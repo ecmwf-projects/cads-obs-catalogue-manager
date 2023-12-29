@@ -1,0 +1,36 @@
+services:
+  test_ingestiondb:
+    image: postgres:14
+    volumes:
+    - ./data:/var/lib/postgresql/data
+    - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d/
+    environment:
+    - POSTGRES_DB=baron
+    - POSTGRES_USER=user
+    - POSTGRES_PASSWORD=${TEST_INGESTION_DB_PASS:?Ingestion DB  password is not set in .env file}
+    ports:
+    - 127.0.0.1:25432:5432
+  test_cataloguedb:
+    image: postgres:14
+    volumes:
+    - ./db-data:/var/lib/postgresql/data
+    ports:
+    - 127.0.0.1:5433:5432
+    environment:
+    - POSTGRES_USER=docker
+    - POSTGRES_PASSWORD=${CATALOGUE_PASSWORD:?Catalogue DB  password is not set in .env file}
+    - POSTGRES_DB=cataloguedbtest
+  object-storage:
+    image: quay.io/minio/minio:RELEASE.2022-07-24T17-09-31Z
+    command: server --console-address ":9001" /data
+    ports:
+    - 127.0.0.1:9000:9000
+    - 127.0.0.1:9001:9001
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_KEY:?Object storage password is not set in .env file}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3

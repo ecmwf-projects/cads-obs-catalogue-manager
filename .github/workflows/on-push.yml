@@ -1,0 +1,137 @@
+name: on-push
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: 3.x
+    - uses: pre-commit/action@v3.0.0
+
+  unit-tests:
+    name: unit-tests (3.10)
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download CDM tables
+      uses: actions/checkout@v3
+      with:
+        repository: ecmwf-projects/cads-obs-common_data_model
+        ref: 'cadsobs-changes'
+        path: common_data_model
+    - name: Deploy test ingestion database
+      env:
+        TEST_INGESTION_DB_PASS: ${{ secrets.TEST_INGESTION_DB_PASS }}
+        CATALOGUE_PASSWORD: ${{ secrets.CATALOGUE_PASSWORD}}
+        STORAGE_PASSWORD: ${{ secrets.STORAGE_PASSWORD}}
+        STORAGE_SECRET_KEY: ${{ secrets.STORAGE_SECRET_KEY}}
+      timeout-minutes: 2
+      run: |
+        cd tests/docker/
+        wget -nv -O docker-entrypoint-initdb.d/test_ingestiondb.sql https://cloud.predictia.es/s/R9a6z8fBZQcPrAQ/download
+        touch .env
+        echo TEST_INGESTION_DB_PASS=$TEST_INGESTION_DB_PASS >> .env
+        echo CATALOGUE_PASSWORD=$CATALOGUE_PASSWORD >> .env
+        echo STORAGE_PASSWORD=$STORAGE_PASSWORD >> .env
+        docker-compose up -d
+        until pg_isready -U user -d baron -p 25432 -h localhost; do sleep 2; done
+    - name: Download test netCDFs
+      timeout-minutes: 2
+      run: |
+        cd tests/data
+        wget -nv -O test_netcdfs.tar.gz https://cloud.predictia.es/s/7QzpBEaYyiZ3o6C/download
+        mkdir cuon_data && tar xzf test_netcdfs.tar.gz -C cuon_data/
+        rm test_netcdfs.tar.gz
+    - name: Install Conda environment with Micromamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: environment.yml
+        environment-name: DEVELOP
+        channels: conda-forge
+        cache-env: true
+        extra-specs: |
+          python=3.10
+    - name: Install package
+      run: |
+        python -m pip install --no-deps -e .
+    - name: Run tests
+      env:
+        TEST_INGESTION_DB_PASS: ${{ secrets.TEST_INGESTION_DB_PASS }}
+        STORAGE_PASSWORD: ${{ secrets.STORAGE_PASSWORD}}
+        CATALOGUE_DB: ${{ secrets.CATALOGUE_DB}}
+        CATALOGUE_HOST: ${{ secrets.CATALOGUE_HOST}}
+        CATALOGUE_PASSWORD: ${{ secrets.CATALOGUE_PASSWORD}}
+        CATALOGUE_PORT: ${{ secrets.CATALOGUE_PORT}}
+        CATALOGUE_USER: ${{ secrets.CATALOGUE_USER}}
+        STORAGE_ACCESS_KEY: ${{ secrets.STORAGE_ACCESS_KEY}}
+        STORAGE_HOST: ${{ secrets.STORAGE_HOST}}
+        STORAGE_PORT: ${{ secrets.STORAGE_PORT}}
+        STORAGE_SECRET_KEY: ${{ secrets.STORAGE_SECRET_KEY}}
+        STORAGE_SECURE: ${{ secrets.STORAGE_SECURE}}
+        CDM_TABLES_LOCATION: ${{ github.workspace }}
+      run: |
+        ls ${GITHUB_WORKSPACE}/common_data_model/*
+        make unit-tests COV_REPORT=xml
+
+  type-check:
+    needs: [unit-tests]
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Conda environment with Micromamba
+      uses: mamba-org/provision-with-micromamba@v12
+      with:
+        environment-file: environment.yml
+        environment-name: DEVELOP
+        channels: conda-forge
+        cache-env: true
+        extra-specs: |
+          python=3.10
+    - name: Install package
+      run: |
+        python -m pip install --no-deps -e .
+    - name: Run code quality checks
+      run: |
+        make type-check
+
+  docs-build:
+    needs: [unit-tests]
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Conda environment with Micromamba
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-file: environment.yml
+        environment-name: DEVELOP
+        channels: conda-forge
+        cache-env: true
+        extra-specs: |
+          python=3.10
+    - name: Install package
+      run: |
+        python -m pip install --no-deps -e .
+    - name: Build documentation
+      run: |
+        make docs-build

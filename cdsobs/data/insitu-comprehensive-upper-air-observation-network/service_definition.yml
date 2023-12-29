@@ -1,0 +1,146 @@
+global_attributes:
+  contactemail: https://support.ecmwf.int
+  licence_list: 20180314_Copernicus_License_V1.1
+  responsible_organisation: ECMWF
+out_columns_order:
+- station_name
+- radiosonde_code
+- sensor_model
+- report_timestamp
+- actual_time
+- report_id
+- longitude
+- latitude
+- height_of_station_above_sea_level
+- air_pressure
+- air_temperature
+- air_temperature_total_uncertainty
+- relative_humidity
+- relative_humidity_total_uncertainty
+- wind_speed
+- air_dewpoint_depression
+- secondary_id
+products_hierarchy:
+- variables
+sources:
+  CUON:
+    cdm_mapping:
+      melt_columns: false
+      unit_changes:
+        aerosol_absorption_optical_depth:
+          names:
+            '1': '1'
+          offset: 0
+          scale: 1
+    data_table: observations_table
+    descriptions:
+      aerosol_absorption_optical_depth:
+        description: Vertical column integral of spectral aerosol absorption coefficient
+        dtype: float32
+        long_name: aerosol_absorption_optical_depth
+        units: '1'
+      air_pressure:
+        description: Barometric air pressure
+        dtype: float32
+        long_name: air_pressure
+        units: Pa
+      air_temperature:
+        description: Air temperature (from profile measurement)
+        dtype: float32
+        long_name: air_temperature
+        units: K
+      air_dewpoint:
+        description: Dewpoint measurement (from profile measurement)
+        dtype: float32
+        long_name: air_dewpoint
+      dew_point_depression:
+        description: The difference between air temperature and dew point temperature.  The dew point temperature is the temperature to which a given air parcel must be cooled at constant pressure and constant water vapour content in order for saturation to occur
+        long_name: dew_point_depression
+        dtype: float32
+      eastward_wind_speed:
+        description: Wind towards the east
+        dtype: float32
+        long_name: eastward_wind_speed
+      northward_wind_speed:
+        description: Wind towards the north
+        dtype: float32
+        long_name: northward_wind_speed
+      geopotential_height:
+        description: Height of a standard or significant pressure level in meters
+        dtype: float32
+        long_name: geopotential_height
+        units: m
+      location_latitude:
+        description: Latitude of the station (deg. North)
+        dtype: float32
+        long_name: latitude
+        units: degree_north
+      location_longitude:
+        description: Longitude of the station (deg. East)
+        dtype: float32
+        long_name: longitude
+        units: degree_east
+      relative_humidity:
+        description: Relative humidity (from profile measurement)
+        dtype: float32
+        long_name: relative_humidity
+        units: m
+      report_timestamp:
+        description: Observation date time UTC
+        dtype: datetime64[ns]
+        long_name: report_timestamp
+      specific_humidity:
+        description: specific means per unit mass. Specific humidity is the mass fraction of water vapor in (moist) air.
+        dtype: float32
+        long_name: specific_humidity
+      station_name:
+        description: Station identification code
+        dtype: object
+        long_name: station_name
+      wind_from_direction:
+        description: "Wind direction with 0°:north, 90°:east, 180°:south, 270°:west"
+        dtype: float32
+        long_name: wind_from_direction
+      wind_speed:
+        description: Wind speed
+        dtype: float32
+        long_name: wind_speed
+      secondary_id:
+        description: Secondary id
+        dtype: object
+        long_name: decondary_id
+      sensor_id:
+        description: Model ID where applicable.
+        dtype: object
+        long_name: instrument_model
+
+
+    header_columns:
+    - primary_station_id
+    - report_timestamp
+    - longitude
+    - latitude
+    header_table: header_table
+    join_ids:
+      data: report_id
+      header: report_id
+    mandatory_columns:
+    - primary_station_id
+    - report_timestamp
+    - longitude
+    - latitude
+    - report_id
+    order_by:
+    - report_timestamp
+    - report_id
+    - air_pressure
+    products:
+    - columns:
+      - aerosol_absorption_optical_depth
+      - air_temperature
+      - geopotential_height
+      - relative_humidity
+      group_name: variables
+    space_columns:
+      y: latitude|station_configuration
+      x: longitude|station_configuration

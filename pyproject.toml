@@ -1,0 +1,82 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+
+[project]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering"
+]
+description = "CopDS Observation Repository Catalogue Manager"
+dynamic = ["version"]
+license = {file = "LICENSE"}
+name = "cdsobs"
+readme = "README.md"
+
+[project.scripts]
+cadsobs = "cdsobs.cli.app:main"
+
+[tool.black]
+target-version = ['py310']
+
+[tool.coverage.run]
+branch = true
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+exclude = 'tests/docker'
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+log_cli = false
+log_level = "INFO"
+norecursedirs = [
+  'tests/docker'
+]
+
+[tool.ruff]
+ignore = [
+  # pydocstyle: Missing Docstrings
+  "D1",
+  # pydocstyle: numpy convention
+  "D107",
+  "D203",
+  "D212",
+  "D213",
+  "D402",
+  "D413",
+  "D415",
+  "D416",
+  "D417"
+]
+# Black line length is 88, but black does not format comments.
+line-length = 110
+select = [
+  # pyflakes
+  "F",
+  # pycodestyle
+  "E",
+  "W",
+  # isort
+  "I",
+  # pydocstyle
+  "D"
+]
+
+[tool.setuptools]
+packages = ["cdsobs"]
+
+[tool.setuptools_scm]
+write_to = "cdsobs/version.py"
+write_to_template = '''
+# Do not change! Do not track in version control!
+__version__ = "{version}"
+'''

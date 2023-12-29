@@ -1,0 +1,18 @@
+{
+  "template": "git@github.com:ecmwf-projects/cookiecutter-conda-package.git",
+  "commit": "5ab0496fbbaa26b585901b4a2b6efe649434fb4f",
+  "context": {
+    "cookiecutter": {
+      "project_name": "cdsobs",
+      "project_slug": "cdsobs",
+      "project_short_description": "CopDS Observation Repository Catalogue Manager",
+      "copyright_holder": "European Union",
+      "copyright_year": "2022",
+      "mypy_strict": "False",
+      "integration_tests": "False",
+      "_template": "git@github.com:ecmwf-projects/cookiecutter-conda-package.git"
+    }
+  },
+  "directory": null,
+  "checkout": null
+}

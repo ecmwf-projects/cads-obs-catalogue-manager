@@ -1,0 +1,10 @@
+# Header table name, data table name, header index name, header index name in data, database name
+woudc_ozonesonde_header,woudc_ozonesonde_value,id,header_id,woudc2
+woudc_totalozone_header,woudc_totalozone_value,id,header_id,woudc2
+guan_data_header,guan_data_value,guandataheader_id,guan_data_header_id,baron
+None,igra_h,None,None,baron
+gruan_data_header,gruan_data_value,g_product_id,gruan_data_header_id,baron
+None,unc_subhourly,None,None,uscrn
+None,unc_hourly,None,None,uscrn
+None,unc_daily,None,None,uscrn
+None,unc_monthly,None,None,uscrn

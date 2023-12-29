@@ -1,0 +1,350 @@
+{
+  "products_hierarchy": [
+    "variables",
+    "total_uncertainty",
+    "random_uncertainty",
+    "systematic_uncertainty",
+    "post_processing_radiation_correction"
+  ],
+  "out_columns_order": [
+    "station_name",
+    "report_timestamp",
+    "time_since_launch",
+    "report_id",
+    "location_longitude",
+    "location_latitude",
+    "height_of_station_above_sea_level",
+    "altitude",
+    "altitude_total_uncertainty",
+    "air_pressure",
+    "air_pressure_total_uncertainty",
+    "air_temperature",
+    "air_temperature_total_uncertainty",
+    "air_temperature_random_uncertainty",
+    "air_temperature_systematic_uncertainty",
+    "air_temperature_post_processing_radiation_correction",
+    "relative_humidity",
+    "relative_humidity_total_uncertainty",
+    "relative_humidity_random_uncertainty",
+    "relative_humidity_systematic_uncertainty",
+    "relative_humidity_post_processing_radiation_correction",
+    "wind_speed",
+    "wind_speed_total_uncertainty",
+    "wind_from_direction",
+    "wind_from_direction_total_uncertainty",
+    "eastward_wind_speed",
+    "northward_wind_speed",
+    "shortwave_radiation",
+    "shortwave_radiation_total_uncertainty",
+    "vertical_speed_of_radiosonde",
+    "geopotential_height",
+    "water_vapour_mixing_ratio",
+    "frost_point_temperature",
+    "air_relative_humidity_effective_vertical_resolution"
+  ],
+  "sources": {
+    "GRUAN": {
+      "header_table": "gruan_data_header",
+      "data_table": "gruan_data_value",
+      "join_ids": {
+        "header": "g_product_id",
+        "data": "gruan_data_header_id"
+	  },
+      "space_columns": {
+        "longitude": "location_longitude",
+        "latitude": "location_latitude"
+      },
+      "header_columns": [
+        {
+          "g_general_site_code": "station_name"
+        },
+        {
+          "date_of_observation": "report_timestamp"
+        },
+        {
+          "g_measuring_system_altitude": "height_of_station_above_sea_level"
+        }
+      ],
+      "order_by": [
+        "report_timestamp",
+        "report_id",
+        "time_since_launch"
+      ],
+      "mandatory_columns": [
+        "g_general_site_code",
+        "date_of_observation",
+        "time",
+        "gruan_data_header_id",
+        "g_measuring_system_altitude",
+        "lon",
+        "lat",
+        "press",
+        "u_press"
+      ],
+      "products": [
+        {
+          "group_name": "variables",
+          "columns": [
+            "temp",
+            "rh",
+            "wdir",
+            "wspeed",
+            "u",
+            "v",
+            "wvmr",
+            "asc_",
+            "geopot",
+            "fp",
+            "res_rh",
+            "swrad",
+            "alt"
+          ]
+        },
+        {
+          "group_name": "total_uncertainty",
+          "columns": [
+            "u_temp",
+            "u_wdir",
+            "u_wspeed",
+            "u_rh",
+            "u_alt",
+            "u_swrad"
+          ]
+        },
+        {
+          "group_name": "random_uncertainty",
+          "columns": [
+            "u_std_temp",
+            "u_std_rh"
+          ]
+        },
+        {
+          "group_name": "systematic_uncertainty",
+          "columns": [
+            "u_cor_temp",
+            "u_cor_rh"
+          ]
+        },
+        {
+          "group_name": "post_processing_radiation_correction",
+          "columns": [
+            "cor_temp",
+            "cor_rh"
+          ]
+        }
+      ],
+      "descriptions": {
+        "date_of_observation": {
+          "name_for_output": "report_timestamp",
+          "description": "observation date time UTC"
+        },
+        "g_general_site_code": {
+          "name_for_output": "station_name",
+          "description": "station identifier according to [...to_do...]"
+        },
+        "lon": {
+          "units": "degree_east",
+          "name_for_output": "location_longitude",
+          "long_name": "longitude",
+          "description": "Longitude deg. Est"
+        },
+        "lat": {
+          "units": "degree_north",
+          "name_for_output": "location_latitude",
+          "long_name": "latitude",
+          "description": "Latitude deg. North"
+        },
+        "g_measuring_system_altitude": {
+          "name_for_output": "height_of_station_above_sea_level",
+          "long_name": "height_of_station_above_sea_level",
+          "description": "altitude above means sea level [....reference...]"
+        },
+        "press": {
+          "units": "Pa",
+          "description": "Barometric air pressure using silicon sensor up to 15.4 km, derived from GPS-altitude above",
+          "long_name": "air_pressure",
+          "name_for_output": "air_pressure",
+          "total_uncertainty": "u_press"
+        },
+        "wdir": {
+          "units": "degree from north",
+          "description": "Wind direction with 0\u00b0:north, 90\u00b0:east, 180\u00b0:south, 270\u00b0:west",
+          "long_name": "wind_from_direction",
+          "name_for_output": "wind_from_direction",
+          "total_uncertainty": "u_wdir"
+        },
+        "u": {
+          "units": "m s-1",
+          "description": "Wind towards the east",
+          "long_name": "eastward_wind_speed",
+          "name_for_output": "eastward_wind_speed"
+        },
+        "v": {
+          "units": "m s-1",
+          "description": "Wind towards the north",
+          "long_name": "northward_wind_speed",
+          "name_for_output": "northward_wind_speed"
+        },
+        "wvmr": {
+          "units": "mol mol-1",
+          "description": "Volume mixing ratio (mol/mol) of water vapor calculated from relative_humidity  using vapor pressure formula HylandWexler based on the water vapor HylandWexler pressure fomula, corrected by GRUAN correction scheme",
+          "long_name": "water_vapour_mixing_ratio",
+          "name_for_output": "water_vapour_mixing_ratio"
+        },
+        "temp": {
+          "units": "K",
+          "description": "Temperature in the atmosphere at the observed height. Temperature measured in Kelvin can be converted to degrees Celsius by subtracting 273.15. Its uncertainty is estimated with a GRUAN correction scheme.",
+          "long_name": "air_temperature",
+          "name_for_output": "air_temperature",
+          "total_uncertainty": "u_temp",
+          "random_uncertainty": "u_std_temp",
+          "systematic_uncertainty": "u_cor_temp",
+          "post_processing_radiation_correction": "cor_temp"
+        },
+        "cor_temp": {
+          "units": "K",
+          "description": "Bias corrections applied to air_temperature by the GRUAN correction scheme estimated from calibration and radiation correction uncertainty",
+          "long_name": "air_temperature_post_processing_radiation_correction",
+          "name_for_output": "air_temperature_post_processing_radiation_correction"
+        },
+        "wspeed": {
+          "units": "m s-1",
+          "description": "Wind speed",
+          "long_name": "wind_speed",
+          "name_for_output": "wind_speed",
+          "total_uncertainty": "u_wspeed"
+        },
+        "asc_": {
+          "units": "m s-1",
+          "description": "the ascent speed radiosonde calculated from altitude",
+          "long_name": "vertical_speed_of_radiosonde",
+          "name_for_output": "vertical_speed_of_radiosonde"
+        },
+        "time": {
+          "units": "s",
+          "description": "Time after launch",
+          "long_name": "time_since_launch",
+          "name_for_output": "time_since_launch"
+        },
+        "gruan_data_header_id": {
+          "name_for_output": "report_id",
+          "description": "Identifier in the GRUAN meta-database"
+        },
+        "rh": {
+          "units": "%",
+          "description": "Relative humidity collated from U1 and U2 based on the water vapor HylandWexler pressure fomula, corrected by GRUAN correction scheme",
+          "long_name": "relative_humidity",
+          "name_for_output": "relative_humidity",
+          "total_uncertainty": "u_rh",
+          "random_uncertainty": "u_std_rh",
+          "systematic_uncertainty": "u_cor_rh",
+          "post_processing_radiation_correction": "cor_rh"
+        },
+        "cor_rh": {
+          "units": "%",
+          "description": "Relative_humidity by the GRUAN correction scheme",
+          "long_name": "relative_humidity_post_processing_radiation_correction",
+          "name_for_output": "relative_humidity_post_processing_radiation_correction"
+        },
+        "res_rh": {
+          "units": "s",
+          "description": "Resolution (defined by 1 / cut-off frequency) of the relative humidity time in terms",
+          "long_name": "air_relative_humidity_effective_vertical_resolution",
+          "name_for_output": "air_relative_humidity_effective_vertical_resolution"
+        },
+        "geopot": {
+          "units": "m",
+          "description": "Geopotential altitude from corrected pressure product",
+          "long_name": "geopotential_height",
+          "name_for_output": "geopotential_height"
+        },
+        "alt": {
+          "units": "m",
+          "description": "Geometric altitude above sea level calculated from air pressure and GPS altitude",
+          "long_name": "altitude",
+          "name_for_output": "altitude",
+          "total_uncertainty": "u_alt"
+        },
+        "fp": {
+          "units": "K",
+          "description": "Frost point temperature calculated from relative_humidity  using vapor pressure formula HylandWexler based on the water vapor HylandWexler pressure fomula, corrected by GRUAN correction scheme",
+          "long_name": "frost_point_temperature",
+          "name_for_output": "frost_point_temperature"
+        },
+        "swrad": {
+          "units": "W m-2",
+          "description": "Short wave radiation field (actinic flux) derived from model for given sun elevation (mean between a cloudy and cloudfree case)",
+          "long_name": "shortwave_radiation",
+          "name_for_output": "shortwave_radiation",
+          "total_uncertainty": "u_swrad"
+        },
+        "u_alt": {
+          "units": "m",
+          "description": "Standard uncertainty (k=1) of altitude dominated by correlated uncertainty",
+          "long_name": "altitude_total_uncertainty",
+          "name_for_output": "altitude_total_uncertainty"
+        },
+        "u_swrad": {
+          "units": "W m-2",
+          "description": "Standard uncertainty (k=1) of short_wave_radiatio",
+          "long_name": "shortwave_radiation_total_uncertainty",
+          "name_for_output": "shortwave_radiation_total_uncertainty"
+        },
+        "u_press": {
+          "units": "Pa",
+          "description": "Standard uncertainty (k=1) of air_pressure dominated by correlated uncertainty",
+          "long_name": "air_pressure_total_uncertainty",
+          "name_for_output": "air_pressure_total_uncertainty"
+        },
+        "u_wdir": {
+          "units": "degree",
+          "description": "Standard uncertainty (k=1) of wind direction  derived from statistics only",
+          "long_name": "wind_from_direction_total_uncertainty",
+          "name_for_output": "wind_from_direction_total_uncertainty"
+        },
+        "u_temp": {
+          "units": "K",
+          "description": "Standard uncertainty (k=1) of air_temperature",
+          "long_name": "air_temperature total uncertainty",
+          "name_for_output": "air_temperature_total_uncertainty"
+        },
+        "u_wspeed": {
+          "units": "m s-1",
+          "description": "Standard uncertainty (k=1) of wind_speed  derived from statistics only",
+          "long_name": "wind_speed total uncertainty",
+          "name_for_output": "wind_speed_total_uncertainty"
+        },
+        "u_rh": {
+          "units": "%",
+          "description": "Standard uncertainty (k=1) of relative_humidity calculated by the the geometric sum correlated and random uncertainties",
+          "long_name": "relative_humidity total uncertainty",
+          "name_for_output": "relative_humidity_total_uncertainty"
+        },
+        "u_std_temp": {
+          "units": "K",
+          "description": "Statistical standard deviation (k=1) of air_temperature",
+          "long_name": "air_temperature_random_uncertainty",
+          "name_for_output": "air_temperature_random_uncertainty"
+        },
+        "u_std_rh": {
+          "units": "%",
+          "description": "Statistical standard deviation (k=1) of relative_humidity",
+          "long_name": "relative_humidity_random_uncertainty",
+          "name_for_output": "relative_humidity_random_uncertainty"
+        },
+        "u_cor_temp": {
+          "units": "K",
+          "description": "air_temperature correlated uncertainty estimated from systematic uncertainty sources estimated from calibration and radiation correction uncertainty.",
+          "long_name": "air_temperature_systematic_uncertainty",
+          "name_for_output": "air_temperature_systematic_uncertainty"
+        },
+        "u_cor_rh": {
+          "units": "%",
+          "description": "relative_humidity correlated uncertainty estimated from systematic uncertainty sources estimated from calibration, calibration correction, radiation correction, time-lag",
+          "long_name": "relative_humidity_systematic_uncertainty",
+          "name_for_output": "relative_humidity_systematic_uncertainty"
+        }
+      }
+    }
+  }
+}

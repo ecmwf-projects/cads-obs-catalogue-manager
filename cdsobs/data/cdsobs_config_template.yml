@@ -1,0 +1,90 @@
+ingestion_databases:
+  main:
+    db_user: user
+    pwd: testpass
+    host: localhost
+    port: 25432
+    db_name: baron
+catalogue_db:
+  db_user: docker
+  pwd: docker
+  host: localhost
+  port: 5433
+  db_name: cataloguedbtest
+s3config:
+  access_key: minioadmin
+  secret_key: minioadmin
+  host: 127.0.0.1
+  port: 9000
+  secure: false
+  namespace: cds2-obs-dev
+datasets:
+- name: insitu-observations-woudc-ozone-total-column-and-profiles
+  lon_tile_size: 180
+  lat_tile_size: 90
+  time_tile_size: year
+- name: insitu-observations-igra-baseline-network
+  lon_tile_size: 45
+  lat_tile_size: 45
+  available_cdm_tables:
+  - observations_table
+  - header_table
+  - station_configuration
+  - sensor_configuration
+  - uncertainty_table
+  reader:
+    IGRA: "cdsobs.ingestion.readers.sql.read_header_and_data_tables"
+    IGRA_H: "cdsobs.ingestion.readers.sql.read_singletable_data"
+- name: insitu-observations-gruan-reference-network
+  lon_tile_size: 20
+  lat_tile_size: 20
+- name: insitu-observations-gnss
+  lon_tile_size: 20
+  lat_tile_size: 20
+  available_cdm_tables:
+  - observations_table
+  - header_table
+  - station_configuration
+  - sensor_configuration
+  - uncertainty_table
+- name: insitu-observations-near-surface-temperature-us-climate-reference-network
+  lon_tile_size:
+    USCRN_MONTHLY: 90
+    USCRN_DAILY: 90
+    USCRN_HOURLY: 90
+    USCRN_SUBHOURLY:
+      2006-2010: 30
+      2010-2030: 20
+  lat_tile_size:
+    USCRN_MONTHLY: 90
+    USCRN_DAILY: 90
+    USCRN_HOURLY: 90
+    USCRN_SUBHOURLY:
+      2006-2010: 30
+      2010-2030: 20
+  available_cdm_tables:
+  - observations_table
+  - header_table
+  - station_configuration
+  - sensor_configuration
+  - uncertainty_table
+  reader: "cdsobs.ingestion.readers.sql.read_singletable_data"
+- name: insitu-comprehensive-upper-air-observation-network
+  lon_tile_size: 180
+  lat_tile_size: 90
+  read_with_spatial_batches: true
+  available_cdm_tables:
+  - observations_table
+  - header_table
+  - station_configuration
+  - era5fb_table
+  - advanced_homogenisation
+  reader: "cdsobs.ingestion.readers.cuon.read_cuon_netcdfs"
+  reader_extra_args:
+    input_dir: "test"
+- name: insitu-observations-woudc-netcdfs
+  lon_tile_size: 180
+  lat_tile_size: 90
+  reader: "cdsobs.ingestion.readers.netcdf.read_flat_netcdfs"
+  reader_extra_args:
+    input_dir: "test"

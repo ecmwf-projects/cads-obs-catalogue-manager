@@ -1,0 +1,2 @@
+ipw_gnss_data_header,ipw_gnss_data_value,dataheader_id,ipw_gnss_data_header_id,gnss_db
+ipw_epn_repro2_data_header,ipw_epn_repro2_data_value,dataheader_id,ipw_epn_data_header_id,gnss_db

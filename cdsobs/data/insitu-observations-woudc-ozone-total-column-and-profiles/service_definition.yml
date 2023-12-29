@@ -1,0 +1,462 @@
+global_attributes:
+  contactemail: https://support.ecmwf.int
+  licence_list: 20180314_Copernicus_License_V1.1
+  responsible_organisation: ECMWF
+out_columns_order:
+- platform_type
+- station_name
+- other_ids
+- sensor_id
+- report_timestamp
+- daily_timestamp
+- time_begin
+- time_end
+- time_mean
+- time_since_launch
+- longitude|station_configuration
+- latitude|station_configuration
+- longitude|observations_table
+- latitude|observations_table
+- height_of_station_above_sea_level
+- sensor_model
+- sonde_current
+- pump_motor_current
+- pump_motor_voltage
+- reference_model
+- ozone_reference_total_ozone
+- ozone_reference_time_mean
+- wl_code
+- obs_code
+- monthly_npts
+- number_of_observations
+- harmonic_mean_relative_slant_path
+- sample_temperature
+- level_code
+- observation_height_above_station_surface
+- air_pressure
+- ozone_partial_pressure
+- air_temperature
+- relative_humidity
+- wind_speed
+- wind_from_direction
+- geopotential_height
+- total_ozone_column
+- total_ozone_column_standard_deviation
+- column_sulphur_dioxide
+products_hierarchy:
+- variables
+- standard_deviation
+sources:
+  OzoneSonde:
+    cdm_mapping:
+      melt_columns: true
+      rename:
+        duration: time_since_launch
+        gp_height: geopotential_height
+        height: observation_height_above_station_surface
+        instrument_model: sensor_id
+        level_code: level_code
+        location_height: height_of_station_above_sea_level
+        latitude: latitude|observations_table
+        location_latitude: latitude|station_configuration
+        location_longitude: longitude|station_configuration
+        longitude: longitude|observations_table
+        o3_partial_pressure: ozone_partial_pressure
+        ozone_reference_model: reference_model
+        ozone_reference_total_o3: ozone_reference_total_ozone
+        ozone_reference_utc_mean: ozone_reference_time_mean
+        platform_gaw_id: other_ids
+        platform_id: primary_station_id
+        platform_type: platform_type
+        pressure: z_coordinate
+        pump_motor_current: pump_motor_current
+        pump_motor_voltage: pump_motor_voltage
+        radiosonde_model: sensor_model
+        relative_humidity: relative_humidity
+        sample_temperature: sample_temperature
+        sonde_current: sonde_current
+        temperature: air_temperature
+        timestamp_datetime: report_timestamp
+        to3: total_ozone_column
+        wind_direction: wind_from_direction
+        wind_speed: wind_speed
+      add:
+        z_coordinate_type: pressure (Pa)
+      unit_changes:
+        geopotential_height:
+          names:
+            Pa: m
+          offset: 0
+          scale: 1
+    data_table: woudc_ozonesonde_value
+    descriptions:
+      air_pressure:
+        description: Atmospheric pressure of each level in Pascals.
+        dtype: float32
+        long_name: pressure
+        units: Pa
+      air_temperature:
+        description: Level temperature Kelvin.
+        dtype: float32
+        long_name: temperature
+        units: Kelvin
+      geopotential_height:
+        description: Geopotential height in meters.
+        dtype: float32
+        long_name: gp_height
+        units: m
+      height_of_station_above_sea_level:
+        description: Height is defined as the altitude, elevation, or height of the defined platform + instrument above sea level.
+        dtype: float32
+        long_name: location_height
+        units: meters above sea level
+      latitude|observations_table:
+        description: Geographical latitude (for example from GPS).
+        dtype: float32
+        long_name: latitude
+        units: decimal degrees
+      level_code:
+        description: Code for the level type.
+        dtype: float32
+        long_name: level_code
+      latitude|station_configuration:
+        description: Latitude of the instrument.
+        dtype: float32
+        long_name: location_latitude
+        units: decimal degrees
+      longitude|station_configuration:
+        description: Longitude of the instrument.
+        dtype: float32
+        long_name: location_longitude
+        units: decimal degrees
+      longitude|observations_table:
+        description: Geographical longitude (for example from GPS).
+        dtype: float32
+        long_name: longitude
+        units: decimal degrees
+      observation_height_above_station_surface:
+        description: Geographical height (for example from GPS).
+        dtype: float32
+        long_name: height
+        units: m
+      other_ids:
+        description: Three-letter GAW ID as issued by GAWSIS, if available (recommended).
+        dtype: object
+        long_name: platform_gaw_id
+      ozone_partial_pressure:
+        description: Level partial pressure of ozone in Pascals.
+        dtype: float32
+        long_name: o3_partial_pressure
+        units: Pa
+      ozone_reference_time_mean:
+        description: The mean time of observations.
+        dtype: float32
+        long_name: ozone_reference_utc_mean
+        units: decimal hours, UTC
+      ozone_reference_total_ozone:
+        description: Daily value of total column ozone amount defined as the "best representative value" in the order of Direct Sun (DS), Zenith Cloud (ZS) and Focused Moon (FM).
+        dtype: float32
+        long_name: ozone_reference_total_o3
+        name_for_output: ozone_reference_total_ozone
+        units: Dobson-units
+      pump_motor_current:
+        description: Electrical current measured through the pump motor.
+        dtype: float32
+        long_name: pump_motor_current
+        name_for_output: pump_motor_current
+        units: Ampere
+      pump_motor_voltage:
+        description: Applied voltage measured across the pump motor.
+        dtype: float32
+        long_name: pump_motor_voltage
+        name_for_output: pump_motor_voltage
+        units: Volt
+      reference_model:
+        description: Model ID where applicable.
+        dtype: object
+        long_name: ozone_reference_model
+        name_for_output: reference_model
+      relative_humidity:
+        description: Percentage of water vapour relative to the saturation amount.
+        dtype: float32
+        long_name: relative_humidity
+        units: '%'
+      report_timestamp:
+        description: Timestamp with time zone.
+        dtype: datetime64[ns]
+        long_name: timestamp_datetime
+      sample_temperature:
+        description: Temperature where sample is measured in Kelvin.
+        dtype: float32
+        long_name: sample_temperature
+        units: Kelvin
+      sensor_id:
+        description: Model ID where applicable.
+        dtype: object
+        long_name: instrument_model
+      sensor_model:
+        description: Radiosonde model.
+        dtype: object
+        long_name: radiosonde_model
+      sonde_current:
+        description: Measured ozonesonde cell current with no corrections applied.
+        dtype: float32
+        long_name: sonde_current
+        units: Ampere
+      primary_station_id:
+        description: Unique station or flight ID assigned by the WOUDC to each registered platform.
+        dtype: object
+        long_name: platform_id
+      time_since_launch:
+        description: Elapsed flight time since released as primary variable.
+        dtype: float32
+        long_name: duration
+        units: s
+      total_ozone_column:
+        description: Total column ozone.
+        dtype: float32
+        long_name: to3
+        units: Dobson-units
+      platform_type:
+        description: Type of observing platform.
+        dtype: object
+        long_name: platform_type
+      wind_from_direction:
+        description: Wind direction in degrees.
+        dtype: float32
+        long_name: wind_direction
+        units: decimal degrees
+      wind_speed:
+        description: Wind speed in meters per second.
+        dtype: float32
+        long_name: wind_speed
+        units: m s^-1
+    header_columns:
+    - platform_type
+    - primary_station_id
+    - other_ids
+    - sensor_id
+    - longitude|station_configuration
+    - latitude|station_configuration
+    - height_of_station_above_sea_level
+    - sensor_model
+    - reference_model
+    - ozone_reference_total_ozone
+    - ozone_reference_time_mean
+    - report_timestamp
+    header_table: woudc_ozonesonde_header
+    join_ids:
+      data: header_id
+      header: id
+    mandatory_columns:
+    - platform_type
+    - primary_station_id
+    - other_ids
+    - sensor_id
+    - sensor_model
+    - reference_model
+    - ozone_reference_total_o3
+    - ozone_reference_time_mean
+    - report_timestamp
+    - longitude|station_configuration
+    - latitude|station_configuration
+    - height_of_station_above_sea_level
+    - z_coordinate
+    - level_code
+    - time_since_launch
+    - sample_temperature
+    - sonde_current
+    - pump_motor_current
+    - pump_motor_voltage
+    - latitude|observations_table
+    - longitude|observations_table
+    - observation_height_above_station_surface
+    order_by:
+    - primary_station_id
+    - report_timestamp
+    - time_since_launch
+    products:
+    - columns:
+      - ozone_partial_pressure
+      - temperature
+      - wind_speed
+      - wind_direction
+      - gp_height
+      - relative_humidity
+      - total_ozone_column
+      group_name: variables
+    space_columns:
+      y: latitude|station_configuration
+      x: longitude|station_configuration
+  TotalOzone:
+    cdm_mapping:
+      melt_columns: true
+      rename:
+        column_o3: total_ozone_column
+        column_so2: column_sulphur_dioxide
+        daily_date: daily_timestamp
+        instrument_model: sensor_id
+        location_height: height_of_station_above_sea_level
+        location_latitude: latitude|station_configuration
+        location_longitude: longitude|station_configuration
+        m_mu: harmonic_mean_relative_slant_path
+        monthly_npts: monthly_npts
+        n_obs: number_of_observations
+        obs_code: obs_code
+        platform_gaw_id: other_ids
+        platform_id: primary_station_id
+        std_dev_o3: total_ozone_column_standard_deviation
+        timestamp_datetime_first_day: report_timestamp
+        utc_begin: time_begin
+        utc_end: time_end
+        utc_mean: time_mean
+        wl_code: wl_code
+      unit_changes:
+        column_sulphur_dioxide:
+          names:
+            Dobson-units: Dobson-units
+          offset: 0
+          scale: 1
+        total_ozone_column:
+          names:
+            Dobson-units: Dobson-units
+          offset: 0
+          scale: 1
+    data_table: woudc_totalozone_value
+    descriptions:
+      column_sulphur_dioxide:
+        description: The daily total column sulphur dioxide (SO2) amount calculated as the mean of the individual SO2 amounts from the same observation used for the O3 amount.
+        dtype: float32
+        long_name: column_so2
+        units: Dobson-units
+      daily_timestamp:
+        description: Date of the observations.
+        dtype: datetime64[ns]
+        long_name: daily_date
+      harmonic_mean_relative_slant_path:
+        description: The harmonic mean of the relative slant path through the ozone layer at 22Km for each of the observations used to compute the daily value.
+        dtype: float32
+        long_name: m_mu
+      height_of_station_above_sea_level:
+        description: Height is defined as the altitude, elevation, or height of the defined platform + instrument above sea level.
+        dtype: float32
+        long_name: location_height
+        units: meters above sea level
+      latitude|station_configuration:
+        description: Latitude of the measurement station (used when differs from the one of the instrument).
+        dtype: float32
+        long_name: location_latitude
+        units: decimal degrees
+      longitude|station_configuration:
+        description: Longitude of the measurement station (used when differs from the one of the instrument).
+        dtype: float32
+        long_name: location_longitude
+        units: decimal degrees
+      monthly_npts:
+        description: The number of points (typically this is the number of daily averages) used to estimate the monthly mean ozone value.
+        dtype: float32
+        long_name: monthly_npts
+      number_of_observations:
+        description: Number of observations used to calculate the total column ozone value.
+        dtype: float32
+        long_name: n_obs
+      obs_code:
+        description: Code to designate the type of total ozone measurement.
+        dtype: object
+        long_name: obs_code
+      other_ids:
+        description: Three-letter GAW ID as issued by GAWSIS, if available (recommended).
+        dtype: object
+        long_name: platform_gaw_id
+      report_timestamp:
+        description: timestamp datetime first day.
+        dtype: datetime64[ns]
+        long_name: timestamp_datetime_first_day
+        units: Datetime
+      sensor_id:
+        description: Model ID where applicable.
+        dtype: object
+        long_name: sensor_id
+      primary_station_id:
+        description: Unique station or flight ID assigned by the WOUDC to each registered platform.
+        dtype: object
+        long_name: platform_id
+      time_begin:
+        description: The starting time of observations.
+        dtype: float32
+        long_name: utc_begin
+        units: decimal hours, UTC
+      time_end:
+        description: The ending time of observations.
+        dtype: float32
+        long_name: utc_end
+        units: decimal hours, UTC
+      time_mean:
+        description: The mean time of observations.
+        dtype: float32
+        long_name: utc_mean
+        units: decimal hours, UTC
+      total_ozone_column:
+        description: Daily value of total column ozone amount defined as the 'best representative value' in order of Direct Sun (DS), Zenith Cloud (ZS) and Focused Moon (FM).
+        dtype: float32
+        long_name: column_o3
+        units: Dobson-units
+      total_ozone_column_standard_deviation:
+        description: Estimated population standard deviation of the total column ozone measurements used for the daily value.
+        dtype: float32
+        long_name: std_dev_o3
+      platform_type:
+        description: Type of observing platform.
+        dtype: object
+        long_name: platform_type
+        name_for_output: type
+      wl_code:
+        description: Code to designate the wavelength pair(s) used for total ozone measurement.
+        dtype: float32
+        long_name: wl_code
+        name_for_output: wl_code
+    header_columns:
+    - platform_type
+    - primary_station_id
+    - other_ids
+    - sensor_id
+    - longitude|station_configuration
+    - latitude|station_configuration
+    - height_of_station_above_sea_level
+    - monthly_npts
+    - report_timestamp
+    header_table: woudc_totalozone_header
+    join_ids:
+      data: header_id
+      header: id
+    mandatory_columns:
+    - platform_type
+    - primary_station_id
+    - other_ids
+    - sensor_id
+    - monthly_npts
+    - longitude
+    - latitude
+    - height_of_station_above_sea_level
+    - daily_timestamp
+    - wl_code
+    - obs_code
+    - time_begin
+    - time_end
+    - time_mean
+    - number_of_observations
+    - harmonic_mean_relative_slant_path
+    order_by:
+    - primary_station_id
+    - report_timestamp
+    products:
+    - columns:
+      - total_ozone_column
+      - column_sulphur_dioxide
+      group_name: variables
+    - columns:
+      - std_dev_O3
+      group_name: standard_deviation
+    space_columns:
+      y: latitude|station_configuration
+      x: longitude|station_configuration

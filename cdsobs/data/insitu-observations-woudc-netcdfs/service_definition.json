@@ -1,0 +1,267 @@
+{
+    "products_hierarchy": [
+        "variables",
+        "standard_deviation"
+    ],
+    "out_columns_order": [
+        "type",
+        "station_name",
+        "other_ids",
+        "sensor_id",
+        "report_timestamp",
+        "daily_timestamp",
+        "time_begin",
+        "time_end",
+        "time_mean",
+        "time_since_launch",
+        "location_longitude",
+        "location_latitude",
+        "longitude",
+        "latitude",
+        "height_of_station_above_sea_level",
+        "sensor_model",
+        "sonde_current",
+        "pump_motor_current",
+        "pump_motor_voltage",
+        "reference_model",
+        "ozone_reference_total_ozone",
+        "ozone_reference_time_mean",
+        "wl_code",
+        "obs_code",
+        "monthly_npts",
+        "number_of_observations",
+        "harmonic_mean_relative_slant_path",
+        "sample_temperature",
+        "level_code",
+        "observation_height_above_station_surface",
+        "air_pressure",
+        "ozone_partial_pressure",
+        "air_temperature",
+        "relative_humidity",
+        "wind_speed",
+        "wind_from_direction",
+        "geopotential_height",
+        "total_ozone_column",
+        "total_ozone_column_standard_deviation",
+        "column_sulphur_dioxide"
+    ],
+    "sources": {
+        "OzoneSonde": {
+            "data_table": "data",
+            "space_columns": {
+                "longitude": "location_longitude",
+                "latitude": "location_latitude"
+            },
+            "order_by": [
+                "station_name",
+                "report_timestamp",
+                "time_since_launch"
+            ],
+            "mandatory_columns": [
+                "type",
+                "station_name",
+                "other_ids",
+                "sensor_id",
+                "sensor_model",
+                "reference_model",
+                "ozone_reference_total_ozone",
+                "ozone_reference_time_mean",
+                "report_timestamp",
+                "location_longitude",
+                "location_latitude",
+                "observation_height_above_station_surface",
+                "air_pressure",
+                "level_code",
+                "time_since_launch",
+                "sample_temperature",
+                "sonde_current",
+                "pump_motor_current",
+                "pump_motor_voltage",
+                "latitude",
+                "longitude"
+            ],
+            "products": [
+                {
+                    "group_name": "variables",
+                    "columns": [
+                        "ozone_partial_pressure",
+                        "air_temperature",
+                        "wind_speed",
+                        "wind_from_direction",
+                        "geopotential_height",
+                        "relative_humidity",
+                        "total_ozone_column",
+                        "air_pressure"
+                    ]
+                }
+            ],
+            "descriptions": {
+                "type": {
+                    "name_for_output": "type",
+                    "long_name": "type",
+                    "description": "Type of observing platform."
+                },
+                "station_name": {
+                    "name_for_output": "station_name",
+                    "long_name": "station_name",
+                    "description": "Unique station or flight ID assigned by the WOUDC to each registered platform."
+                },
+                "other_ids": {
+                    "name_for_output": "other_ids",
+                    "long_name": "other_ids",
+                    "description": "Three-letter GAW ID as issued by GAWSIS, if available (recommended)."
+                },
+                "sensor_id": {
+                    "name_for_output": "sensor_id",
+                    "long_name": "sensor_id",
+                    "description": "Model ID where applicable."
+                },
+                "location_longitude": {
+                    "units": "decimal degrees",
+                    "name_for_output": "location_longitude",
+                    "long_name": "location_longitude",
+                    "description": "Longitude of the instrument."
+                },
+                "location_latitude": {
+                    "units": "decimal degrees",
+                    "name_for_output": "location_latitude",
+                    "long_name": "location_latitude",
+                    "description": "Latitude of the instrument."
+                },
+                "height_of_station_above_sea_level": {
+                    "units": "meters above sea level",
+                    "name_for_output": "height_of_station_above_sea_level",
+                    "long_name": "height_of_station_above_sea_level",
+                    "description": "Height is defined as the altitude, elevation, or height of the defined platform + instrument above sea level."
+                },
+                "sensor_model": {
+                    "name_for_output": "sensor_model",
+                    "long_name": "sensor_model",
+                    "description": "Radiosonde model."
+                },
+                "reference_model": {
+                    "name_for_output": "reference_model",
+                    "long_name": "reference_model",
+                    "description": "Model ID where applicable."
+                },
+                "ozone_reference_total_ozone": {
+                    "units": "Dobson-units",
+                    "name_for_output": "ozone_reference_total_ozone",
+                    "long_name": "ozone_reference_total_ozone",
+                    "description": "Daily value of total column ozone amount defined as the \"best representative value\" in the order of Direct Sun (DS), Zenith Cloud (ZS) and Focused Moon (FM)."
+                },
+                "ozone_reference_time_mean": {
+                    "units": "decimal hours, UTC",
+                    "name_for_output": "ozone_reference_time_mean",
+                    "long_name": "ozone_reference_time_mean",
+                    "description": "The mean time of observations."
+                },
+                "report_timestamp": {
+                    "name_for_output": "report_timestamp",
+                    "description": "Timestamp with time zone."
+                },
+                "air_pressure": {
+                    "units": "Pa",
+                    "description": "Atmospheric pressure of each level in Pascals.",
+                    "long_name": "air_pressure",
+                    "name_for_output": "air_pressure"
+                },
+                "ozone_partial_pressure": {
+                    "units": "Pa",
+                    "description": "Level partial pressure of ozone in Pascals.",
+                    "long_name": "ozone_partial_pressure",
+                    "name_for_output": "ozone_partial_pressure"
+                },
+                "air_temperature": {
+                    "units": "Kelvin",
+                    "description": "Level temperature Kelvin.",
+                    "long_name": "air_temperature",
+                    "name_for_output": "air_temperature"
+                },
+                "wind_speed": {
+                    "units": "m s^-1",
+                    "description": "Wind speed in meters per second.",
+                    "long_name": "wind_speed",
+                    "name_for_output": "wind_speed"
+                },
+                "wind_from_direction": {
+                    "units": "decimal degrees",
+                    "description": "Wind direction in degrees.",
+                    "long_name": "wind_from_direction",
+                    "name_for_output": "wind_from_direction"
+                },
+                "level_code": {
+                    "description": "Code for the level type.",
+                    "long_name": "level_code",
+                    "name_for_output": "level_code"
+                },
+                "time_since_launch": {
+                    "units": "s",
+                    "description": "Elapsed flight time since released as primary variable.",
+                    "long_name": "time_since_launch",
+                    "name_for_output": "time_since_launch"
+                },
+                "geopotential_height": {
+                    "units": "m",
+                    "description": "Geopotential height in meters.",
+                    "long_name": "Geopotential height",
+                    "name_for_output": "geopotential_height"
+                },
+                "relative_humidity": {
+                    "units": "%",
+                    "description": "Percentage of water vapour relative to the saturation amount.",
+                    "long_name": "relative_humidity",
+                    "name_for_output": "relative_humidity"
+                },
+                "sample_temperature": {
+                    "units": "Kelvin",
+                    "description": "Temperature where sample is measured in Kelvin.",
+                    "long_name": "sample_temperature",
+                    "name_for_output": "sample_temperature"
+                },
+                "sonde_current": {
+                    "units": "Ampere",
+                    "description": "Measured ozonesonde cell current with no corrections applied.",
+                    "long_name": "sonde_current",
+                    "name_for_output": "sonde_current"
+                },
+                "total_ozone_column": {
+                    "units": "Dobson-units",
+                    "description": "Total column ozone.",
+                    "long_name": "total_ozone_column",
+                    "name_for_output": "total_ozone_column"
+                },
+                "pump_motor_current": {
+                    "units": "Ampere",
+                    "description": "Electrical current measured through the pump motor.",
+                    "long_name": "pump_motor_current",
+                    "name_for_output": "pump_motor_current"
+                },
+                "pump_motor_voltage": {
+                    "units": "Volt",
+                    "description": "Applied voltage measured across the pump motor.",
+                    "long_name": "pump_motor_voltage",
+                    "name_for_output": "pump_motor_voltage"
+                },
+                "latitude": {
+                    "units": "decimal degrees",
+                    "description": "Geographical latitude (for example from GPS).",
+                    "long_name": "latitude",
+                    "name_for_output": "latitude"
+                },
+                "longitude": {
+                    "units": "decimal degrees",
+                    "description": "Geographical longitude (for example from GPS).",
+                    "long_name": "longitude",
+                    "name_for_output": "longitude"
+                },
+                "observation_height_above_station_surface": {
+                    "units": "m",
+                    "description": "Geographical height (for example from GPS).",
+                    "long_name": "observation_height_above_station_surface",
+                    "name_for_output": "observation_height_above_station_surface"
+                }
+            }
+        }
+    }
+}

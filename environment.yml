@@ -1,0 +1,47 @@
+# environment.yml: Mandatory dependencies only.
+channels:
+- conda-forge
+- nodefaults
+dependencies:
+- make
+- mypy
+- myst-parser
+- pre-commit
+- pydata-sphinx-theme
+- pytest
+- pytest-cov
+- sphinx
+- sphinx-autoapi
+# DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
+- connectorx
+- cruft
+- boto3
+- httpx
+- hdf5
+- libnetcdf
+- netcdf4
+- numpy
+- pandas
+- psycopg2
+- pydantic
+- pytest-mock
+- python-dotenv
+- sqlalchemy>=2.0.9
+- xarray
+- types-requests
+- types-setuptools
+- fastapi
+- types-python-dateutil
+- yaml
+- h5py
+- types-PyYAML
+- typer
+- dask
+- structlog
+- h5netcdf
+- fsspec
+- aiohttp
+- pydantic-settings
+- python=3.10
+- pip:
+  - sqlalchemy_json

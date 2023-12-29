@@ -1,0 +1,4 @@
+catalogue-data
+*.nc
+*.pkl
+tests/docker/*

@@ -1,0 +1,19 @@
+channels:
+- conda-forge
+- nodefaults
+dependencies:
+- cdsapi
+- netcdf4
+- numpy==1.23.4
+- pandas==1.5.1
+- psycopg2
+- pydantic
+- s3fs
+- sqlalchemy
+- xarray
+- yaml
+- fsspec
+- h5netcdf
+- aiohttp
+- pip:
+  - sqlalchemy_json

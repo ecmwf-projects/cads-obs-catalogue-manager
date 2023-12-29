@@ -1,0 +1,163 @@
+import copy
+import importlib
+import pickle
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+
+import pytest
+
+from cdsobs.api import run_ingestion_pipeline
+from cdsobs.config import CDSObsConfig
+from cdsobs.constants import CATALOGUE_ENTRY, CONFIG_YML, DATE_FORMAT, DS_TEST_NAME
+from cdsobs.ingestion.core import DatasetPartition, SerializedPartition
+from cdsobs.ingestion.serialize import serialize_partition
+from cdsobs.observation_catalogue.database import Base, get_session
+from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
+from cdsobs.retrieve.models import RetrieveArgs
+from cdsobs.service_definition.api import get_service_definition
+from cdsobs.storage import S3Client, StorageClient
+from tests.utils import get_test_years
+
+
+@pytest.fixture(scope="module")
+def test_config():
+    config = CDSObsConfig.from_yaml(CONFIG_YML)
+    # For cuon, add the test dir with the test files
+    cuon_config = config.get_dataset(
+        "insitu-comprehensive-upper-air-observation-network"
+    )
+    tests_path = importlib.resources.files("tests")
+    input_dir = Path(
+        tests_path, "data/cuon_data/0-20500-0-94829_CEUAS_merged_v1.nc"
+    ).parent.absolute()
+    cuon_config.reader_extra_args["input_dir"] = str(input_dir)
+    # Do the same for WOUDC test netcdfs
+    woudc_netcdfs_config = config.get_dataset("insitu-observations-woudc-netcdfs")
+    example_filename = "insitu-observations-woudc-ozone-total-column-and-profiles_OzoneSonde_1969_01.nc"
+    input_dir = Path(
+        tests_path, f"data/woudc_netcdfs/{example_filename}"
+    ).parent.absolute()
+    woudc_netcdfs_config.reader_extra_args["input_dir"] = str(input_dir)
+    return config
+
+
+@pytest.fixture(scope="module")
+def test_session(test_config):
+    session = get_session(test_config.catalogue_db, reset=True)
+    yield session
+    session.close()
+    # To reset database. Comment  this line to see test results.
+    Base.metadata.drop_all(session.get_bind())
+
+
+@pytest.fixture()
+def test_session_pertest(test_config):
+    session = get_session(test_config.catalogue_db, reset=True)
+    yield session
+    session.close()
+    # To reset database. Comment  this line to see test results.
+    Base.metadata.drop_all(session.get_bind())
+
+
+@pytest.fixture
+def test_catalogue_repository(test_session):
+    return CatalogueRepository(test_session)
+
+
+@pytest.fixture(scope="module")
+def test_s3_client(test_config):
+    s3client = S3Client.from_config(test_config.s3config)
+    _clean_storage(s3client)
+    yield s3client
+    # To clean storage. Comment this line to see test results.
+    _clean_storage(s3client)
+
+
+@pytest.fixture()
+def test_s3_client_pertest(test_config):
+    s3client = S3Client.from_config(test_config.s3config)
+    _clean_storage(s3client)
+    yield s3client
+    # To clean storage. Comment this line to see test results.
+    _clean_storage(s3client)
+
+
+@dataclass
+class TestRepository:
+    catalogue_repository: CatalogueRepository
+    s3_client: StorageClient
+
+
+@pytest.fixture(scope="module")
+def test_repository(test_session, test_s3_client, test_config):
+    """The whole thing, session to the catalogue DB and storage client."""
+    dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
+    service_definition = get_service_definition(dataset_name)
+    for dataset_source in ["OzoneSonde", "TotalOzone"]:
+        start_year, end_year = get_test_years(dataset_source)
+        run_ingestion_pipeline(
+            dataset_name,
+            service_definition,
+            dataset_source,
+            test_session,
+            test_config,
+            start_year,
+            end_year,
+        )
+    catalogue_repository = CatalogueRepository(test_session)
+    return TestRepository(catalogue_repository, test_s3_client)
+
+
+@pytest.fixture
+def test_partition() -> DatasetPartition:
+    partition_file = Path(str(importlib.resources.files("tests")), "data/partition.pkl")
+    with partition_file.open("rb") as fileobj:
+        return pickle.load(fileobj)
+
+
+@pytest.fixture
+def test_serialized_partition(
+    test_partition, tmp_path, test_config
+) -> SerializedPartition:
+    serialized_partition = serialize_partition(test_partition, tmp_path)
+    return serialized_partition
+
+
+def _clean_bucket(bucket_name: str, test_s3_client: S3Client):
+    """Remove all objects in a bucket for teardown after tests."""
+    for object_name in test_s3_client.list_directory_objects(bucket_name):
+        test_s3_client.delete_file(bucket_name, object_name)
+
+
+def _clean_storage(test_s3_client: S3Client):
+    """Clean all storage for teardown after tests."""
+    for bucket in test_s3_client.list_buckets():
+        _clean_bucket(bucket, test_s3_client)
+        test_s3_client.delete_bucket(bucket)
+
+
+@pytest.fixture
+def mock_entries():
+    catalogue_entry_1 = copy.deepcopy(CATALOGUE_ENTRY)
+    catalogue_entry_2 = copy.deepcopy(CATALOGUE_ENTRY)
+    catalogue_entry_2.stations = ["7", "8"]
+    catalogue_entry_2.constraints["time"] = [datetime(1998, 1, 2).strftime(DATE_FORMAT)]
+    catalogue_entry_2.constraints["variable_constraints"] = {
+        "air_pressure": [1],
+        "column_burden": [0],
+    }
+    return [catalogue_entry_1, catalogue_entry_2]
+
+
+@pytest.fixture
+def mock_retrieve_args():
+    params = dict(
+        dataset_source="OzoneSonde",
+        stations=["7"],
+        variables=["air_pressure", "geopotential_height"],
+        latitude_coverage=(0.0, 90.0),
+        longitude_coverage=(120.0, 140.0),
+        time_coverage=(datetime(1998, 1, 1), datetime(1998, 2, 1)),
+    )
+    return RetrieveArgs(dataset=DS_TEST_NAME, params=params)

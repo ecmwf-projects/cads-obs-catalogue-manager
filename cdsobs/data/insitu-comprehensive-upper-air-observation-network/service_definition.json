@@ -1,0 +1,131 @@
+{
+  "products_hierarchy": [
+    "variables"
+  ],
+  "out_columns_order": [
+    "station_name",
+    "radiosonde_code",
+    "sensor_model",
+    "report_timestamp",
+    "actual_time",
+    "report_id",
+    "longitude",
+    "latitude",
+    "height_of_station_above_sea_level",
+    "air_pressure",
+    "air_temperature",
+    "air_temperature_total_uncertainty",
+    "relative_humidity",
+    "relative_humidity_total_uncertainty",
+    "wind_speed",
+    "air_dewpoint_depression"
+  ],
+  "space_columns": {
+    "longitude": "longitude",
+    "latitude": "latitude"
+  },
+  "sources": {
+    "CUON": {
+      "header_table": "header_table",
+      "data_table": "observations_table",
+      "join_ids": {
+        "header": "report_id",
+        "data": "report_id"
+      },
+      "space_columns": {
+        "longitude": "location_longitude",
+        "latitude": "location_longitude"
+      },
+      "order_by": [
+        "report_timestamp",
+        "report_id",
+        "air_pressure"
+      ],
+      "header_columns": [
+        {
+          "primary_station_id": "primary_station_id"
+        },
+        {
+          "report_timestamp": "report_timestamp"
+        },
+        {
+          "location_longitude": "location_longitude"
+        },
+        {
+          "location_latitude": "location_latitude"
+        }
+      ],
+      "mandatory_columns": [
+        "primary_station_id",
+        "report_timestamp",
+        "location_longitude",
+        "location_latitude",
+        "report_id"
+      ],
+      "products": [
+        {
+          "group_name": "variables",
+          "columns": [
+                "aerosol_absorption_optical_depth",
+                "air_temperature",
+                "geopotential_height",
+                "relative_humidity"
+            ]
+        }
+      ],
+      "descriptions": {
+        "station_name": {
+          "name_for_output": "station_name",
+          "long_name": "station_name",
+          "description": "Station identification code"
+        },
+        "report_timestamp": {
+          "name_for_output": "report_timestamp",
+          "description": "Observation date time UTC"
+        },
+        "location_longitude": {
+          "units": "degree_east",
+          "name_for_output": "location_longitude",
+          "long_name": "longitude",
+          "description": "Longitude of the station (deg. East)"
+        },
+        "location_latitude": {
+          "units": "degree_north",
+          "name_for_output": "location_latitude",
+          "long_name": "latitude",
+          "description": "Latitude of the station (deg. North)"
+        },
+        "air_pressure": {
+          "units": "Pa",
+          "description": "Barometric air pressure",
+          "long_name": "air_pressure",
+          "name_for_output": "air_pressure"
+        },
+        "aerosol_absorption_optical_depth": {
+          "units": "1",
+          "description": "Vertical column integral of spectral aerosol absorption coefficient",
+          "long_name": "aerosol_absorption_optical_depth",
+          "name_for_output": "aerosol_absorption_optical_depth"
+        },
+        "geopotential_height": {
+          "units": "m",
+          "description": "Height of a standard or significant pressure level in meters",
+          "long_name": "geopotential_height",
+          "name_for_output": "geopotential_height"
+        },
+        "air_temperature": {
+          "units": "K",
+          "description": "Air temperature (from profile measurement)",
+          "long_name": "air_temperature",
+          "name_for_output": "air_temperature"
+        },
+        "relative_humidity": {
+          "units": "m",
+          "description": "Relative humidity (from profile measurement)",
+          "long_name": "relative_humidity",
+          "name_for_output": "relative_humidity"
+        }
+      }
+    }
+  }
+}
