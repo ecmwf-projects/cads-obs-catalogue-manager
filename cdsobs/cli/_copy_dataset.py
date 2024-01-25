@@ -92,10 +92,10 @@ def check_params(dest_config_yml, dataset, dest_dataset):
                 "spaces) or is empty"
             )
 
-        if dest_dataset == dataset:
+        if dest_dataset == dataset and dest_config_yml is None:
             raise CliException(
-                "Destination dataset must be different from original"
-                " dataset. To preserve dataset name, do not fill this "
+                "If copying to the same repo destination dataset must be different from"
+                " origin dataset. To preserve dataset name, do not fill this "
                 "parameter"
             )
 
