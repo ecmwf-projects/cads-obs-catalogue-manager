@@ -194,9 +194,11 @@ def catalogue_copy(
         entry_dict_json.pop("id")
         entry_dict_json.pop("dataset")
         entry_dict_json.pop("asset")
+        logger.info(f"Reading catalogue entry for {asset}")
         new_schemas.append(
             CatalogueSchema(dataset=dest_dataset, asset=asset, **entry_dict_json)
         )
+    logger.info("Commiting catalogue entries to the new database")
     CatalogueRepository(catalogue_session).create_many(new_schemas)
 
 
