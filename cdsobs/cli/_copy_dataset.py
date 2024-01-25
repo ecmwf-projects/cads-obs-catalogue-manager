@@ -195,10 +195,10 @@ def catalogue_copy(
         }
         entry_dict_json = jsonable_encoder(entry_dict)
         entry_dict_json.pop("id")
-        dataset = entry_dict_json.pop("dataset")
+        entry_dict_json.pop("dataset")
         asset = entry_dict_json.pop("asset")
         logger.info(f"Copying catalogue entry for {asset}")
-        bucket_name = dest_s3client.get_bucket_name(dataset)
+        bucket_name = dest_s3client.get_bucket_name(dest_dataset)
         filename = asset.split("/")[-1]
         new_assset = dest_s3client.get_asset(bucket_name, filename)
         new_schema = CatalogueSchema(
@@ -207,16 +207,17 @@ def catalogue_copy(
         catalogue_repo.create(new_schema)
 
 
-def s3_copy(s3client, entries, dest_dataset):
+def s3_copy(s3client: S3Client, entries, dest_dataset):
     """Copy into another bucket."""
-    assets = [e.asset for e in entries]
     new_assets = []
     try:
-        for asset in assets:
-            bucket, name = asset.split("/")
-            s3client.create_directory(dest_dataset)
-            s3client.copy_file(bucket, name, dest_dataset, name)
-            new_assets.append(s3client.get_asset(dest_dataset, name))
+        for entry in entries:
+            source_asset = entry.asset
+            source_bucket, name = source_asset.split("/")
+            dest_bucket = s3client.get_bucket_name(dest_dataset)
+            s3client.create_directory(dest_bucket)
+            s3client.copy_file(source_bucket, name, dest_bucket, name)
+            new_assets.append(s3client.get_asset(dest_bucket, name))
     except (Exception, KeyboardInterrupt):
         s3_rollback(s3client, new_assets)
         raise
