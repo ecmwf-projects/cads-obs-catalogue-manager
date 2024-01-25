@@ -16,7 +16,9 @@ from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRe
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.schemas.catalogue import CatalogueSchema
 from cdsobs.storage import S3Client
-from cdsobs.utils.logutils import ConfigError
+from cdsobs.utils.logutils import ConfigError, get_logger
+
+logger = get_logger(__name__)
 
 
 def copy_dataset(
@@ -150,15 +152,17 @@ def copy_outside(init_config, dest_config, dataset, dest_dataset):
     -------
 
     """
-    s3client = S3Client.from_config(init_config.s3config)
+    init_s3client = S3Client.from_config(init_config.s3config)
     with get_session(init_config.catalogue_db) as init_session:
         entries = CatalogueRepository(init_session).get_by_dataset(dataset)
     if init_config.s3config == dest_config.s3config:
-        new_assets = s3_copy(s3client, entries, dest_dataset)
+        new_assets = s3_copy(init_s3client, entries, dest_dataset)
+        client_to_rollback = init_s3client
     else:
         # get new destination client as current client
-        s3client = S3Client.from_config(dest_config.s3config)
-        new_assets = s3_export(s3client, entries, dest_dataset)
+        dest_s3client = S3Client.from_config(dest_config.s3config)
+        new_assets = s3_export(init_s3client, dest_s3client, entries, dest_dataset)
+        client_to_rollback = dest_s3client
     try:
         if init_config.catalogue_db == dest_config.catalogue_db:
             catalogue_copy(init_session, entries, new_assets, dest_dataset)
@@ -167,7 +171,7 @@ def copy_outside(init_config, dest_config, dataset, dest_dataset):
             with get_session(dest_config.catalogue_db) as dest_session:
                 catalogue_copy(dest_session, entries, new_assets, dest_dataset)
     except (Exception, KeyboardInterrupt):
-        s3_rollback(s3client, new_assets)
+        s3_rollback(client_to_rollback, new_assets)
         raise
 
 
@@ -218,15 +222,16 @@ def s3_rollback(s3_client, assets):
         s3_client.delete_file(bucket, name)
 
 
-def s3_export(s3client: S3Client, entries, dest_dataset):
+def s3_export(init_s3client: S3Client, dest_s3client: S3Client, entries, dest_dataset):
     """Download from one S3 and upload to another."""
-    object_urls = [s3client.get_url_from_asset(e.asset) for e in entries]
+    object_urls = [init_s3client.get_url_from_asset(e.asset) for e in entries]
     new_assets = []
     try:
-        dest_bucket = s3client.get_bucket_name(dest_dataset)
-        s3client.create_directory(dest_bucket)
+        dest_bucket = dest_s3client.get_bucket_name(dest_dataset)
+        dest_s3client.create_directory(dest_bucket)
         for object_url in object_urls:
-            old_bucket, name = object_url.split("/")[-2:]
+            logger.info(f"Copying {object_url} to new storage.")
+            name = object_url.split("/")[-1]
             response = requests.get(object_url, stream=True)
             response.raise_for_status()
             with (
@@ -236,9 +241,9 @@ def s3_export(s3client: S3Client, entries, dest_dataset):
                 ntf.write(bc.read())
                 ntf.flush()
                 new_assets.append(
-                    s3client.upload_file(dest_bucket, name, Path(ntf.name))
+                    dest_s3client.upload_file(dest_bucket, name, Path(ntf.name))
                 )
         return new_assets
     except (Exception, KeyboardInterrupt):
-        s3_rollback(s3client, new_assets)
+        s3_rollback(dest_s3client, new_assets)
         raise
