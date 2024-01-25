@@ -126,7 +126,7 @@ def copy_inside(init_config, dataset, dest_dataset):
         entries = CatalogueRepository(init_session).get_by_dataset(dataset)
         new_assets = s3_copy(init_s3client, entries, dest_dataset)
         try:
-            catalogue_copy(init_session, entries, new_assets, dest_dataset)
+            catalogue_copy(init_session, entries, init_s3client, dest_dataset)
         except (Exception, KeyboardInterrupt):
             s3_rollback(init_s3client, new_assets)
             raise
@@ -156,35 +156,37 @@ def copy_outside(init_config, dest_config, dataset, dest_dataset):
     init_s3client = S3Client.from_config(init_config.s3config)
     with get_session(init_config.catalogue_db) as init_session:
         entries = CatalogueRepository(init_session).get_by_dataset(dataset)
-    if init_config.s3config == dest_config.s3config:
-        new_assets = s3_copy(init_s3client, entries, dest_dataset)
-        client_to_rollback = init_s3client
-    else:
-        # get new destination client as current client
-        dest_s3client = S3Client.from_config(dest_config.s3config)
-        new_assets = s3_export(init_s3client, dest_s3client, entries, dest_dataset)
-        client_to_rollback = dest_s3client
-    try:
-        if init_config.catalogue_db == dest_config.catalogue_db:
-            catalogue_copy(init_session, entries, new_assets, dest_dataset)
+        if init_config.s3config == dest_config.s3config:
+            new_assets = s3_copy(init_s3client, entries, dest_dataset)
+            dest_s3client = init_s3client
         else:
-            # open new destination session
-            with get_session(dest_config.catalogue_db) as dest_session:
-                catalogue_copy(dest_session, entries, new_assets, dest_dataset)
-    except (Exception, KeyboardInterrupt):
-        s3_rollback(client_to_rollback, new_assets)
-        raise
+            # get new destination client as current client
+            dest_s3client = S3Client.from_config(dest_config.s3config)
+            new_assets = s3_export(init_s3client, dest_s3client, entries, dest_dataset)
+        try:
+            if init_config.catalogue_db == dest_config.catalogue_db:
+                catalogue_copy(init_session, entries, dest_s3client, dest_dataset)
+            else:
+                # open new destination session
+                with get_session(dest_config.catalogue_db) as dest_session:
+                    catalogue_copy(dest_session, entries, new_assets, dest_dataset)
+        except (Exception, KeyboardInterrupt):
+            s3_rollback(dest_s3client, new_assets)
+            raise
 
 
 def catalogue_copy(
-    catalogue_session: Session, entries: Sequence[Catalogue], new_assets, dest_dataset
+    catalogue_session: Session,
+    entries: Sequence[Catalogue],
+    dest_s3client,
+    dest_dataset,
 ):
     # Create the dataset in the CadsDatasets table
     cads_dataset_repo = CadsDatasetRepository(catalogue_session)
     cads_dataset_repo.create_dataset(dest_dataset)
     # copy dataset entries but with different dataset name and asset.
     catalogue_repo = CatalogueRepository(catalogue_session)
-    for entry, asset in zip(entries, new_assets):
+    for entry, asset in entries:
         # This is needed to load the constraints as it is a deferred attribute.
         # However if we load them the other attributes will dissappear from __dict__
         # There is no way apparently if doing this better in sqlalchemy
@@ -196,8 +198,10 @@ def catalogue_copy(
         entry_dict_json.pop("dataset")
         entry_dict_json.pop("asset")
         logger.info(f"Copying catalogue entry for {asset}")
+        bucket_name = dest_s3client.get_bucket_name(entry.dataset)
+        new_assset = dest_s3client.get_asset(bucket_name, entry.asset.split("/")[-1])
         new_schema = CatalogueSchema(
-            dataset=dest_dataset, asset=asset, **entry_dict_json
+            dataset=dest_dataset, asset=new_assset, **entry_dict_json
         )
         catalogue_repo.create(new_schema)
 
