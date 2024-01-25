@@ -319,9 +319,8 @@ def read_cuon_netcdfs(
                 raise EmptyBatchException
             if not table_data.observation_id.is_unique:
                 logger.warning("observation_id is not unique, fixing")
-                table_data = table_data.loc[
-                    ~table_data.observation_id.duplicated(keep="first")
-                ]
+                table_data["observation_id"] = numpy.arange(len(table_data),
+                                                            dtype="int").astype("bytes")
             # Remove missing values to save memory
             table_data = table_data.loc[~table_data.observation_value.isnull()]
         # Try with sparse arrays to reduce memory usage.
@@ -363,6 +362,9 @@ def read_cuon_netcdfs(
             )
         if "level_0" in table_data:
             table_data = table_data.drop("level_0", axis=1)
+        # Drop duplicates for header and stations
+        if table_name == ["station_configuration", "header_table"]:
+            table_data.drop_duplicates(inplace=True, ignore_index=False)
         primary_keys_are_unique = (
             table_data.reset_index().set_index(primary_keys).index.is_unique
         )
