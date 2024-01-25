@@ -319,8 +319,9 @@ def read_cuon_netcdfs(
                 raise EmptyBatchException
             if not table_data.observation_id.is_unique:
                 logger.warning("observation_id is not unique, fixing")
-                table_data["observation_id"] = numpy.arange(len(table_data),
-                                                            dtype="int").astype("bytes")
+                table_data["observation_id"] = numpy.arange(
+                    len(table_data), dtype="int"
+                ).astype("bytes")
             # Remove missing values to save memory
             table_data = table_data.loc[~table_data.observation_value.isnull()]
         # Try with sparse arrays to reduce memory usage.
