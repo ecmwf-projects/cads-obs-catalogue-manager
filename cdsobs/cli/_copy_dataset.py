@@ -169,7 +169,7 @@ def copy_outside(init_config, dest_config, dataset, dest_dataset):
             else:
                 # open new destination session
                 with get_session(dest_config.catalogue_db) as dest_session:
-                    catalogue_copy(dest_session, entries, new_assets, dest_dataset)
+                    catalogue_copy(dest_session, entries, dest_s3client, dest_dataset)
         except (Exception, KeyboardInterrupt):
             s3_rollback(dest_s3client, new_assets)
             raise
@@ -178,15 +178,15 @@ def copy_outside(init_config, dest_config, dataset, dest_dataset):
 def catalogue_copy(
     catalogue_session: Session,
     entries: Sequence[Catalogue],
-    dest_s3client,
-    dest_dataset,
+    dest_s3client: S3Client,
+    dest_dataset: str,
 ):
     # Create the dataset in the CadsDatasets table
     cads_dataset_repo = CadsDatasetRepository(catalogue_session)
     cads_dataset_repo.create_dataset(dest_dataset)
     # copy dataset entries but with different dataset name and asset.
     catalogue_repo = CatalogueRepository(catalogue_session)
-    for entry, asset in entries:
+    for entry in entries:
         # This is needed to load the constraints as it is a deferred attribute.
         # However if we load them the other attributes will dissappear from __dict__
         # There is no way apparently if doing this better in sqlalchemy
@@ -195,11 +195,12 @@ def catalogue_copy(
         }
         entry_dict_json = jsonable_encoder(entry_dict)
         entry_dict_json.pop("id")
-        entry_dict_json.pop("dataset")
-        entry_dict_json.pop("asset")
+        dataset = entry_dict_json.pop("dataset")
+        asset = entry_dict_json.pop("asset")
         logger.info(f"Copying catalogue entry for {asset}")
-        bucket_name = dest_s3client.get_bucket_name(entry.dataset)
-        new_assset = dest_s3client.get_asset(bucket_name, entry.asset.split("/")[-1])
+        bucket_name = dest_s3client.get_bucket_name(dataset)
+        filename = asset.split("/")[-1]
+        new_assset = dest_s3client.get_asset(bucket_name, filename)
         new_schema = CatalogueSchema(
             dataset=dest_dataset, asset=new_assset, **entry_dict_json
         )
