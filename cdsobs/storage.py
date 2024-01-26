@@ -214,9 +214,12 @@ class S3Client(StorageClient):
             logger.warning(
                 f"By default bucket is named as the env + dataset, but {new_name} is"
                 f"too long (>{max_allowed_bucket_length} characters). It will be "
-                f"truncated."
+                f"truncated. Also, it can't end with an hyphen."
             )
-        return new_name[:max_allowed_bucket_length]
+        new_name = new_name[:max_allowed_bucket_length]
+        if new_name[-1] == "-":
+            new_name = new_name[:-1]
+        return new_name
 
     @staticmethod
     def from_config(config: S3Config) -> "S3Client":
