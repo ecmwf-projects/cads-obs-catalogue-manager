@@ -18,8 +18,16 @@ out_columns_order:
 - relative_humidity
 - relative_humidity_total_uncertainty
 - wind_speed
-- air_dewpoint_depression
 - secondary_id
+- aerosol_absorption_optical_depth
+- air_dewpoint
+- dew_point_depression
+- eastward_wind_speed
+- geopotential_height
+- northward_wind_speed
+- specific_humidity
+- wind_from_direction
+
 products_hierarchy:
 - variables
 sources:
@@ -140,6 +148,14 @@ sources:
       - air_temperature
       - geopotential_height
       - relative_humidity
+      - air_pressure
+      - wind_speed
+      - air_dewpoint
+      - dew_point_depression
+      - eastward_wind_speed
+      - northward_wind_speed
+      - specific_humidity
+      - wind_from_direction
       group_name: variables
     space_columns:
       y: latitude|station_configuration
