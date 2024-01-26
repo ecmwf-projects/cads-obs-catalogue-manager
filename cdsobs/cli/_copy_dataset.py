@@ -3,6 +3,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Optional, Sequence
 
+import dask
 import requests
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
@@ -16,7 +17,9 @@ from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRe
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.schemas.catalogue import CatalogueSchema
 from cdsobs.storage import S3Client
-from cdsobs.utils.logutils import ConfigError
+from cdsobs.utils.logutils import ConfigError, get_logger
+
+logger = get_logger(__name__)
 
 
 def copy_dataset(
@@ -92,10 +95,10 @@ def check_params(dest_config_yml, dataset, dest_dataset):
                 "spaces) or is empty"
             )
 
-        if dest_dataset == dataset:
+        if dest_dataset == dataset and dest_config_yml is None:
             raise CliException(
-                "Destination dataset must be different from original"
-                " dataset. To preserve dataset name, do not fill this "
+                "If copying to the same repo destination dataset must be different from"
+                " origin dataset. To preserve dataset name, do not fill this "
                 "parameter"
             )
 
@@ -123,7 +126,7 @@ def copy_inside(init_config, dataset, dest_dataset):
         entries = CatalogueRepository(init_session).get_by_dataset(dataset)
         new_assets = s3_copy(init_s3client, entries, dest_dataset)
         try:
-            catalogue_copy(init_session, entries, new_assets, dest_dataset)
+            catalogue_copy(init_session, entries, init_s3client, dest_dataset)
         except (Exception, KeyboardInterrupt):
             s3_rollback(init_s3client, new_assets)
             raise
@@ -150,36 +153,40 @@ def copy_outside(init_config, dest_config, dataset, dest_dataset):
     -------
 
     """
-    s3client = S3Client.from_config(init_config.s3config)
+    init_s3client = S3Client.from_config(init_config.s3config)
     with get_session(init_config.catalogue_db) as init_session:
         entries = CatalogueRepository(init_session).get_by_dataset(dataset)
-    if init_config.s3config == dest_config.s3config:
-        new_assets = s3_copy(s3client, entries, dest_dataset)
-    else:
-        # get new destination client as current client
-        s3client = S3Client.from_config(dest_config.s3config)
-        new_assets = s3_export(s3client, entries, dest_dataset)
-    try:
-        if init_config.catalogue_db == dest_config.catalogue_db:
-            catalogue_copy(init_session, entries, new_assets, dest_dataset)
+        if init_config.s3config == dest_config.s3config:
+            new_assets = s3_copy(init_s3client, entries, dest_dataset)
+            dest_s3client = init_s3client
         else:
-            # open new destination session
-            with get_session(dest_config.catalogue_db) as dest_session:
-                catalogue_copy(dest_session, entries, new_assets, dest_dataset)
-    except (Exception, KeyboardInterrupt):
-        s3_rollback(s3client, new_assets)
-        raise
+            # get new destination client as current client
+            dest_s3client = S3Client.from_config(dest_config.s3config)
+            new_assets = s3_export(init_s3client, dest_s3client, entries, dest_dataset)
+        try:
+            if init_config.catalogue_db == dest_config.catalogue_db:
+                catalogue_copy(init_session, entries, dest_s3client, dest_dataset)
+            else:
+                # open new destination session
+                with get_session(dest_config.catalogue_db) as dest_session:
+                    catalogue_copy(dest_session, entries, dest_s3client, dest_dataset)
+        except (Exception, KeyboardInterrupt):
+            s3_rollback(dest_s3client, new_assets)
+            raise
 
 
 def catalogue_copy(
-    catalogue_session: Session, entries: Sequence[Catalogue], new_assets, dest_dataset
+    catalogue_session: Session,
+    entries: Sequence[Catalogue],
+    dest_s3client: S3Client,
+    dest_dataset: str,
 ):
     # Create the dataset in the CadsDatasets table
     cads_dataset_repo = CadsDatasetRepository(catalogue_session)
     cads_dataset_repo.create_dataset(dest_dataset)
     # copy dataset entries but with different dataset name and asset.
-    new_schemas = []
-    for entry, asset in zip(entries, new_assets):
+    catalogue_repo = CatalogueRepository(catalogue_session)
+    for entry in entries:
         # This is needed to load the constraints as it is a deferred attribute.
         # However if we load them the other attributes will dissappear from __dict__
         # There is no way apparently if doing this better in sqlalchemy
@@ -189,23 +196,28 @@ def catalogue_copy(
         entry_dict_json = jsonable_encoder(entry_dict)
         entry_dict_json.pop("id")
         entry_dict_json.pop("dataset")
-        entry_dict_json.pop("asset")
-        new_schemas.append(
-            CatalogueSchema(dataset=dest_dataset, asset=asset, **entry_dict_json)
+        asset = entry_dict_json.pop("asset")
+        logger.info(f"Copying catalogue entry for {asset}")
+        bucket_name = dest_s3client.get_bucket_name(dest_dataset)
+        filename = asset.split("/")[-1]
+        new_assset = dest_s3client.get_asset(bucket_name, filename)
+        new_schema = CatalogueSchema(
+            dataset=dest_dataset, asset=new_assset, **entry_dict_json
         )
-    CatalogueRepository(catalogue_session).create_many(new_schemas)
+        catalogue_repo.create(new_schema)
 
 
-def s3_copy(s3client, entries, dest_dataset):
+def s3_copy(s3client: S3Client, entries, dest_dataset):
     """Copy into another bucket."""
-    assets = [e.asset for e in entries]
     new_assets = []
     try:
-        for asset in assets:
-            bucket, name = asset.split("/")
-            s3client.create_directory(dest_dataset)
-            s3client.copy_file(bucket, name, dest_dataset, name)
-            new_assets.append(s3client.get_asset(dest_dataset, name))
+        for entry in entries:
+            source_asset = entry.asset
+            source_bucket, name = source_asset.split("/")
+            dest_bucket = s3client.get_bucket_name(dest_dataset)
+            s3client.create_directory(dest_bucket)
+            s3client.copy_file(source_bucket, name, dest_bucket, name)
+            new_assets.append(s3client.get_asset(dest_bucket, name))
     except (Exception, KeyboardInterrupt):
         s3_rollback(s3client, new_assets)
         raise
@@ -218,15 +230,18 @@ def s3_rollback(s3_client, assets):
         s3_client.delete_file(bucket, name)
 
 
-def s3_export(s3client: S3Client, entries, dest_dataset):
+def s3_export(init_s3client: S3Client, dest_s3client: S3Client, entries, dest_dataset):
     """Download from one S3 and upload to another."""
-    object_urls = [s3client.get_url_from_asset(e.asset) for e in entries]
+    object_urls = [init_s3client.get_url_from_asset(e.asset) for e in entries]
     new_assets = []
     try:
-        dest_bucket = s3client.get_bucket_name(dest_dataset)
-        s3client.create_directory(dest_bucket)
-        for object_url in object_urls:
-            old_bucket, name = object_url.split("/")[-2:]
+        dest_bucket = dest_s3client.get_bucket_name(dest_dataset)
+        dest_s3client.create_directory(dest_bucket)
+
+        # Use dask to speed up the process
+        def copy_object(object_url):
+            logger.info(f"Copying {object_url} to new storage.")
+            name = object_url.split("/")[-1]
             response = requests.get(object_url, stream=True)
             response.raise_for_status()
             with (
@@ -235,10 +250,15 @@ def s3_export(s3client: S3Client, entries, dest_dataset):
             ):
                 ntf.write(bc.read())
                 ntf.flush()
-                new_assets.append(
-                    s3client.upload_file(dest_bucket, name, Path(ntf.name))
-                )
+                new_asset = dest_s3client.upload_file(dest_bucket, name, Path(ntf.name))
+            return new_asset
+
+        delayed_copies = []
+        for object_url in object_urls:
+            delayed_copies.append(dask.delayed(copy_object)(object_url))
+
+        new_assets = dask.compute(*delayed_copies, num_workers=32)
         return new_assets
     except (Exception, KeyboardInterrupt):
-        s3_rollback(s3client, new_assets)
+        s3_rollback(dest_s3client, new_assets)
         raise

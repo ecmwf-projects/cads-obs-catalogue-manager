@@ -27,7 +27,8 @@ def test_copy_delete_dataset_inside(test_repository, test_config):
     assert result.exit_code == 0
     with get_session(test_config.catalogue_db) as test_session:
         assert len(CatalogueRepository(test_session).get_by_dataset("test")) == 2
-    assert len(list(test_repository.s3_client.list_directory_objects("test"))) == 2
+    dest_bucket = test_repository.s3_client.get_bucket_name("test")
+    assert len(list(test_repository.s3_client.list_directory_objects(dest_bucket))) == 2
     result = runner.invoke(
         app,
         [
@@ -47,12 +48,12 @@ def test_copy_delete_dataset_inside(test_repository, test_config):
     assert result.exit_code == 0
     with get_session(test_config.catalogue_db) as test_session:
         assert len(CatalogueRepository(test_session).get_by_dataset("test")) == 1
-    assert len(list(test_repository.s3_client.list_directory_objects("test"))) == 1
+    assert len(list(test_repository.s3_client.list_directory_objects(dest_bucket))) == 1
 
 
 def test_s3_export(test_repository):
     entries = test_repository.catalogue_repository.get_by_dataset(DS_TEST_NAME)
-    s3_export(test_repository.s3_client, entries, "test")
+    s3_export(test_repository.s3_client, test_repository.s3_client, entries, "test")
     s3_client = test_repository.s3_client
     origin_bucket = s3_client.get_bucket_name(DS_TEST_NAME)
     dest_bucket = s3_client.get_bucket_name("test")
