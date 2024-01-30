@@ -266,7 +266,6 @@ def read_cuon_netcdfs(
     cdm_tables = read_cdm_tables(config.cdm_tables_location, tables_to_use)
     files_and_slices = read_all_nc_slices(files, time_space_batch.time_batch)
     denormalized_tables_futures = []
-    denormalized_tables = []
     if os.environ.get("CADSOBS_AVOID_MULTIPROCESS"):
         # This is for the tests.
         scheduler = "synchronous"
@@ -275,16 +274,24 @@ def read_cuon_netcdfs(
         scheduler = "processes"
     # Use dask to speed up the process
     for file_and_slices in files_and_slices:
-        denormalized_table_future = dask.delayed(get_denormalized_table_file)(
+        denormalized_table_future = dask.delayed(_get_denormalized_table_file)(
             cdm_tables, config, file_and_slices, tables_to_use, time_space_batch
         )
-        denormalized_tables_futures.append(denormalized_table_future)
+        if denormalized_table_future is not None:
+            denormalized_tables_futures.append(denormalized_table_future)
     denormalized_tables = dask.compute(
         *denormalized_tables_futures,
         scheduler=scheduler,
         num_workers=min(len(files_and_slices), 32),
     )
     return pandas.concat(denormalized_tables)
+
+
+def _get_denormalized_table_file(*args):
+    try:
+        return get_denormalized_table_file(*args)
+    except NoDataInFileException:
+        return None
 
 
 def get_denormalized_table_file(
@@ -341,6 +348,10 @@ def get_denormalized_table_file(
     return denormalized_table_file
 
 
+class NoDataInFileException(RuntimeError):
+    pass
+
+
 def _fix_table_data(
     dataset_cdm: dict[str, pandas.DataFrame],
     table_data: pandas.DataFrame,
@@ -354,7 +365,8 @@ def _fix_table_data(
     if table_name == "observations_table":
         # If there is nothing here it is a waste of time to continue
         if len(table_data) == 0:
-            raise EmptyBatchException
+            logger.warning("No data found in file for this times.")
+            raise NoDataInFileException
         if not table_data.observation_id.is_unique:
             logger.warning("observation_id is not unique, fixing")
             table_data["observation_id"] = numpy.arange(
