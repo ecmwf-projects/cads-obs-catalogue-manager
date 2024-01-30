@@ -55,7 +55,7 @@ def read_nc_file(
         "era5fb",
         "observations_table",
     ]
-    sorted_by_date = ["header_table", "source_configuration"]
+    sorted_by_date = ["header_table", "source_configuration", "station_configuration"]
 
     # Get times in seconds from 1900-01-01
     selected_end, selected_start = _get_times_in_seconds_from(time_batch)
@@ -363,9 +363,7 @@ def read_cuon_netcdfs(
             )
         if "level_0" in table_data:
             table_data = table_data.drop("level_0", axis=1)
-        # Drop duplicates for header and stations
-        if table_name == ["station_configuration", "header_table"]:
-            table_data.drop_duplicates(inplace=True, ignore_index=False)
+
         primary_keys_are_unique = (
             table_data.reset_index().set_index(primary_keys).index.is_unique
         )
