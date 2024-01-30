@@ -15,7 +15,7 @@ import pandas
 
 from cdsobs import constants
 from cdsobs.cdm.denormalize import denormalize_tables
-from cdsobs.cdm.tables import read_cdm_tables
+from cdsobs.cdm.tables import CDMTable, read_cdm_tables
 from cdsobs.config import CDSObsConfig
 from cdsobs.ingestion.api import EmptyBatchException
 from cdsobs.ingestion.core import TimeBatch, TimeSpaceBatch
@@ -55,7 +55,7 @@ def read_nc_file(
         "era5fb",
         "observations_table",
     ]
-    sorted_by_date = ["header_table", "source_configuration", "station_configuration"]
+    sorted_by_date = ["header_table", "source_configuration"]
 
     # Get times in seconds from 1900-01-01
     selected_end, selected_start = _get_times_in_seconds_from(time_batch)
@@ -295,116 +295,125 @@ def read_cuon_netcdfs(
     tables_to_use = config.get_dataset(dataset_name).available_cdm_tables
     cdm_tables = read_cdm_tables(config.cdm_tables_location, tables_to_use)
     files_and_slices = read_all_nc_slices(files, time_space_batch.time_batch)
-    dataset_cdm: dict[str, pandas.DataFrame] = {}
-    for table_name, table_definition in cdm_tables.items():
-        # Fix era5fb having different names in the CDM and in the files
-        if table_name == "era5fb_table":
-            table_name_in_file = "era5fb"
-        else:
-            table_name_in_file = table_name
-        # Read table data
-        table_data = read_all_nc_files(
-            files_and_slices, table_name_in_file, time_space_batch.time_batch
-        )
-        # Make sure that latitude and longiture always carry on their table name.
-        for coord in ["latitude", "longitude", "source_id"]:
-            if coord in table_data:
-                table_data = table_data.rename(
-                    {coord: coord + "|" + table_name}, axis=1
-                )
-        # Check that observation id is unique and fix if not
-        if table_name == "observations_table":
-            # If there is nothing here it is a waste of time to continue
-            if len(table_data) == 0:
-                raise EmptyBatchException
-            if not table_data.observation_id.is_unique:
-                logger.warning("observation_id is not unique, fixing")
-                table_data["observation_id"] = numpy.arange(
-                    len(table_data), dtype="int"
-                ).astype("bytes")
-            # Remove missing values to save memory
-            table_data = table_data.loc[~table_data.observation_value.isnull()]
-        # Try with sparse arrays to reduce memory usage.
-        for var in table_data:
-            if str(table_data[var].dtype) == "float32" and var != "observation_value":
-                table_data[var] = pandas.arrays.SparseArray(table_data[var])
-        # Check primary keys can be used to build a unique index
-        primary_keys = table_definition.primary_keys
-        if table_name in ["era5fb_table", "advanced_homogenisation"]:
-            table_data = table_data.reset_index()
-            table_data_len = len(table_data)
-            obs_table_len = len(dataset_cdm["observations_table"])
-            logger.warning(
-                "Filling era5fb table index with observation_id from observations_table"
-            )
-            obs_id_name = "obs_id" if table_name == "era5fb_table" else "observation_id"
-            if table_data_len < obs_table_len:
-                logger.warning(
-                    "era5fb is shorter than observations_table "
-                    "truncating observation_ids"
-                )
-                observation_ids = dataset_cdm[
-                    "observations_table"
-                ].observation_id.values[0:table_data_len]
-                table_data[obs_id_name] = observation_ids
-            elif table_data_len > obs_table_len:
-                logger.warning("era5fb is longer than observations_table " "truncating")
-                table_data = table_data.iloc[0:obs_table_len]
-                observation_ids = dataset_cdm[
-                    "observations_table"
-                ].observation_id.values
+    denormalized_tables = []
+    for file_and_slices in files_and_slices:
+        dataset_cdm: dict[str, pandas.DataFrame] = {}
+        for table_name, table_definition in cdm_tables.items():
+            # Fix era5fb having different names in the CDM and in the files
+            if table_name == "era5fb_table":
+                table_name_in_file = "era5fb"
             else:
-                observation_ids = dataset_cdm[
-                    "observations_table"
-                ].observation_id.values
-            table_data[obs_id_name] = observation_ids
-            table_data = table_data.set_index(obs_id_name).rename(
-                {"index": f"index|{table_name}"}, axis=1
+                table_name_in_file = table_name
+            # Read table data
+            table_data = read_all_nc_files(
+                [file_and_slices], table_name_in_file, time_space_batch.time_batch
             )
-        if "level_0" in table_data:
-            table_data = table_data.drop("level_0", axis=1)
+            # Make sure that latitude and longiture always carry on their table name.
+            table_data = _fix_table_data(
+                dataset_cdm, table_data, table_definition, table_name
+            )
+            dataset_cdm[table_name] = table_data
+        # Filter stations outside ofthe Batch
+        lats = dataset_cdm["header_table"]["latitude|header_table"]
+        lons = dataset_cdm["header_table"]["longitude|header_table"]
+        lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
+        lon_mask = between(lons, lon_start, lon_end)
+        lat_mask = between(lats, lat_start, lat_end)
+        spatial_mask = lon_mask * lat_mask
+        if spatial_mask.sum() < len(spatial_mask):
+            logger.info(
+                "Stations have been found outside the SpatialBatch ranges, "
+                "filtering out."
+            )
+            dataset_cdm["header_table"] = dataset_cdm["header_table"].loc[spatial_mask]
+        # Denormalize tables
+        denormalized_table_file = denormalize_tables(
+            cdm_tables, dataset_cdm, tables_to_use, ignore_errors=True
+        )
+        # Decode time
+        if len(denormalized_table_file) > 0:
+            for time_field in ["record_timestamp", "report_timestamp"]:
+                denormalized_table_file.loc[:, time_field] = cftime.num2date(
+                    denormalized_table_file.loc[:, time_field],
+                    constants.TIME_UNITS,
+                    only_use_cftime_datetimes=False,
+                )
+        else:
+            logger.warning(f"No data was found in file {file_and_slices.path}")
+        # Decode variable names
+        code_dict = get_var_code_dict(config.cdm_tables_location)
+        denormalized_table_file["observed_variable"] = denormalized_table_file[
+            "observed_variable"
+        ].map(code_dict)
+        denormalized_tables.append(denormalized_table_file)
+    return pandas.concat(denormalized_tables)
 
-        primary_keys_are_unique = (
-            table_data.reset_index().set_index(primary_keys).index.is_unique
+
+def _fix_table_data(
+    dataset_cdm: dict[str, pandas.DataFrame],
+    table_data: pandas.DataFrame,
+    table_definition: CDMTable,
+    table_name: str,
+):
+    for coord in ["latitude", "longitude", "source_id"]:
+        if coord in table_data:
+            table_data = table_data.rename({coord: coord + "|" + table_name}, axis=1)
+    # Check that observation id is unique and fix if not
+    if table_name == "observations_table":
+        # If there is nothing here it is a waste of time to continue
+        if len(table_data) == 0:
+            raise EmptyBatchException
+        if not table_data.observation_id.is_unique:
+            logger.warning("observation_id is not unique, fixing")
+            table_data["observation_id"] = numpy.arange(
+                len(table_data), dtype="int"
+            ).astype("bytes")
+        # Remove missing values to save memory
+        table_data = table_data.loc[~table_data.observation_value.isnull()]
+    # Try with sparse arrays to reduce memory usage.
+    for var in table_data:
+        if str(table_data[var].dtype) == "float32" and var != "observation_value":
+            table_data[var] = pandas.arrays.SparseArray(table_data[var])
+    # Check primary keys can be used to build a unique index
+    primary_keys = table_definition.primary_keys
+    if table_name in ["era5fb_table", "advanced_homogenisation"]:
+        table_data = table_data.reset_index()
+        table_data_len = len(table_data)
+        obs_table_len = len(dataset_cdm["observations_table"])
+        logger.warning(
+            "Filling era5fb table index with observation_id from observations_table"
         )
-        if not primary_keys_are_unique:
+        obs_id_name = "obs_id" if table_name == "era5fb_table" else "observation_id"
+        if table_data_len < obs_table_len:
             logger.warning(
-                "Unable to build a unique index with primary_keys "
-                f"{table_definition.primary_keys} in table {table_name}"
+                "era5fb is shorter than observations_table "
+                "truncating observation_ids"
             )
-        dataset_cdm[table_name] = table_data
-    # Filter stations outside ofthe Batch
-    lats = dataset_cdm["header_table"]["latitude|header_table"]
-    lons = dataset_cdm["header_table"]["longitude|header_table"]
-    lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
-    lon_mask = between(lons, lon_start, lon_end)
-    lat_mask = between(lats, lat_start, lat_end)
-    spatial_mask = lon_mask * lat_mask
-    if spatial_mask.sum() < len(spatial_mask):
-        logger.info(
-            "Stations have been found outside the SpatialBatch ranges, "
-            "filtering out."
+            observation_ids = dataset_cdm["observations_table"].observation_id.values[
+                0:table_data_len
+            ]
+            table_data[obs_id_name] = observation_ids
+        elif table_data_len > obs_table_len:
+            logger.warning("era5fb is longer than observations_table " "truncating")
+            table_data = table_data.iloc[0:obs_table_len]
+            observation_ids = dataset_cdm["observations_table"].observation_id.values
+        else:
+            observation_ids = dataset_cdm["observations_table"].observation_id.values
+        table_data[obs_id_name] = observation_ids
+        table_data = table_data.set_index(obs_id_name).rename(
+            {"index": f"index|{table_name}"}, axis=1
         )
-        dataset_cdm["header_table"] = dataset_cdm["header_table"].loc[spatial_mask]
-    # Denormalize tables
-    denormalized_table = denormalize_tables(
-        cdm_tables, dataset_cdm, tables_to_use, ignore_errors=True
+    if "level_0" in table_data:
+        table_data = table_data.drop("level_0", axis=1)
+    primary_keys_are_unique = (
+        table_data.reset_index().set_index(primary_keys).index.is_unique
     )
-    del cdm_tables
-    # Decode time
-    if len(denormalized_table) > 0:
-        for time_field in ["record_timestamp", "report_timestamp"]:
-            denormalized_table.loc[:, time_field] = cftime.num2date(
-                denormalized_table.loc[:, time_field],
-                constants.TIME_UNITS,
-                only_use_cftime_datetimes=False,
-            )
-    # Decode variable names
-    code_dict = get_var_code_dict(config.cdm_tables_location)
-    denormalized_table["observed_variable"] = denormalized_table[
-        "observed_variable"
-    ].map(code_dict)
-    return denormalized_table
+    if not primary_keys_are_unique:
+        logger.warning(
+            "Unable to build a unique index with primary_keys "
+            f"{table_definition.primary_keys} in table {table_name}"
+        )
+    return table_data
 
 
 def read_nc_file_slices(
