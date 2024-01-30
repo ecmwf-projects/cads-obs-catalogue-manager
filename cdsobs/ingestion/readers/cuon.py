@@ -374,6 +374,11 @@ def _fix_table_data(
             ).astype("bytes")
         # Remove missing values to save memory
         table_data = table_data.loc[~table_data.observation_value.isnull()]
+    # Remove duplicate station records
+    if table_name == "station_configuration":
+        table_data = table_data.drop_duplicates(
+            subset=["primary_id", "record_number"], ignore_index=True
+        )
     # Try with sparse arrays to reduce memory usage.
     for var in table_data:
         if str(table_data[var].dtype) == "float32" and var != "observation_value":
