@@ -87,7 +87,8 @@ def check_if_missing_in_catalogue(
                 object_names, bucket, s3client, catalogue_repo
             )
     else:
-        objects = s3client.list_directory_objects(dataset)
+        bucket = s3client.get_bucket_name(dataset)
+        objects = s3client.list_directory_objects(bucket)
         object_names = [o.object_name for o in objects]
         red_flag = objects_in_catalogue(object_names, dataset, s3client, catalogue_repo)
     if not red_flag:
