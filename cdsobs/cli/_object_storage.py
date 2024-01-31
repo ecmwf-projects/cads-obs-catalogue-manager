@@ -87,9 +87,9 @@ def check_if_missing_in_catalogue(
                 object_names, bucket, s3client, catalogue_repo
             )
     else:
-        objects = s3client.list_directory_objects(dataset)
-        object_names = [o.object_name for o in objects]
-        red_flag = objects_in_catalogue(object_names, dataset, s3client, catalogue_repo)
+        bucket = s3client.get_bucket_name(dataset)
+        objects = s3client.list_directory_objects(bucket)
+        red_flag = objects_in_catalogue(objects, bucket, s3client, catalogue_repo)
     if not red_flag:
         console.print("[bold green] Found all assets in catalogue [/bold green]")
 
