@@ -86,18 +86,19 @@ def get_constraints_json(session, output_path: Path, dataset) -> Path:
     # This is probably slow, can it be improved?
     catalogue_entries = get_catalogue_entries_stream(session, dataset)
     merged_constraints = merged_constraints_table(catalogue_entries)
-    # Remove the stations here to avoid using too much memory
+    # Remove the stations here to avoid using too much memory, set to true the constraints
+    # if there is data for any of the stations
     merged_constraints = merged_constraints.drop("stations", axis=1)
     merged_constraints = merged_constraints.groupby(["time", "source"]).any()
     logger.info("Computing flat constraints.")
     # This returns a bool series where True are available combinations
-    flat_constraints = merged_constraints.set_index(["time", "source"]).stack()
+    flat_constraints = merged_constraints.stack()
     # Filter out the False rows
     flat_constraints = flat_constraints.loc[flat_constraints]
     # Turn into a dataframe and remove the bools column (named 0 by default)
     flat_constraints = (
         flat_constraints.reset_index()
-        .rename(dict(level_3="variable"), axis=1)
+        .rename(dict(level_2="variable"), axis=1)
         .drop(0, axis=1)
         .rename(dict(source="dataset_source"), axis=1)
     )
