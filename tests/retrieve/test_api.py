@@ -7,7 +7,6 @@ import xarray
 
 from cdsobs.config import CDSObsConfig
 from cdsobs.constants import CONFIG_YML
-from cdsobs.observation_catalogue.database import get_session
 from cdsobs.retrieve.api import retrieve_observations
 from cdsobs.retrieve.models import RetrieveArgs
 from cdsobs.storage import S3Client
@@ -23,7 +22,9 @@ PARAMETRIZE_VALUES = (
 
 
 @pytest.mark.parametrize("oformat,dataset_source,time_coverage", PARAMETRIZE_VALUES)
-def test_retrieve(test_repository, tmp_path, oformat, dataset_source, time_coverage):
+def test_retrieve(
+    test_repository, test_config, tmp_path, oformat, dataset_source, time_coverage
+):
     dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
     start_year, end_year = get_test_years(dataset_source)
     if dataset_source == "OzoneSonde":
@@ -52,7 +53,7 @@ def test_retrieve(test_repository, tmp_path, oformat, dataset_source, time_cover
     retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
     start = datetime.now()
     output_file = retrieve_observations(
-        test_repository.catalogue_repository.session,
+        test_config.catalogue_db.get_url(),
         test_repository.s3_client.base,
         retrieve_args,
         tmp_path,
@@ -86,10 +87,9 @@ def test_retrieve_cuon():
         ],
     }
     retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
-    session = get_session(test_config.catalogue_db)
     s3_client = S3Client.from_config(test_config.s3config)
     output_file = retrieve_observations(
-        session,
+        test_config.catalogue_db.get_url(),
         s3_client.base,
         retrieve_args,
         Path("/tmp"),

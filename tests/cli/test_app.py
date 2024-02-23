@@ -31,7 +31,7 @@ def test_cli_make_production(verbose):
     assert result.exit_code == 0
 
 
-@pytest.mark.skip(reason="this test does not reset db after running")
+# @pytest.mark.skip(reason="this test does not reset db after running")
 def test_cli_retrieve(tmp_path, test_repository):
     runner = CliRunner()
     test_json_str = """[
@@ -61,8 +61,6 @@ def test_cli_retrieve(tmp_path, test_repository):
         CONFIG_YML,
         "--output-dir",
         str(tmp_path),
-        "--np",
-        "2",
     ]
     result = runner.invoke(
         app,

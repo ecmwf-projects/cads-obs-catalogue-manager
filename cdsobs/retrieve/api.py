@@ -13,7 +13,6 @@ import numpy
 import pandas
 import xarray
 from fsspec.implementations.http import HTTPFileSystem
-from sqlalchemy.orm import Session
 
 from cdsobs.cdm.lite import cdm_lite_variables
 from cdsobs.constants import TIME_UNITS_REFERENCE_DATE
@@ -27,14 +26,14 @@ from cdsobs.retrieve.models import RetrieveArgs, RetrieveFormat, RetrieveParams
 from cdsobs.retrieve.retrieve_services import estimate_data_size, ezclump
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.utils.logutils import SizeError, get_logger
-from cdsobs.utils.utils import get_code_mapping
+from cdsobs.utils.utils import get_code_mapping, get_database_session
 
 logger = get_logger(__name__)
 MAX_NUMBER_OF_GROUPS = 10
 
 
 def retrieve_observations(
-    session: Session,
+    catalogue_url: str,
     storage_url: str,
     retrieve_args: RetrieveArgs,
     output_dir: Path,
@@ -45,8 +44,9 @@ def retrieve_observations(
 
     Parameters
     ----------
-    session:
-      Session in the catalogue database
+    catalogue_url:
+      URL of the catalogue database including credentials, in the form of
+      "postgresql+psycopg2://someuser:somepass@hostname:port/catalogue"
     storage_url:
       Storage URL
     retrieve_args :
@@ -58,11 +58,12 @@ def retrieve_observations(
     """
     logger.info("Starting retrieve pipeline.")
     # Query the storage to get the URLS of the files that contain the data requested
-    catalogue_repository = CatalogueRepository(session)
-    entries = _get_catalogue_entries(catalogue_repository, retrieve_args)
-    object_urls = _get_urls_and_check_size(
-        entries, retrieve_args, size_limit, storage_url
-    )
+    with get_database_session(catalogue_url) as session:
+        catalogue_repository = CatalogueRepository(session)
+        entries = _get_catalogue_entries(catalogue_repository, retrieve_args)
+        object_urls = _get_urls_and_check_size(
+            entries, retrieve_args, size_limit, storage_url
+        )
     # Get the path of the output file
     output_path_netcdf = _get_output_path(output_dir, retrieve_args.dataset, "netCDF")
     # First we always write the netCDF-lite file
