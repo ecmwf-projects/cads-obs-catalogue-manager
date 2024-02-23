@@ -272,6 +272,9 @@ def read_cuon_netcdfs(
     else:
         # Do not use threads as HDF5 is not yet thread safe.
         scheduler = "processes"
+    # Check for emptiness
+    if len(files_and_slices) == 0:
+        raise EmptyBatchException
     # Use dask to speed up the process
     for file_and_slices in files_and_slices:
         denormalized_table_future = dask.delayed(_get_denormalized_table_file)(
@@ -284,6 +287,9 @@ def read_cuon_netcdfs(
         scheduler=scheduler,
         num_workers=min(len(files_and_slices), 32),
     )
+    # Check for emptiness
+    if all([dt is None for dt in denormalized_tables]):
+        raise EmptyBatchException
     return pandas.concat(denormalized_tables)
 
 
