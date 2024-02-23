@@ -1,3 +1,4 @@
+import pytest
 from typer.testing import CliRunner
 
 from cdsobs.cli._catalogue_explorer import list_catalogue_
@@ -8,10 +9,11 @@ from tests.conftest import CONFIG_YML, DS_TEST_NAME
 runner = CliRunner()
 
 
-def test_list_catalogue(test_session, test_repository):
+@pytest.mark.parametrize("print_format", ["table", "json"])
+def test_list_catalogue(test_session, test_repository, print_format):
     result = runner.invoke(
         app,
-        ["list-catalogue", "-c", CONFIG_YML],
+        ["list-catalogue", "-c", CONFIG_YML, "--print-format", print_format],
         catch_exceptions=False,
     )
     assert result.exit_code == 0
@@ -26,10 +28,11 @@ def test_catalogue_dataset_info(test_session, test_repository):
     assert result.exit_code == 0
 
 
-def test_list_datasets():
+@pytest.mark.parametrize("print_format", ["table", "json"])
+def test_list_datasets(print_format):
     result = runner.invoke(
         app,
-        ["list-datasets", "-c", CONFIG_YML, "--print-format", "json"],
+        ["list-datasets", "-c", CONFIG_YML, "--print-format", print_format],
         catch_exceptions=False,
     )
     assert result.exit_code == 0
