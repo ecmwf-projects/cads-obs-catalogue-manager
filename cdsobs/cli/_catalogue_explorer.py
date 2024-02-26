@@ -94,10 +94,10 @@ def list_catalogue(
         # with pagination (50 per page)
         results = list_catalogue_(session, filters, page)
 
-    if len(results) == 0:
-        raise RuntimeError("No catalogue entries found for these parameters.")
+        if len(results) == 0:
+            raise RuntimeError("No catalogue entries found for these parameters.")
 
-    print_db_results(results, print_format)
+        print_db_results(results, print_format)
 
 
 def list_catalogue_(

@@ -95,8 +95,9 @@ def main():
                 retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
                 s3_client = S3Client.from_config(config.s3config)
                 start_time = time.perf_counter()
+                catalogue_url = config.catalogue_db.get_url()
                 retrieve_funct(
-                    session,
+                    catalogue_url,
                     s3_client.public_url_base,
                     retrieve_args,
                     tmpdir,
@@ -127,7 +128,7 @@ def main():
                 retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
                 start_time = time.perf_counter()
                 retrieve_funct(
-                    session,
+                    catalogue_url,
                     s3_client.public_url_base,
                     retrieve_args,
                     tmpdir,
@@ -151,7 +152,7 @@ def main():
                 retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
                 start_time = time.perf_counter()
                 retrieve_funct(
-                    session,
+                    catalogue_url,
                     s3_client.public_url_base,
                     retrieve_args,
                     tmpdir,

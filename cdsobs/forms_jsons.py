@@ -78,11 +78,7 @@ def get_variables_json(dataset: str, output_path: Path) -> Path:
 
 
 def get_constraints_json(session, output_path: Path, dataset) -> Path:
-    """
-    JSON file with the constraints in compressed form.
-
-    Beware this in the need of some optimization (may be resource heavy).
-    """
+    """JSON file with the constraints in compressed form."""
     # This is probably slow, can it be improved?
     catalogue_entries = get_catalogue_entries_stream(session, dataset)
     merged_constraints = merged_constraints_table(catalogue_entries)

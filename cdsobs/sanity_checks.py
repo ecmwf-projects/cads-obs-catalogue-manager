@@ -71,7 +71,7 @@ def _sanity_check_dataset(
         check_if_missing_in_object_storage(catalogue_repo, s3_client, dataset_name)
         # Retrieve and check output
         output_path = retrieve_observations(
-            session,
+            config.catalogue_db.get_url(),
             s3_client.public_url_base,
             retrieve_args,
             Path(tmpdir),

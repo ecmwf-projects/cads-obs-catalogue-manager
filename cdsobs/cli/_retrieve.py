@@ -7,7 +7,6 @@ from rich.console import Console
 
 from cdsobs.cli._utils import CliException, ConfigNotFound, config_yml_typer
 from cdsobs.config import validate_config
-from cdsobs.observation_catalogue.database import get_session
 from cdsobs.retrieve.api import retrieve_observations
 from cdsobs.retrieve.models import RetrieveArgs
 from cdsobs.storage import S3Client
@@ -61,13 +60,12 @@ def retrieve(
         raise ConfigNotFound()
     config = validate_config(cdsobs_config_yml)
     s3_client = S3Client.from_config(config.s3config)
-    with get_session(config.catalogue_db) as session:
-        output_file = retrieve_observations(
-            session,
-            s3_client.public_url_base,
-            retrieve_args,
-            output_dir,
-            size_limit,
-        )
+    output_file = retrieve_observations(
+        config.catalogue_db.get_url(),
+        s3_client.public_url_base,
+        retrieve_args,
+        output_dir,
+        size_limit,
+    )
     console = Console()
     console.print(f"[green] Successfully downloaded {output_file} [/green]")
