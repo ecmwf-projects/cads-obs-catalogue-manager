@@ -94,11 +94,11 @@ def get_constraints_json(session, output_path: Path, dataset) -> Path:
     # Turn into a dataframe and remove the bools column (named 0 by default)
     flat_constraints = (
         flat_constraints.reset_index()
-        .rename(dict(level_2="variable"), axis=1)
+        .rename(dict(level_2="variables"), axis=1)
         .drop(0, axis=1)
         .rename(dict(source="dataset_source"), axis=1)
     )
-    flat_constraints["variable"] = flat_constraints["variable"].astype(str)
+    flat_constraints["variables"] = flat_constraints["variables"].astype(str)
     times = flat_constraints.time.astype("datetime64[s]")
     flat_constraints["year"] = times.dt.year.astype("str")
     flat_constraints["month"] = times.dt.month.astype("str").str.rjust(2, "0")
@@ -120,7 +120,7 @@ def get_widgets_json(session, output_path: Path, dataset: str) -> Path:
     catalogue_entries = get_catalogue_entries_stream(session, dataset)
     summary = stats_summary(catalogue_entries)
     widgets_json_content = dict()
-    widgets_json_content["variable"] = summary["available variables"]
+    widgets_json_content["variables"] = summary["available variables"]
     time_coverage_start, time_coverage_end = summary["total time coverage"]
     start_year = int(time_coverage_start[0:4])
     end_year = int(time_coverage_end[0:4])
@@ -130,7 +130,6 @@ def get_widgets_json(session, output_path: Path, dataset: str) -> Path:
         # year! We still check that the coverage ends the first of Jan just to be sure
         # in case something changes in the future.
         end_year -= 1
-    widgets_json_content["variable"] = summary["available variables"]
     widgets_json_content["stations"] = summary["available stations"]
     widgets_json_content["dataset_source"] = summary["available dataset sources"]
     widgets_json_content["year"] = _to_str_list(range(start_year, end_year + 1))
