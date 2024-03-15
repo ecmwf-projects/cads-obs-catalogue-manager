@@ -21,7 +21,7 @@ dependencies:
 - libnetcdf
 - netcdf4
 - numpy
-- pandas
+- pandas=2.1.4
 - psycopg2
 - pydantic
 - pytest-mock
