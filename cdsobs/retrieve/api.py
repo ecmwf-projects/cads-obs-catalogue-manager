@@ -61,7 +61,7 @@ def retrieve_observations(
     with get_database_session(catalogue_url) as session:
         catalogue_repository = CatalogueRepository(session)
         entries = _get_catalogue_entries(catalogue_repository, retrieve_args)
-        object_urls = _get_urls_and_check_size(
+        object_urls = get_urls_and_check_size(
             entries, retrieve_args, size_limit, storage_url
         )
     # Get the path of the output file
@@ -147,7 +147,7 @@ def _to_csv(
     return output_path
 
 
-def _get_urls_and_check_size(
+def get_urls_and_check_size(
     entries: Sequence[Catalogue],
     retrieve_args: RetrieveArgs,
     size_limit: int,

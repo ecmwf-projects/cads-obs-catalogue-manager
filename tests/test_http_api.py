@@ -15,19 +15,22 @@ def test_read_main(test_repository, test_config, tmp_path):
     app.dependency_overrides[session_gen] = test_session
 
     payload = {
-        "dataset": "insitu-observations-woudc-ozone-total-column-and-profiles",
-        "params": {
-            "dataset_source": "OzoneSonde",
-            "stations": ["7"],
-            "variables": None,
-            "latitude_coverage": (0.0, 90.0),
-            "longitude_coverage": (0.0, 180.0),
-            "time_coverage": ("1969-02-01T00:00:00", "1970-03-01T00:00:00"),
-            "year": None,
-            "month": None,
-            "day": None,
-            "format": "netCDF",
+        "retrieve_args": {
+            "dataset": "insitu-observations-woudc-ozone-total-column-and-profiles",
+            "params": {
+                "dataset_source": "OzoneSonde",
+                "stations": ["7"],
+                "variables": None,
+                "latitude_coverage": (0.0, 90.0),
+                "longitude_coverage": (0.0, 180.0),
+                "time_coverage": ("1969-02-01T00:00:00", "1970-03-01T00:00:00"),
+                "year": None,
+                "month": None,
+                "day": None,
+                "format": "netCDF",
+            },
         },
+        "config": {"size_limit": 1000000},
     }
 
     response = client.post("/get_object_urls_and_check_size", json=payload)

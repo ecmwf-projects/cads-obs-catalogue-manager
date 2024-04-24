@@ -1,11 +1,9 @@
 from dataclasses import dataclass
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import Annotated
 
 import sqlalchemy.orm
 from fastapi import APIRouter, Depends, HTTPException
-from starlette.responses import FileResponse
 
 from cdsobs.api_rest import config_helper
 from cdsobs.api_rest.models import RetrievePayload
@@ -14,10 +12,8 @@ from cdsobs.config import CDSObsConfig, validate_config
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.retrieve.api import (
     _get_catalogue_entries,
-    _get_urls_and_check_size,
-    retrieve_observations,
+    get_urls_and_check_size,
 )
-from cdsobs.retrieve.models import RetrieveArgs
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.storage import S3Client
@@ -45,39 +41,18 @@ def session_gen() -> HttpAPISession:
         session.catalogue_session.close()
 
 
-@router.post("/retrieve")
-def retrieve(payload: RetrievePayload):
-    """Get observations data from the repository."""
-    with NamedTemporaryFile() as tempfile:
-        catalogue_url = payload.catalogue_url
-        storage_url = payload.storage_url
-        retrieve_args = payload.retrieve_args
-        retrieve_observations(
-            catalogue_url,
-            storage_url,
-            retrieve_args,
-            Path(tempfile.name),
-            size_limit=100000,
-        )
-        return FileResponse(
-            path=tempfile,
-            media_type="application/octet-stream",
-            filename="retrieved.nc",
-        )
-
-
 @router.post("/get_object_urls_and_check_size")
 def get_object_urls_and_check_size(
-    retrieve_args: RetrieveArgs,
+    retrieve_payload: RetrievePayload,
     session: Annotated[HttpAPISession, Depends(session_gen)],
-    size_limit=100000,
-):
+) -> list[str]:
     # Query the storage to get the URLS of the files that contain the data requested
+    retrieve_args = retrieve_payload.retrieve_args
     catalogue_repository = CatalogueRepository(session.catalogue_session)
     entries = _get_catalogue_entries(catalogue_repository, retrieve_args)
     s3client = S3Client.from_config(session.cdsobs_config.s3config)
-    object_urls = _get_urls_and_check_size(
-        entries, retrieve_args, size_limit, s3client.base
+    object_urls = get_urls_and_check_size(
+        entries, retrieve_args, retrieve_payload.config.size_limit, s3client.base
     )
     return object_urls
 
