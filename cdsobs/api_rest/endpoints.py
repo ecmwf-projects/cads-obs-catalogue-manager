@@ -5,10 +5,10 @@ from typing import Annotated
 import sqlalchemy.orm
 from fastapi import APIRouter, Depends, HTTPException
 
-from cdsobs.api_rest import config_helper
 from cdsobs.api_rest.models import RetrievePayload
 from cdsobs.cli._utils import ConfigNotFound
 from cdsobs.config import CDSObsConfig, validate_config
+from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.retrieve.api import (
     _get_catalogue_entries,
@@ -58,15 +58,19 @@ def get_object_urls_and_check_size(
 
 
 @router.get("/capabilities/datasets")
-def get_capabilities() -> list[str]:
+def get_capabilities(
+    session: Annotated[HttpAPISession, Depends(session_gen)]
+) -> list[str]:
     """Get available datasets."""
-    return config_helper.datasets_installed()
+    results = CadsDatasetRepository(session.catalogue_session).get_all()
+    return [r.name for r in results]
 
 
 @router.get("/capabilities/{dataset}/sources")
-def get_sources(dataset: str):
+def get_sources(dataset: str) -> list[str]:
     """Get available sources for a given dataset."""
-    return config_helper.get_dataset_sources(dataset)
+    service_definition = get_service_definition(dataset)
+    return list(service_definition.sources)
 
 
 @router.get("/{dataset}/service_definition")

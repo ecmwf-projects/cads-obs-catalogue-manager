@@ -48,3 +48,22 @@ def test_service_definition():
     actual = client.get(f"/{dataset}/service_definition").json()
     expected = get_service_definition(dataset).dict()
     assert actual == expected
+
+
+def test_capabilities_datasets(test_config, test_repository):
+    # We define a test session callable and use it to override session_gen for the test
+    def test_session() -> HttpAPISession:
+        return HttpAPISession(test_config, test_repository.catalogue_repository.session)
+
+    # Note that the  key here is the callable itself, not the callable name.
+    app.dependency_overrides[session_gen] = test_session
+    actual = client.get("/capabilities/datasets").json()
+    expected = ["insitu-observations-woudc-ozone-total-column-and-profiles"]
+    assert actual == expected
+
+
+def test_catabilities_sources():
+    dataset = "insitu-observations-woudc-ozone-total-column-and-profiles"
+    actual = client.get(f"capabilities/{dataset}/sources").json()
+    expected = ["OzoneSonde", "TotalOzone"]
+    assert actual == expected
