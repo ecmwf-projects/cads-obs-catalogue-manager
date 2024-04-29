@@ -42,6 +42,8 @@ dependencies:
 - fsspec
 - aiohttp
 - pydantic-settings
+- datetimerange
 - python=3.10
 - pip:
   - sqlalchemy_json
+  - git+https://github.com/ecmwf-projects/cads-adaptors
