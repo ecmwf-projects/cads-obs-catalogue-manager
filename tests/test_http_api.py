@@ -2,6 +2,7 @@ from starlette.testclient import TestClient
 
 from cdsobs.api_rest.app import app
 from cdsobs.api_rest.endpoints import HttpAPISession, session_gen
+from cdsobs.cdm.lite import cdm_lite_variables
 from cdsobs.service_definition.api import get_service_definition
 
 client = TestClient(app)
@@ -62,8 +63,14 @@ def test_capabilities_datasets(test_config, test_repository):
     assert actual == expected
 
 
-def test_catabilities_sources():
+def test_capabilities_sources():
     dataset = "insitu-observations-woudc-ozone-total-column-and-profiles"
     actual = client.get(f"capabilities/{dataset}/sources").json()
     expected = ["OzoneSonde", "TotalOzone"]
+    assert actual == expected
+
+
+def test_get_cdm_lite():
+    actual = client.get("cdm/lite_variables").json()
+    expected = cdm_lite_variables
     assert actual == expected

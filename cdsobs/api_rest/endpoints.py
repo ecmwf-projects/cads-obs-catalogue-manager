@@ -6,6 +6,7 @@ import sqlalchemy.orm
 from fastapi import APIRouter, Depends, HTTPException
 
 from cdsobs.api_rest.models import RetrievePayload
+from cdsobs.cdm.lite import cdm_lite_variables
 from cdsobs.cli._utils import ConfigNotFound
 from cdsobs.config import CDSObsConfig, validate_config
 from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
@@ -82,3 +83,8 @@ def get_dataset_service_definition(dataset: str) -> ServiceDefinition:
         raise HTTPException(
             status_code=404, detail=f"Service definition not found for {dataset=}"
         )
+
+
+@router.get("/cdm/lite_variables")
+def get_cdm_lite_variables() -> list[str]:
+    return cdm_lite_variables
