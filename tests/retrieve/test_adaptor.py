@@ -1,14 +1,10 @@
-import os
 from pathlib import Path
 
 import xarray
 
-from cdsobs.constants import CONFIG_YML
-
 
 def test_adaptor(test_repository, tmp_path, test_api_server):
     """Full test with a local instance of the HTTP API."""
-    os.environ["CDSOBS_CONFIG"] = str(CONFIG_YML)
     from cads_adaptors import ObservationsAdaptor
 
     test_request = {

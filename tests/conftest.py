@@ -1,5 +1,6 @@
 import copy
 import importlib
+import os
 import pickle
 import time
 from dataclasses import dataclass
@@ -168,6 +169,7 @@ def mock_retrieve_args():
 
 
 def run_server():
+    os.environ["CDSOBS_CONFIG"] = str(CONFIG_YML)
     uvicorn.run(
         "cdsobs.api_rest.app:app",
         host="0.0.0.0",
