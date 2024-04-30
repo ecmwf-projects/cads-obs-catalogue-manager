@@ -46,4 +46,4 @@ dependencies:
 - python=3.10
 - pip:
   - sqlalchemy_json
-  - git+https://github.com/ecmwf-projects/cads-adaptors
+  - git+https://github.com/ecmwf-projects/cads-adaptors@obs_adaptor

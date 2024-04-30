@@ -1,19 +1,18 @@
 from pathlib import Path
 
-import pytest
 import xarray
 
 
-@pytest.mark.skip("Depends on cads_adaptors")
-def test_adaptor(test_config, test_repository, tmp_path):
+def test_adaptor(test_config, test_repository, tmp_path, test_api_server):
+    """Full test with a local instance of the HTTP API."""
     from cads_adaptors import ObservationsAdaptor
 
     test_request = {
-        "observation_type": ["vertical_profile"],
+        "observation_type": ["total_column"],
         "format": "netCDF",
-        "variable": ["air_temperature"],
-        "year": ["1969"],
-        "month": ["01"],
+        "variable": ["total_ozone_column"],
+        "year": ["2011"],
+        "month": ["02"],
         "day": [
             "01",
             "02",
@@ -26,11 +25,7 @@ def test_adaptor(test_config, test_repository, tmp_path):
     test_adaptor_config = {
         "entry_point": "cads_adaptors:ObservationsAdaptor",
         "collection_id": "insitu-observations-woudc-ozone-total-column-and-profiles",
-        "catalogue_url": test_config.catalogue_db.get_url(),
-        "storage_url": "http://"
-        + test_config.s3config.host
-        + ":"
-        + str(test_config.s3config.port),
+        "obs_api_url": "http://localhost:8000",
         "mapping": {
             "remap": {
                 "observation_type": {

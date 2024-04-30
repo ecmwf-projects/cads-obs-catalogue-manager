@@ -1,6 +1,7 @@
+import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Iterator
 
 import sqlalchemy.orm
 from fastapi import APIRouter, Depends, HTTPException
@@ -29,8 +30,11 @@ class HttpAPISession:
     catalogue_session: sqlalchemy.orm.Session
 
 
-def session_gen() -> HttpAPISession:
-    cdsobs_config_yml = Path.home().joinpath(".cdsobs/cdsobs_config.yml")
+def session_gen() -> Iterator[HttpAPISession]:
+    if "CDSOBS_CONFIG" in os.environ:
+        cdsobs_config_yml = Path(os.environ["CDSOBS_CONFIG"])
+    else:
+        cdsobs_config_yml = Path.home().joinpath(".cdsobs/cdsobs_config.yml")
     if not Path(cdsobs_config_yml).exists():
         raise ConfigNotFound()
     cdsobs_config = validate_config(cdsobs_config_yml)

@@ -1,11 +1,15 @@
 import copy
 import importlib
 import pickle
+import time
 from dataclasses import dataclass
 from datetime import datetime
+from multiprocessing import Process
 from pathlib import Path
 
 import pytest
+import requests
+import uvicorn
 
 from cdsobs.api import run_ingestion_pipeline
 from cdsobs.config import CDSObsConfig
@@ -161,3 +165,37 @@ def mock_retrieve_args():
         time_coverage=(datetime(1998, 1, 1), datetime(1998, 2, 1)),
     )
     return RetrieveArgs(dataset=DS_TEST_NAME, params=params)
+
+
+def run_server():
+    uvicorn.run(
+        "cdsobs.api_rest.app:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=False,
+        workers=1,
+    )
+
+
+def wait_until_api_is_ready(timeout: int, period=0.25):
+    mustend = time.time() + timeout
+    while time.time() < mustend:
+        try:
+            res = requests.get("http://localhost:8000/cdm/lite_variables")
+            res.raise_for_status()
+            return True
+        except requests.exceptions.HTTPError:
+            time.sleep(period)
+        except requests.exceptions.ConnectionError:
+            time.sleep(period)
+    return False
+
+
+@pytest.fixture()
+def test_api_server():
+    proc = Process(target=run_server, args=(), daemon=True)
+    proc.start()
+    wait_until_api_is_ready(5)
+    yield proc
+    # Cleanup after test
+    proc.terminate()
