@@ -43,6 +43,7 @@ dependencies:
 - aiohttp
 - pydantic-settings
 - datetimerange
+- uvicorn
 - python=3.10
 - pip:
   - sqlalchemy_json
