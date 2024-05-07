@@ -112,6 +112,13 @@ sources:
         description: This parameter indicates the name of the GNSS receiving station.
         dtype: object
         long_name: idstation
+      total_column_water_vapour:
+        combined_uncertainty: uncert_epn_ipw
+        description: This parameter is the total amount of water vapour in a column extending vertically from the GNSS receiver position (near the surface) to the top of the atmosphere.
+        dtype: float32
+        era5: era_ipw
+        long_name: epn_ipw
+        units: kg m-2
       total_column_water_vapour_combined_uncertainty:
         description: This parameter is the combined sum of all uncertainties in the total column water vapour derived from zenith total delay and ancillary meteorological data. The uncertainties that are included in the calculation include uncertainties of the observed zenith total delay, uncertainties of the ancillary data, and uncertainties of the coefficients used in the retrieval (csv-lev only).
         dtype: float32
@@ -177,6 +184,8 @@ sources:
     space_columns:
       y: latitude|station_configuration
       x: longitude|station_configuration
+
+
   IGS:
     cdm_mapping:
       melt_columns: true
@@ -265,6 +274,178 @@ sources:
         description: This parameter indicates the name of the GNSS receiving station.
         dtype: object
         long_name: idstation
+        name_for_output: station_name
+      total_column_water_vapour:
+        combined_uncertainty: uncert_gnss_ipw
+        description: This parameter is the total amount of water vapour in a column extending vertically from the GNSS receiver position (near the surface) to the top of the atmosphere.
+        dtype: float32
+        era5: era_ipw
+        long_name: gnss_ipw
+        name_for_output: total_column_water_vapour
+        units: kg m-2
+      total_column_water_vapour_combined_uncertainty:
+        description: This parameter is the combined sum of all uncertainties in the total column water vapour derived from zenith total delay and ancillary meteorological data. The uncertainties that are included in the calculation include uncertainties of the observed zenith total delay, uncertainties of the ancillary data, and uncertainties of the coefficients used in the retrieval (csv-lev only).
+        dtype: float32
+        long_name: total_column_water_vapour_combined_uncertainty
+        units: kg m-2
+      precipitable_water_column_era5:
+        description: This parameter is the total amount of water vapour in a column extending vertically from the GNSS receiver position (near the surface) to the top of the atmosphere, retrieved from ERA5 at the station coordinates, altitude, date, and time (csv-lev only).
+        dtype: float32
+        long_name: total_column_water_vapour_era5
+        units: kg m-2
+      zenith_total_delay:
+        description: This parameter characterizes the delay of the GNSS signal on the path from a satellite to the receiver due to atmospheric refraction and bending, mapped into the zenith direction. It is expressed as an equivalent distance travelled additionally by the radio waves, due to the atmosphere. The numerical value of zenith total delay correlates with the amount of total column water vapour (i.e., not including effects of liquid water and/or ice) above the GNSS receiver antenna. It is hence used to estimate the total column water vapour.
+        dtype: float32
+        long_name: zenith total delay
+        random_uncertainty: sigma_ztd
+        units: m
+      zenith_total_delay_random_uncertainty:
+        description: This parameter is an estimate of the standard uncertainty equivalent to 1-sigma uncertainty of zenith total delay (csv-lev only).
+        dtype: float32
+        long_name: zenith_total_delay_random_uncertainty
+        units: m
+    header_columns:
+    - primary_station_id
+    - city
+    - organisation_name
+    - latitude|station_configuration
+    - longitude|station_configuration
+    - sensor_altitude
+    - height_of_station_above_sea_level
+    - start_date
+    header_table: ipw_gnss_data_header
+    join_ids:
+      data: ipw_gnss_data_header_id
+      header: dataheader_id
+    mandatory_columns:
+    - observation_id
+    - primary_station_id
+    - city
+    - organisation_name
+    - sensor_altitude
+    - height_of_station_above_sea_level
+    - start_date
+    - report_timestamp
+    - latitude|station_configuration
+    - longitude|station_configuration
+    order_by:
+    - report_timestamp
+    - report_id
+    products:
+    - columns:
+      - precipitable_water_column
+      - precipitable_water_column_era5
+      group_name: variables
+    - columns:
+      - era_ipw
+      group_name: era5
+    - columns:
+      - uncert_gnss_ipw
+      group_name: combined_uncertainty
+    - columns:
+      - sigma_ztd
+      group_name: random_uncertainty
+    space_columns:
+      y: latitude|station_configuration
+      x: longitude|station_configuration
+  IGS_R3:
+    cdm_mapping:
+      melt_columns: true
+      rename:
+        agency: organisation_name
+        amsl_m: height_of_station_above_sea_level
+        city: city
+        country: country
+        date_of_observation: report_timestamp
+        date_since: start_date
+        era_ipw: precipitable_water_column_era5
+        gnss_ipw: precipitable_water_column
+        height_from_ellipsoid_m: sensor_altitude
+        id: report_id
+        idstation: primary_station_id
+        ipw_gnss_data_header_id: report_id
+        lat: latitude|station_configuration
+        lon: longitude|station_configuration
+        network: network
+        observation_id: observation_id
+        sigma_ztd: zenith_total_delay_random_uncertainty
+        uncert_gnss_ipw: total_column_water_vapour_combined_uncertainty
+        ztd: zenith_total_delay
+      unit_changes:
+        precipitable_water_column:
+          names:
+            kg m-2: kg m-2
+          offset: 0
+          scale: 1
+    data_table: ipw_igs_repro3_data_value
+    descriptions:
+      city:
+        description: This parameter is the name of the location of the GNSS receiver. This name is provided by the SEMISYS database (see Citation).
+        dtype: object
+        long_name: city
+      country:
+        description: Country hosting the station name.
+        dtype: object
+        long_name: country
+      height_of_station_above_sea_level:
+        description: This parameter is the altitude of the GNSS receiving station above the mean sea-level.
+        dtype: float32
+        long_name: height_of_station_above_sea_level
+        units: m
+      location_latitude:
+        description: This parameter is the latitude of the GNSS receiving station.
+        dtype: float32
+        long_name: latitude
+        units: degree_north
+      location_longitude:
+        description: This parameter is the longitude of the GNSS receiving station.
+        dtype: float32
+        long_name: longitude
+        units: degree_east
+      network:
+        description: Subnetwork name the site belongs to.
+        dtype: object
+        long_name: network
+      organisation_name:
+        description: This parameter indicates the agency responsible for the station.
+        dtype: object
+        long_name: agency
+      precipitable_water_column:
+        combined_uncertainty: uncert_gnss_ipw
+        description: This parameter is the total amount of water vapour in a column extending vertically from the GNSS receiver position (near the surface) to the top of the atmosphere.
+        dtype: float32
+        era5: era_ipw
+        long_name: precipitable water column
+        units: kg m-2
+      report_id:
+        description: This parameter enables traceability of the report to the original data source.
+        long_name: ipw_gnss_data_header_id
+      report_timestamp:
+        description: This parameter is the date and time (UTC) associated with the observation.
+        dtype: datetime64[ns]
+        long_name: date_of_observation
+      sensor_altitude:
+        description: This parameter is the difference between the GNSS antenna height and the World Geodetic System (WGS)-84 ellipsoid. The WGS-84 is a static reference, maintained by the United States National Geospatial-Intelligence Agency. It is also the reference coordinate system used by the GPS.
+        dtype: float32
+        long_name: sensor_altitude
+        units: m
+      start_date:
+        description: This parameter is the first date and time of data available at the GNSS station.
+        dtype: datetime64[ns]
+        long_name: date_since
+      primary_station_id:
+        description: This parameter indicates the name of the GNSS receiving station.
+        dtype: object
+        long_name: idstation
+        name_for_output: station_name
+      total_column_water_vapour:
+        combined_uncertainty: uncert_gnss_ipw
+        description: This parameter is the total amount of water vapour in a column extending vertically from the GNSS receiver position (near the surface) to the top of the atmosphere.
+        dtype: float32
+        era5: era_ipw
+        long_name: gnss_ipw
+        name_for_output: total_column_water_vapour
+        units: kg m-2
       total_column_water_vapour_combined_uncertainty:
         description: This parameter is the combined sum of all uncertainties in the total column water vapour derived from zenith total delay and ancillary meteorological data. The uncertainties that are included in the calculation include uncertainties of the observed zenith total delay, uncertainties of the ancillary data, and uncertainties of the coefficients used in the retrieval (csv-lev only).
         dtype: float32
