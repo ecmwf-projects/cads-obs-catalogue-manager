@@ -10,7 +10,7 @@ def test_adaptor(test_config, test_repository, tmp_path):
 
     test_request = {
         "observation_type": ["vertical_profile"],
-        "format": "netCDF",
+        "format": "csv",
         "variable": ["air_temperature"],
         "year": ["1969"],
         "month": ["01"],

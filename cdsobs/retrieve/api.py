@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Sequence, Tuple
 
 import cftime
+import dask
 import fsspec
 import h5netcdf
 import numpy
@@ -101,7 +102,8 @@ def retrieve_observations(
         output_path = output_path_netcdf
     else:
         try:
-            output_path = _to_csv(output_dir, output_path_netcdf, retrieve_args)
+            with dask.config.set(scheduler="threads"):
+                output_path = _to_csv(output_dir, output_path_netcdf, retrieve_args)
         finally:
             # Ensure that the netCDF is not left behind taking disk space.
             output_path_netcdf.unlink()
