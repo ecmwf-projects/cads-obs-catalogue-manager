@@ -361,7 +361,6 @@ sources:
         era_ipw: precipitable_water_column_era5
         gnss_ipw: precipitable_water_column
         height_from_ellipsoid_m: sensor_altitude
-        id: report_id
         idstation: primary_station_id
         ipw_gnss_data_header_id: report_id
         lat: latitude|station_configuration
@@ -476,9 +475,9 @@ sources:
     - sensor_altitude
     - height_of_station_above_sea_level
     - start_date
-    header_table: ipw_gnss_data_header
+    header_table: ipw_igs_repro3_data_header
     join_ids:
-      data: ipw_gnss_data_header_id
+      data: ipw_igs_repro3_data_header_id
       header: dataheader_id
     mandatory_columns:
     - observation_id
