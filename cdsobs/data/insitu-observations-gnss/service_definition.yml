@@ -86,7 +86,7 @@ sources:
         dtype: object
         long_name: agency
       precipitable_water_column:
-        combined_uncertainty: uncert_epn_ipw
+        total_uncertainty: uncert_epn_ipw
         description: This parameter is the total amount of water vapour in a column extending vertically from the GNSS receiver position (near the surface) to the top of the atmosphere.
         dtype: float32
         era5: era_ipw
@@ -112,10 +112,10 @@ sources:
         description: This parameter indicates the name of the GNSS receiving station.
         dtype: object
         long_name: idstation
-      precipitable_water_column_combined_uncertainty:
+      precipitable_water_column_total_uncertainty:
         description: This parameter is the combined sum of all uncertainties in the total column water vapour derived from zenith total delay and ancillary meteorological data. The uncertainties that are included in the calculation include uncertainties of the observed zenith total delay, uncertainties of the ancillary data, and uncertainties of the coefficients used in the retrieval (csv-lev only).
         dtype: float32
-        long_name: precipitable_water_column_combined_uncertainty
+        long_name: precipitable_water_column_total_uncertainty
         units: kg m-2
       precipitable_water_column_era5:
         description: This parameter is the total amount of water vapour in a column extending vertically from the GNSS receiver position (near the surface) to the top of the atmosphere, retrieved from ERA5 at the station coordinates, altitude, date, and time (csv-lev only).
@@ -171,7 +171,7 @@ sources:
       group_name: era5
     - columns:
       - uncert_epn_ipw
-      group_name: combined_uncertainty
+      group_name: total_uncertainty
     - columns:
       - sigma_ztd
       group_name: random_uncertainty
@@ -200,7 +200,7 @@ sources:
         network: network
         observation_id: observation_id
         sigma_ztd: zenith_total_delay_random_uncertainty
-        uncert_gnss_ipw: precipitable_water_column_combined_uncertainty
+        uncert_gnss_ipw: precipitable_water_column_total_uncertainty
         ztd: zenith_total_delay
       unit_changes:
         precipitable_water_column:
@@ -242,7 +242,7 @@ sources:
         dtype: object
         long_name: agency
       precipitable_water_column:
-        combined_uncertainty: uncert_gnss_ipw
+        total_uncertainty: uncert_gnss_ipw
         description: This parameter is the total amount of water vapour in a column extending vertically from the GNSS receiver position (near the surface) to the top of the atmosphere.
         dtype: float32
         era5: era_ipw
@@ -270,17 +270,17 @@ sources:
         long_name: idstation
         name_for_output: station_name
       total_column_water_vapour:
-        combined_uncertainty: uncert_gnss_ipw
+        total_uncertainty: uncert_gnss_ipw
         description: This parameter is the total amount of water vapour in a column extending vertically from the GNSS receiver position (near the surface) to the top of the atmosphere.
         dtype: float32
         era5: era_ipw
         long_name: gnss_ipw
         name_for_output: total_column_water_vapour
         units: kg m-2
-      precipitable_water_column_combined_uncertainty:
+      precipitable_water_column_total_uncertainty:
         description: This parameter is the combined sum of all uncertainties in the total column water vapour derived from zenith total delay and ancillary meteorological data. The uncertainties that are included in the calculation include uncertainties of the observed zenith total delay, uncertainties of the ancillary data, and uncertainties of the coefficients used in the retrieval (csv-lev only).
         dtype: float32
-        long_name: precipitable_water_column_combined_uncertainty
+        long_name: precipitable_water_column_total_uncertainty
         units: kg m-2
       precipitable_water_column_era5:
         description: This parameter is the total amount of water vapour in a column extending vertically from the GNSS receiver position (near the surface) to the top of the atmosphere, retrieved from ERA5 at the station coordinates, altitude, date, and time (csv-lev only).
@@ -336,7 +336,7 @@ sources:
       group_name: era5
     - columns:
       - uncert_gnss_ipw
-      group_name: combined_uncertainty
+      group_name: total_uncertainty
     - columns:
       - sigma_ztd
       group_name: random_uncertainty
@@ -363,7 +363,7 @@ sources:
         network: network
         observation_id: observation_id
         sigma_ztd: zenith_total_delay_random_uncertainty
-        uncert_gnss_ipw: precipitable_water_column_combined_uncertainty
+        uncert_gnss_ipw: precipitable_water_column_total_uncertainty
         ztd: zenith_total_delay
       unit_changes:
         precipitable_water_column:
@@ -405,7 +405,7 @@ sources:
         dtype: object
         long_name: agency
       precipitable_water_column:
-        combined_uncertainty: uncert_gnss_ipw
+        total_uncertainty: uncert_gnss_ipw
         description: This parameter is the total amount of water vapour in a column extending vertically from the GNSS receiver position (near the surface) to the top of the atmosphere.
         dtype: float32
         era5: era_ipw
@@ -433,17 +433,17 @@ sources:
         long_name: idstation
         name_for_output: station_name
       total_column_water_vapour:
-        combined_uncertainty: uncert_gnss_ipw
+        total_uncertainty: uncert_gnss_ipw
         description: This parameter is the total amount of water vapour in a column extending vertically from the GNSS receiver position (near the surface) to the top of the atmosphere.
         dtype: float32
         era5: era_ipw
         long_name: gnss_ipw
         name_for_output: total_column_water_vapour
         units: kg m-2
-      precipitable_water_column_combined_uncertainty:
+      precipitable_water_column_total_uncertainty:
         description: This parameter is the combined sum of all uncertainties in the total column water vapour derived from zenith total delay and ancillary meteorological data. The uncertainties that are included in the calculation include uncertainties of the observed zenith total delay, uncertainties of the ancillary data, and uncertainties of the coefficients used in the retrieval (csv-lev only).
         dtype: float32
-        long_name: precipitable_water_column_combined_uncertainty
+        long_name: precipitable_water_column_total_uncertainty
         units: kg m-2
       precipitable_water_column_era5:
         description: This parameter is the total amount of water vapour in a column extending vertically from the GNSS receiver position (near the surface) to the top of the atmosphere, retrieved from ERA5 at the station coordinates, altitude, date, and time (csv-lev only).
@@ -499,7 +499,7 @@ sources:
       group_name: era5
     - columns:
       - uncert_gnss_ipw
-      group_name: combined_uncertainty
+      group_name: total_uncertainty
     - columns:
       - sigma_ztd
       group_name: random_uncertainty
