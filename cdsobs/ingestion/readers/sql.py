@@ -210,7 +210,7 @@ def read_header_and_data_tables(
         )
         data_table = data_table.drop("version", axis=1)
     # Join header and data
-    if source in ["IGS", "EPN"]:
+    if source in ["IGS", "EPN", "IGS_R3"]:
         logger.warning(
             "Deleted idstation from data table as it conflicts with the"
             "idstation in the header table."

@@ -57,6 +57,11 @@ from tests.utils import get_test_years
             "EPN",
             False,
         ),
+        (
+            "insitu-observations-gnss",
+            "IGS_R3",
+            False,
+        ),
     ],
 )
 def test_run_ingestion_pipeline(
