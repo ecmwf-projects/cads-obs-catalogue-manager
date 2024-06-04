@@ -12,6 +12,7 @@ from cdsobs.ingestion.api import read_batch_data
 from cdsobs.ingestion.core import (
     TimeBatch,
     TimeSpaceBatch,
+    get_aux_vars_from_service_definition,
     get_variables_from_service_definition,
 )
 from cdsobs.service_definition.api import get_service_definition
@@ -106,3 +107,13 @@ def test_apply_variable_unit_change(test_config):
         apply_unit_changes(
             homogenised_data, source_definition, cdm_code_tables["observed_variable"]
         )
+
+
+def test_get_aux_vars_from_service_definition():
+    dataset_name = (
+        "insitu-observations-near-surface-temperature-us-climate-reference-network"
+    )
+    source = "USCRN_HOURLY"
+    service_definition = get_service_definition(dataset_name)
+    actual = get_aux_vars_from_service_definition(service_definition, source)
+    print(actual)

@@ -26,6 +26,7 @@ from cdsobs.ingestion.core import (
     SpaceBatch,
     TimeBatch,
     TimeSpaceBatch,
+    get_aux_vars_from_service_definition,
     get_variables_from_service_definition,
 )
 from cdsobs.ingestion.partition import get_partitions, save_partitions
@@ -320,6 +321,7 @@ def _get_dataset_metadata(
 ) -> DatasetMetadata:
     # Handle the main variables
     variables = get_variables_from_service_definition(service_definition, source)
+    aux_variables = get_aux_vars_from_service_definition(service_definition, source)
     # Read CDM tables
     cdm_tables = read_cdm_tables(
         config.cdm_tables_location, dataset_config.available_cdm_tables
@@ -335,6 +337,7 @@ def _get_dataset_metadata(
         dataset_config.name,
         source,
         variables,
+        aux_variables,
         cdm_tables,
         cdm_code_tables,
         space_columns,
