@@ -12,7 +12,7 @@ from cdsobs.cli._utils import ConfigNotFound
 from cdsobs.config import CDSObsConfig, validate_config
 from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
-from cdsobs.retrieve.api import (
+from cdsobs.retrieve.retrieve_services import (
     _get_catalogue_entries,
     get_urls_and_check_size,
 )
