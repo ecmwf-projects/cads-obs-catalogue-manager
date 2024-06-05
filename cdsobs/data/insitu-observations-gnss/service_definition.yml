@@ -167,9 +167,6 @@ sources:
       - zenith_total_delay
       group_name: variables
     - columns:
-      - era_ipw
-      group_name: era5
-    - columns:
       - uncert_epn_ipw
       group_name: total_uncertainty
     - columns:
@@ -178,8 +175,6 @@ sources:
     space_columns:
       y: latitude|station_configuration
       x: longitude|station_configuration
-
-
   IGS:
     cdm_mapping:
       melt_columns: true
@@ -331,9 +326,6 @@ sources:
       - precipitable_water_column_era5
       - zenith_total_delay
       group_name: variables
-    - columns:
-      - era_ipw
-      group_name: era5
     - columns:
       - uncert_gnss_ipw
       group_name: total_uncertainty
@@ -494,9 +486,6 @@ sources:
       - precipitable_water_column_era5
       - zenith_total_delay
       group_name: variables
-    - columns:
-      - era_ipw
-      group_name: era5
     - columns:
       - uncert_gnss_ipw
       group_name: total_uncertainty

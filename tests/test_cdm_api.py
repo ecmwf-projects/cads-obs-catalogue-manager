@@ -1,6 +1,5 @@
 import pytest
 
-from cdsobs.api import _get_dataset_metadata
 from cdsobs.cdm.api import (
     apply_unit_changes,
     check_cdm_compliance,
@@ -15,6 +14,7 @@ from cdsobs.ingestion.core import (
     get_aux_vars_from_service_definition,
     get_variables_from_service_definition,
 )
+from cdsobs.metadata import get_dataset_metadata
 from cdsobs.service_definition.api import get_service_definition
 
 
@@ -34,7 +34,7 @@ def test_check_cdm_compliance(test_config, caplog):
 def _get_homogenised_data(dataset_name, service_definition, source, test_config):
     dataset_config = test_config.get_dataset(dataset_name)
     time_batch = TimeSpaceBatch(TimeBatch(year=1969, month=2))
-    dataset_metadata = _get_dataset_metadata(
+    dataset_metadata = get_dataset_metadata(
         test_config, dataset_config, service_definition, source
     )
     homogenised_data = read_batch_data(

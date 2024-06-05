@@ -1,16 +1,8 @@
-from cdsobs.forms_jsons import get_forms_jsons, get_variables_json
-
-
-def test_get_variables_json(tmp_path):
-    dataset_name = (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network"
-    )
-    actual = get_variables_json(dataset_name, tmp_path)
-    print(actual)
+from cdsobs.forms_jsons import get_forms_jsons
 
 
 def test_get_forms_jsons(test_repository, tmp_path):
-    dataset = "insitu-observations-woudc-ozone-total-column-and-profiles"
+    dataset = "insitu-observations-gnss"
     s3_client = test_repository.s3_client
     bucket = s3_client.get_bucket_name(dataset)
     geco_files = get_forms_jsons(
