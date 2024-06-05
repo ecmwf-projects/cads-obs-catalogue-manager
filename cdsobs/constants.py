@@ -106,3 +106,19 @@ VARS2DATASET = {
         "EPN": ["precipitable_water_column"],
     },
 }
+AUX_FIELDS = [
+    "total_uncertainty",
+    "positive_total_uncertainty",
+    "negative_total_uncertainty",
+    "max_positive_total_uncertainty",
+    "max_negative_total_uncertainty",
+    "min_positive_total_uncertainty",
+    "min_negative_total_uncertainty",
+    "random_uncertainty",
+    "positive_systematic_uncertainty",
+    "negative_systematic_uncertainty",
+    "quasisystematic_uncertainty",
+    "positive_quasisystematic_uncertainty",
+    "negative_quasisystematic_uncertainty",
+    "flag",
+]

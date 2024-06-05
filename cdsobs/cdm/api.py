@@ -15,6 +15,7 @@ from cdsobs.cdm.check import (
 )
 from cdsobs.cdm.code_tables import CDMCodeTable, CDMCodeTables
 from cdsobs.cdm.tables import CDMTables
+from cdsobs.constants import AUX_FIELDS
 from cdsobs.ingestion.core import (
     DatasetMetadata,
     DatasetPartition,
@@ -326,29 +327,13 @@ def get_aux_fields_mapping_from_service_definition(
     source_definition: SourceDefinition, variables: List[str]
 ) -> AuxFields:
     """Return the auxiliary (uncertainty) fields for each variable."""
-    possible_aux_fields = [
-        "total_uncertainty",
-        "positive_total_uncertainty",
-        "negative_total_uncertainty",
-        "max_positive_total_uncertainty",
-        "max_negative_total_uncertainty",
-        "min_positive_total_uncertainty",
-        "min_negative_total_uncertainty",
-        "random_uncertainty",
-        "positive_systematic_uncertainty",
-        "negative_systematic_uncertainty",
-        "quasisystematic_uncertainty",
-        "positive_quasisystematic_uncertainty",
-        "negative_quasisystematic_uncertainty",
-        "flag",
-    ]
     descriptions = source_definition.descriptions
 
     def _get_aux_fields(description: Description) -> List:
         description_dict = description.model_dump()
         rename_dict = source_definition.cdm_mapping.rename
         aux_fields = [
-            description_dict[af] for af in possible_aux_fields if af in description_dict
+            description_dict[af] for af in AUX_FIELDS if af in description_dict
         ]
         if rename_dict is not None:
             aux_fields = [
