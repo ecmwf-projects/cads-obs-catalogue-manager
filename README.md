@@ -119,3 +119,15 @@ truncating the data tables at 10k rows, and dump it to a .sql file.
 cd tests/scripts
 bash make_test_ingestiondb.sh
 ```
+
+### HTTP API
+
+To deploy the HTTP API, unicorn needs to be installed. Please note that it should
+not be exposed to the internet without a proxy. The deploy command is:
+
+```
+python cdsobs/api_rest/main.py
+```
+
+The /doc endpoint can be opened in a browser to check the automatically generated
+documentation.

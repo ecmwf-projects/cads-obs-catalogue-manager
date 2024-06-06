@@ -31,14 +31,22 @@ def test_retrieve(
         stations = [
             "7",
         ]
+        variables = [
+            "air_temperature",
+            "geopotential_height",
+            "ozone_partial_pressure",
+            "relative_humidity",
+            "wind_from_direction",
+        ]
     else:
         stations = [
             "2",
         ]
+        variables = ["column_sulphur_dioxide", "total_ozone_column"]
     # Full test
     params = dict(
         dataset_source=dataset_source,
-        variables=None,
+        variables=variables,
         latitude_coverage=(0.0, 90.0),
         longitude_coverage=(0.0, 180.0),
         format=oformat,
