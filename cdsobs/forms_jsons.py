@@ -4,9 +4,11 @@ from pathlib import Path
 from typing import Iterable, Tuple
 
 import fsspec
+import h5netcdf
 import numpy
 import pandas
 import sqlalchemy as sa
+from fsspec.implementations.http import HTTPFileSystem
 
 from cdsobs.cli._catalogue_explorer import stats_summary
 from cdsobs.constraints import iterative_ordering
@@ -15,7 +17,6 @@ from cdsobs.ingestion.core import (
 )
 from cdsobs.observation_catalogue.models import Catalogue
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
-from cdsobs.retrieve.api import get_url_ncobj
 from cdsobs.retrieve.retrieve_services import merged_constraints_table
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.storage import S3Client
@@ -201,7 +202,7 @@ def get_station_summary(
         ]
         for url in object_urls:
             logger.info(f"Reading station data from {url}")
-            with get_url_ncobj(fs, url) as incobj:
+            with _get_url_ncobj(fs, url) as incobj:
                 stationvar = incobj.variables["primary_station_id"]
                 field_len, strlen = stationvar.shape
                 stations_in_partition = (
@@ -251,3 +252,12 @@ def _to_str_list(iterable: Iterable, min_chars: int | None = None) -> list[str]:
     else:
         result = (str(i).rjust(min_chars, "0") for i in iterable)
     return list(result)
+
+
+def _get_url_ncobj(fs: HTTPFileSystem, url: str) -> h5netcdf.File:
+    """Open an URL as a netCDF file object with h5netcdf."""
+    fobj = fs.open(url)
+    logger.debug(f"Reading data from {url}.")
+    # xarray won't read bytes object directly with netCDF4
+    ncfile = h5netcdf.File(fobj, "r")
+    return ncfile

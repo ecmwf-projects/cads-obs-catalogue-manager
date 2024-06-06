@@ -60,6 +60,7 @@ def _sanity_check_dataset(
         longitude_coverage=longitude_coverage,
         time_coverage=(start_date, end_date),
         format="netCDF",
+        variables=variables_from_service_definition,
     )
     retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
     s3_client = S3Client.from_config(config.s3config)

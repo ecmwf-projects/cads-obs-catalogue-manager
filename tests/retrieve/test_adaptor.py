@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 import xarray
 
 
@@ -76,16 +77,16 @@ test_request_gnss = {
 }
 
 
-# @pytest.mark.skip("Depends on cads_adaptors")
+@pytest.mark.skip("Depends on cads_adaptors")
 def test_adaptor(test_config, test_repository, tmp_path):
     from cads_adaptors import ObservationsAdaptor
 
     test_form = {}
     # + "/v1/AUTH_{public_user}" will be needed to work with S3 ceph public urls, but it
     # is not needed for this test as it works with MiniIO.
-    test_adaptor_config = get_gnss_adaptor_config(test_config)
+    test_adaptor_config = get_woudc_adaptor_config(test_config)
     adaptor = ObservationsAdaptor(test_form, **test_adaptor_config)
-    result = adaptor.retrieve(test_request_gnss)
+    result = adaptor.retrieve(test_request_woudc)
     tempfile = Path(tmp_path, "test_adaptor.nc")
     with tempfile.open("wb") as tmpf:
         tmpf.write(result.read())

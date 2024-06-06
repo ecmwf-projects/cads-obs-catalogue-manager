@@ -20,7 +20,7 @@ class BaseRepository:
             sa.select(self.model).filter(self.model.id == record_id).limit(1)
         ).first()
 
-    def get_all(self, skip: int = 0, limit: int = 100) -> Sequence[Base]:
+    def get_all(self, skip: int = 0, limit: int = 100) -> Sequence[Any]:
         return self.session.scalars(
             sa.select(self.model).offset(skip).limit(limit)
         ).all()
