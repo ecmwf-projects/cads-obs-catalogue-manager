@@ -1,18 +1,27 @@
 from pathlib import Path
 
-import pytest
 import xarray
 
 
-def get_woudc_adaptor_config(test_config):
+def test_adaptor(tmp_path):
+    """Full test with a local instance of the HTTP API."""
+    from cads_adaptors import ObservationsAdaptor
+
+    test_request = {
+        "observation_type": ["vertical_profile"],
+        "format": "netCDF",
+        "variable": ["air_temperature", "geopotential_height"],
+        "year": ["1999"],
+        "month": ["01", "02"],
+        "day": [f"{i:02d}" for i in range(1, 32)],
+    }
+    test_form = {}
+    # + "/v1/AUTH_{public_user}" will be needed to work with S3 ceph public urls, but it
+    # is not needed for this test as it works with MiniIO.
     test_adaptor_config = {
         "entry_point": "cads_adaptors:ObservationsAdaptor",
         "collection_id": "insitu-observations-woudc-ozone-total-column-and-profiles",
-        "catalogue_url": test_config.catalogue_db.get_url(),
-        "storage_url": "http://"
-        + test_config.s3config.host
-        + ":"
-        + str(test_config.s3config.port),
+        "obs_api_url": "http://obscatalogue.cads-obs.compute.cci2.ecmwf.int",
         "mapping": {
             "remap": {
                 "observation_type": {
@@ -24,69 +33,51 @@ def get_woudc_adaptor_config(test_config):
             "force": {},
         },
     }
-    return test_adaptor_config
+    adaptor = ObservationsAdaptor(test_form, **test_adaptor_config)
+    result = adaptor.retrieve(test_request)
+    tempfile = Path(tmp_path, "test_adaptor.nc")
+    with tempfile.open("wb") as tmpf:
+        tmpf.write(result.read())
+    assert tempfile.stat().st_size > 0
+    assert xarray.open_dataset(tempfile).observation_id.size > 0
 
 
-def get_gnss_adaptor_config(test_config):
+def test_adaptor_gnss(tmp_path):
+    """Full test with a local instance of the HTTP API."""
+    from cads_adaptors import ObservationsAdaptor
+
+    test_request = {
+        "network_type": ["igs_r3"],
+        "format": "netCDF",
+        "variable": [
+            "precipitable_water_column",
+            "precipitable_water_column_total_uncertainty",
+        ],
+        "year": ["2000"],
+        "month": ["10"],
+        "day": [f"{i:02d}" for i in range(1, 32)],
+    }
+    test_form = {}
+    # + "/v1/AUTH_{public_user}" will be needed to work with S3 ceph public urls, but it
+    # is not needed for this test as it works with MiniIO.
     test_adaptor_config = {
         "entry_point": "cads_adaptors:ObservationsAdaptor",
         "collection_id": "insitu-observations-gnss",
-        "catalogue_url": test_config.catalogue_db.get_url(),
-        "storage_url": "http://"
-        + test_config.s3config.host
-        + ":"
-        + str(test_config.s3config.port),
+        "obs_api_url": "http://localhost:8000",
         "mapping": {
             "remap": {
                 "network_type": {
+                    "igs_r3": "IGS_R3",
                     "epn_repro2": "EPN",
                     "igs_daily": "IGS",
-                    "igs3": "IGS_R3",
-                },
+                }
             },
             "rename": {"network_type": "dataset_source", "variable": "variables"},
             "force": {},
         },
     }
-    return test_adaptor_config
-
-
-test_request_woudc = {
-    "observation_type": ["vertical_profile"],
-    "format": "netCDF",
-    "variable": ["air_temperature"],
-    "year": ["1969"],
-    "month": ["01"],
-    "day": [
-        "01",
-        "02",
-        "03",
-    ],
-}
-
-
-test_request_gnss = {
-    "network_type": ["igs3"],
-    "format": "netCDF",
-    "variable": ["total_column_water_vapour"],
-    "year": ["2000"],
-    "month": ["10"],
-    "day": [
-        "22",
-    ],
-}
-
-
-@pytest.mark.skip("Depends on cads_adaptors")
-def test_adaptor(test_config, test_repository, tmp_path):
-    from cads_adaptors import ObservationsAdaptor
-
-    test_form = {}
-    # + "/v1/AUTH_{public_user}" will be needed to work with S3 ceph public urls, but it
-    # is not needed for this test as it works with MiniIO.
-    test_adaptor_config = get_woudc_adaptor_config(test_config)
     adaptor = ObservationsAdaptor(test_form, **test_adaptor_config)
-    result = adaptor.retrieve(test_request_woudc)
+    result = adaptor.retrieve(test_request)
     tempfile = Path(tmp_path, "test_adaptor.nc")
     with tempfile.open("wb") as tmpf:
         tmpf.write(result.read())

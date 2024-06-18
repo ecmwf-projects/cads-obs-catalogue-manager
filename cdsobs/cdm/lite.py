@@ -16,7 +16,6 @@ variable_names = [
     "actual_time",
     "agency",
     "observation_value",
-    "observation_value_total_uncertainty",
     "city",
     "country",
     "height_of_station_above_sea_level",
@@ -61,4 +60,24 @@ optional_variable_names = [
     "fg_depar@body",
     "an_depar@body",
 ]
-cdm_lite_variables = variable_names + optional_variable_names
+auxiliary_variable_names = [
+    "total_uncertainty",
+    "positive_total_uncertainty",
+    "negative_total_uncertainty",
+    "max_positive_total_uncertainty",
+    "max_negative_total_uncertainty",
+    "min_positive_total_uncertainty",
+    "min_negative_total_uncertainty",
+    "random_uncertainty",
+    "positive_systematic_uncertainty",
+    "negative_systematic_uncertainty",
+    "quasisystematic_uncertainty",
+    "positive_quasisystematic_uncertainty",
+    "negative_quasisystematic_uncertainty",
+    "flag",
+]
+cdm_lite_variables = dict(
+    mandatory=variable_names,
+    optional=optional_variable_names,
+    auxiliary=auxiliary_variable_names,
+)
