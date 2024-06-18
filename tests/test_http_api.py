@@ -60,7 +60,10 @@ def test_capabilities_datasets(test_config, test_repository):
     # Note that the  key here is the callable itself, not the callable name.
     app.dependency_overrides[session_gen] = test_session
     actual = client.get("/capabilities/datasets").json()
-    expected = ["insitu-observations-woudc-ozone-total-column-and-profiles"]
+    expected = [
+        "insitu-observations-woudc-ozone-total-column-and-profiles",
+        "insitu-observations-gnss",
+    ]
     assert actual == expected
 
 

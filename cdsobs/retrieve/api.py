@@ -1,4 +1,5 @@
 """Retrieve pipeline."""
+import itertools
 from pathlib import Path
 
 from cads_adaptors.adaptors.cadsobs.retrieve import retrieve_data
@@ -55,12 +56,13 @@ def retrieve_observations(
         global_attributes = get_service_definition(
             retrieve_args.dataset
         ).global_attributes
+    cdm_lite_vars = list(itertools.chain.from_iterable(cdm_lite_variables.values()))
     output_path = retrieve_data(
         retrieve_args.dataset,
         retrieve_args.params.model_dump(),
         output_dir,
         object_urls,
-        cdm_lite_variables,
+        cdm_lite_vars,
         global_attributes,
     )
     return output_path

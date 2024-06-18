@@ -97,9 +97,9 @@ class TestRepository:
 @pytest.fixture(scope="module")
 def test_repository(test_session, test_s3_client, test_config):
     """The whole thing, session to the catalogue DB and storage client."""
-    dataset_name = "insitu-observations-gnss"
+    dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
     service_definition = get_service_definition(dataset_name)
-    for dataset_source in ["IGS_R3", "EPN", "IGS"]:
+    for dataset_source in ["OzoneSonde", "TotalOzone"]:
         start_year, end_year = get_test_years(dataset_source)
         run_ingestion_pipeline(
             dataset_name,
