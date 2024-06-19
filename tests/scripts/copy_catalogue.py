@@ -9,7 +9,7 @@ from cdsobs.storage import S3Client
 
 def main():
     init_config_yml = Path("cdsobs_config_bopen.yml")
-    dataset = "insitu-comprehensive-upper-air-observation-network"
+    dataset = "insitu-observations-gnss"
     init_config = CDSObsConfig.from_yaml(init_config_yml)
     init_s3client = S3Client.from_config(init_config.s3config)
     init_catalogue_session = get_session(init_config.catalogue_db)
@@ -17,7 +17,7 @@ def main():
     dest_catalogue_session = get_session(
         DBConfig(
             db_user="cds",
-            pwd="quai6Chee0bai&r",
+            pwd="",
             host="localhost",
             port=35432,
             db_name="obsdev",
