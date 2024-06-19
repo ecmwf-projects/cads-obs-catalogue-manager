@@ -1,9 +1,9 @@
-from cdsobs.api import _get_dataset_metadata
 from cdsobs.ingestion.core import (
     TimeBatch,
     TimeSpaceBatch,
 )
 from cdsobs.ingestion.serialize import batch_to_netcdf
+from cdsobs.metadata import get_dataset_metadata
 from cdsobs.service_definition.api import get_service_definition
 
 
@@ -16,7 +16,7 @@ def test_batch_to_netcdf(test_config, tmp_path):
     output_dir = tmp_path
     service_definition = get_service_definition(dataset_name)
     dataset_config = test_config.get_dataset(dataset_name)
-    dataset_metadata = _get_dataset_metadata(
+    dataset_metadata = get_dataset_metadata(
         test_config, dataset_config, service_definition, source
     )
     time_space_batch = TimeSpaceBatch(TimeBatch(year, month))

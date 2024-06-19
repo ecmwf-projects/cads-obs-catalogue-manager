@@ -47,4 +47,4 @@ dependencies:
 - python=3.10
 - pip:
   - sqlalchemy_json
-  - "git+https://github.com/ecmwf-projects/cads-adaptors@obs_adaptor_with_htt_api_COPDS-1550"
+  - "git+https://github.com/ecmwf-projects/cads-adaptors@obs-adaptor-aux-variables"

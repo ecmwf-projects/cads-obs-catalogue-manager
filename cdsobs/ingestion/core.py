@@ -79,6 +79,7 @@ class DatasetMetadata:
     name: str
     dataset_source: str
     variables: list[str]
+    aux_variables: list[str]
     cdm_tables: CDMTables
     cdm_code_tables: CDMCodeTables
     space_columns: SpaceColumns
@@ -89,8 +90,29 @@ def get_variables_from_service_definition(
 ) -> list[str]:
     """Read the variables from the service definition file for a given dataset and source."""
     source_definition = service_definition.sources[source]
+    variables = get_variables_from_sc_group(source_definition, "variables")
+    return variables
+
+
+def get_aux_vars_from_service_definition(
+    service_definition: ServiceDefinition, source: str
+) -> list[str]:
+    """Read the variables from the service definition file for a given dataset and source."""
+    source_definition = service_definition.sources[source]
+    other_products = [
+        p for p in source_definition.products if p.group_name != "variables"
+    ]
+    aux_variables = []
+    for product in other_products:
+        aux_variables += get_variables_from_sc_group(
+            source_definition, product.group_name
+        )
+    return aux_variables
+
+
+def get_variables_from_sc_group(source_definition, group_name: str) -> list[str]:
     variable_products = list(
-        filter(lambda p: p.group_name == "variables", source_definition.products)
+        filter(lambda p: p.group_name == group_name, source_definition.products)
     )
     variable_keys = set()
     for p in variable_products:

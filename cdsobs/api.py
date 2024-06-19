@@ -10,9 +10,7 @@ from sqlalchemy.orm import Session
 from cdsobs.cdm.api import (
     apply_unit_changes,
     check_cdm_compliance,
-    read_cdm_code_tables,
 )
-from cdsobs.cdm.tables import read_cdm_tables
 from cdsobs.config import CDSObsConfig, DatasetConfig
 from cdsobs.ingestion.api import (
     EmptyBatchException,
@@ -21,15 +19,14 @@ from cdsobs.ingestion.api import (
     sort,
 )
 from cdsobs.ingestion.core import (
-    DatasetMetadata,
     DatasetPartition,
     SpaceBatch,
     TimeBatch,
     TimeSpaceBatch,
-    get_variables_from_service_definition,
 )
 from cdsobs.ingestion.partition import get_partitions, save_partitions
 from cdsobs.ingestion.serialize import serialize_partition
+from cdsobs.metadata import get_dataset_metadata
 from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.retrieve.filter_datasets import between
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
@@ -279,7 +276,7 @@ def _read_homogenise_and_partition(
     time_space_batch: TimeSpaceBatch,
 ) -> Iterator[DatasetPartition]:
     dataset_config = config.get_dataset(dataset_name)
-    dataset_metadata = _get_dataset_metadata(
+    dataset_metadata = get_dataset_metadata(
         config, dataset_config, service_definition, source
     )
     # Get the data as a single big table with the names remmaped from
@@ -310,36 +307,6 @@ def _read_homogenise_and_partition(
     )
     sorted_partitions = (sort(dp) for dp in data_partitions)
     return sorted_partitions
-
-
-def _get_dataset_metadata(
-    config: CDSObsConfig,
-    dataset_config: DatasetConfig,
-    service_definition: ServiceDefinition,
-    source: str,
-) -> DatasetMetadata:
-    # Handle the main variables
-    variables = get_variables_from_service_definition(service_definition, source)
-    # Read CDM tables
-    cdm_tables = read_cdm_tables(
-        config.cdm_tables_location, dataset_config.available_cdm_tables
-    )
-    cdm_code_tables = read_cdm_code_tables(config.cdm_tables_location)
-    # Get the name of the space columns
-    if service_definition.space_columns is not None:
-        space_columns = service_definition.space_columns
-    else:
-        space_columns = service_definition.sources[source].space_columns  # type: ignore
-    # Pack dataset metadata into an object to carry on.
-    dataset_metadata = DatasetMetadata(
-        dataset_config.name,
-        source,
-        variables,
-        cdm_tables,
-        cdm_code_tables,
-        space_columns,
-    )
-    return dataset_metadata
 
 
 def _validate_time_interval(homogenised_data: pandas.DataFrame, time_batch: TimeBatch):
