@@ -14,6 +14,7 @@ from cdsobs.cli._catalogue_explorer import stats_summary
 from cdsobs.constraints import iterative_ordering
 from cdsobs.ingestion.core import (
     get_aux_vars_from_service_definition,
+    get_variables_from_sc_group,
 )
 from cdsobs.observation_catalogue.models import Catalogue
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
@@ -131,7 +132,7 @@ def get_widgets_json(session, output_path: Path, dataset: str) -> Path:
     """JSON file with the variables and their metadata."""
     catalogue_entries = get_catalogue_entries_stream(session, dataset)
     service_definition = get_service_definition(dataset)
-    variables = get_all_variables(service_definition)
+    variables = get_all_variables_in_products(service_definition)
     summary = stats_summary(catalogue_entries)
     widgets_json_content = dict()
     widgets_json_content["variables"] = variables
@@ -162,6 +163,15 @@ def get_all_variables(service_definition):
     for source_name, source in service_definition.sources.items():
         variables.extend([variable for variable in source.descriptions])
     return variables
+
+
+def get_all_variables_in_products(service_definition):
+    variables = []
+    # Includes also auxiliary variables
+    for source_name, source in service_definition.sources.items():
+        for product in source.products:
+            variables.extend(get_variables_from_sc_group(source, product.group_name))
+    return list(set(variables))
 
 
 def get_all_aux_variables(service_definition):
