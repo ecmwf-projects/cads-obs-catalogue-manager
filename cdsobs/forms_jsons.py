@@ -10,6 +10,7 @@ import pandas
 import sqlalchemy as sa
 from fsspec.implementations.http import HTTPFileSystem
 
+from cdsobs.cdm.lite import auxiliary_variable_names
 from cdsobs.cli._catalogue_explorer import stats_summary
 from cdsobs.constraints import iterative_ordering
 from cdsobs.ingestion.core import (
@@ -103,19 +104,7 @@ def get_constraints_json(session, output_path: Path, dataset) -> Path:
     flat_constraints = flat_constraints.drop("time", axis=1)
     # Auxiliary variables are metadata, but they are still added as variables here for
     # backwards compatibility
-    service_definition = get_service_definition(dataset)
-    aux_variables = get_all_aux_variables(service_definition)
-    aux_flat_constraints_dicts = []
-    # When we find an aux variable related to the main variable we add it
-    # Would it be better to use the descriptions? Probably
-    # TODO: Use the descriptions
-    for row in flat_constraints.itertuples(index=False):
-        for auxvar in aux_variables:
-            if row.variables in auxvar:
-                newrow = row._replace(variables=auxvar)
-                aux_flat_constraints_dicts.append(newrow)
-    aux_flat_constraints = pandas.DataFrame(aux_flat_constraints_dicts)
-    flat_constraints = pandas.concat([flat_constraints, aux_flat_constraints])
+    flat_constraints = _add_auxiliary_variables(dataset, flat_constraints)
     # Compress constraints
     logger.info("Computing compressed constraints")
     compressed_constraints = iterative_ordering(
@@ -126,6 +115,36 @@ def get_constraints_json(session, output_path: Path, dataset) -> Path:
     with constraints_path.open("w") as cof:
         compressed_constraints.to_json(cof, orient="records")
     return constraints_path
+
+
+def _add_auxiliary_variables(
+    dataset: str, flat_constraints: pandas.DataFrame
+) -> pandas.DataFrame:
+    """Look for auxiliary variables and adds them to the constraints.
+
+    Looks for auxiliary variables in the Service definition file and adds them to the
+    flat constraints. These are dummy variables that will be discarded by the adaptor
+    and the metadata fields will be included.
+    """
+    service_definition = get_service_definition(dataset)
+    aux_flat_constraints_dicts = []
+    # When we find an aux variable related to the main variable we add it
+    for row in flat_constraints.itertuples(index=False):
+        source_definition = service_definition.sources[row.dataset_source]
+        var_description = source_definition.descriptions[row.variables]
+        for auxvar in auxiliary_variable_names:
+            if hasattr(var_description, auxvar):
+                auxvar_original_name = getattr(var_description, auxvar)
+                rename_dict = source_definition.cdm_mapping.rename
+                if rename_dict is not None and auxvar_original_name in rename_dict:
+                    auxvar_final_name = rename_dict[auxvar_original_name]
+                else:
+                    auxvar_final_name = auxvar_original_name
+                newrow = row._replace(variables=auxvar_final_name)
+                aux_flat_constraints_dicts.append(newrow)
+    aux_flat_constraints = pandas.DataFrame(aux_flat_constraints_dicts)
+    flat_constraints = pandas.concat([flat_constraints, aux_flat_constraints])
+    return flat_constraints
 
 
 def get_widgets_json(session, output_path: Path, dataset: str) -> Path:
