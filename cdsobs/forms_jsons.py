@@ -124,7 +124,7 @@ def _add_auxiliary_variables(
 
     Looks for auxiliary variables in the Service definition file and adds them to the
     flat constraints. These are dummy variables that will be discarded by the adaptor
-    and the metadata fields will be included.
+    and it will include metadata fields will be included.
     """
     service_definition = get_service_definition(dataset)
     aux_flat_constraints_dicts = []
