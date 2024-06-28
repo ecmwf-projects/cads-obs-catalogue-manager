@@ -52,10 +52,6 @@ def test_get_aux_fields_mapping_from_service_definition():
         "air_temperature": [
             "air_temperature_positive_total_uncertainty",
             "air_temperature_negative_total_uncertainty",
-            "air_temperature_max_positive_total_uncertainty",
-            "air_temperature_max_negative_total_uncertainty",
-            "air_temperature_min_positive_total_uncertainty",
-            "air_temperature_min_negative_total_uncertainty",
             "air_temperature_random_uncertainty",
             "air_temperature_positive_systematic_uncertainty",
             "air_temperature_negative_systematic_uncertainty",

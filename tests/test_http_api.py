@@ -63,6 +63,7 @@ def test_capabilities_datasets(test_config, test_repository):
     expected = [
         "insitu-observations-woudc-ozone-total-column-and-profiles",
         "insitu-observations-gnss",
+        "insitu-observations-near-surface-temperature-us-climate-reference-network",
     ]
     assert actual == expected
 

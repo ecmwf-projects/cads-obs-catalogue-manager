@@ -97,7 +97,7 @@ def get_dataset_auxiliary_variables_mapping(
     """Get the service definition for a dataset."""
     service_definition = get_service_definition(dataset)
     source_definition = service_definition.sources[source]
-    auxiliary_variables_mapping = dict()
+    auxiliary_variables_mapping: dict[str, list[dict[str, str]]] = dict()
 
     for variable in get_variables_from_service_definition(service_definition, source):
         var_description = source_definition.descriptions[variable]
