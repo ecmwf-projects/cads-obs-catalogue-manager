@@ -7,7 +7,8 @@ import sqlalchemy.orm
 from fastapi import APIRouter, Depends, HTTPException
 
 from cdsobs.api_rest.models import RetrievePayload
-from cdsobs.cdm.lite import auxiliary_variable_names, cdm_lite_variables
+from cdsobs.cdm.api import get_auxiliary_variables_mapping
+from cdsobs.cdm.lite import cdm_lite_variables
 from cdsobs.cli._utils import ConfigNotFound
 from cdsobs.config import CDSObsConfig, validate_config
 from cdsobs.ingestion.core import get_variables_from_service_definition
@@ -97,22 +98,10 @@ def get_dataset_auxiliary_variables_mapping(
     """Get the service definition for a dataset."""
     service_definition = get_service_definition(dataset)
     source_definition = service_definition.sources[source]
-    auxiliary_variables_mapping: dict[str, list[dict[str, str]]] = dict()
-
-    for variable in get_variables_from_service_definition(service_definition, source):
-        var_description = source_definition.descriptions[variable]
-        auxiliary_variables_mapping[variable] = []
-        for auxvar in auxiliary_variable_names:
-            if hasattr(var_description, auxvar):
-                auxvar_original_name = getattr(var_description, auxvar)
-                rename_dict = source_definition.cdm_mapping.rename
-                if rename_dict is not None and auxvar_original_name in rename_dict:
-                    auxvar_final_name = rename_dict[auxvar_original_name]
-                else:
-                    auxvar_final_name = auxvar_original_name
-                auxiliary_variables_mapping[variable].append(
-                    dict(auxvar=auxvar_final_name, metadata_name=auxvar)
-                )
+    variables = get_variables_from_service_definition(service_definition, source)
+    auxiliary_variables_mapping = get_auxiliary_variables_mapping(
+        source_definition, variables
+    )
     return auxiliary_variables_mapping
 
 

@@ -23,7 +23,6 @@ from cdsobs.ingestion.core import (
     SerializedPartition,
 )
 from cdsobs.service_definition.service_definition_models import (
-    Description,
     SourceDefinition,
 )
 from cdsobs.utils.logutils import get_logger
@@ -271,21 +270,25 @@ def read_cdm_code_tables(
     return cdm_tables
 
 
-class AuxFields(UserDict[str, list[str]]):
+class AuxFields(UserDict[str, list[dict[str, str]]]):
     """
     Maps variables in the service definition with auxiliary fields.
 
     Aux fields are those such as uncertainty fields and quality flags.
     """
 
-    def __init__(self, var2auxfields: dict[str, List[str]]):
+    def __init__(self, var2auxfields: dict[str, list[dict[str, str]]]):
         UserDict.__init__(self)
         self.update(var2auxfields)
 
     @property
     def all_list(self) -> list[str]:
         """Return all the auxiliary fields."""
-        return list(chain.from_iterable(self.values()))
+        return [
+            auxf["auxvar"]
+            for variable, variable_auxfields in self.items()
+            for auxf in variable_auxfields
+        ]
 
     @property
     def uncertainty_fields(self) -> list[str]:
@@ -293,7 +296,7 @@ class AuxFields(UserDict[str, list[str]]):
         return [auxf for auxf in self.all_list if "uncertainty" in auxf]
 
     def var_has_uncertainty_field(self, var: str) -> bool:
-        return any(auxf in self.uncertainty_fields for auxf in self[var])
+        return any(auxf["auxvar"] in self.uncertainty_fields for auxf in self[var])
 
     @property
     def vars_with_uncertainty_field(self) -> list[str]:
@@ -308,7 +311,7 @@ class AuxFields(UserDict[str, list[str]]):
 
     def var_has_quality_field(self, var: str) -> bool:
         """Check wether a variable has a quality field."""
-        return any(auxf in self.quality_flag_fields for auxf in self[var])
+        return any(auxf["auxvar"] in self.quality_flag_fields for auxf in self[var])
 
     @property
     def vars_with_quality_field(self) -> list[str]:
@@ -317,39 +320,22 @@ class AuxFields(UserDict[str, list[str]]):
         return vars_with_qf
 
     def get_var_quality_flag_field_name(self, var: str) -> str:
-        return [n for n in self[var] if "flag" in n][0]
+        return [auxf["auxvar"] for auxf in self[var] if "flag" in auxf["auxvar"]][0]
 
     def get_var_uncertainty_field_names(self, var: str) -> list[str]:
-        return [n for n in self[var] if "uncertainty" in n]
+        return [auxf["auxvar"] for auxf in self[var] if "uncertainty" in auxf["auxvar"]]
+
+    def auxfield2metadata_name(self, var: str, aux_var: str) -> str:
+        return [
+            auxf["metadata_name"] for auxf in self[var] if auxf["auxvar"] == aux_var
+        ][0]
 
 
 def get_aux_fields_mapping_from_service_definition(
     source_definition: SourceDefinition, variables: List[str]
 ) -> AuxFields:
     """Return the auxiliary (uncertainty) fields for each variable."""
-    descriptions = source_definition.descriptions
-
-    def _get_aux_fields(description: Description) -> List:
-        description_dict = description.model_dump()
-        rename_dict = source_definition.cdm_mapping.rename
-        aux_fields = [
-            description_dict[af]
-            for af in auxiliary_variable_names
-            if af in description_dict
-        ]
-        if rename_dict is not None:
-            aux_fields = [
-                rename_dict[af] if af in rename_dict else af for af in aux_fields
-            ]
-        return aux_fields
-
-    aux_fields_mapping = {
-        varname: _get_aux_fields(description)
-        for varname, description in descriptions.items()
-        if varname in variables
-    }
-    # Remove empty ones
-    aux_fields_mapping = {k: v for k, v in aux_fields_mapping.items() if len(v) > 0}
+    aux_fields_mapping = get_auxiliary_variables_mapping(source_definition, variables)
     return AuxFields(aux_fields_mapping)
 
 
@@ -459,3 +445,22 @@ def _check_cdm_units(new_units, variable, varname2units):
             f"New units ({new_units}) are different to the units"
             f"defined in the CDM table ({cdm_units})"
         )
+
+
+def get_auxiliary_variables_mapping(source_definition, variables):
+    auxiliary_variables_mapping: dict[str, list[dict[str, str]]] = dict()
+    for variable in variables:
+        var_description = source_definition.descriptions[variable]
+        auxiliary_variables_mapping[variable] = []
+        for auxvar in auxiliary_variable_names:
+            if hasattr(var_description, auxvar):
+                auxvar_original_name = getattr(var_description, auxvar)
+                rename_dict = source_definition.cdm_mapping.rename
+                if rename_dict is not None and auxvar_original_name in rename_dict:
+                    auxvar_final_name = rename_dict[auxvar_original_name]
+                else:
+                    auxvar_final_name = auxvar_original_name
+                auxiliary_variables_mapping[variable].append(
+                    dict(auxvar=auxvar_final_name, metadata_name=auxvar)
+                )
+    return auxiliary_variables_mapping

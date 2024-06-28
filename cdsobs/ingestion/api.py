@@ -304,7 +304,9 @@ def _melt_variables(
         for var in aux_fields.vars_with_uncertainty_field:
             var_mask = homogenised_data_melted["observed_variable"] == var
             for unc_field in aux_fields.get_var_uncertainty_field_names(var):
-                uncertainty_type = unc_field.replace(var, "")[1:]
+                # We cannot assume that the auxiliary field is {var}_{uncertainty_type}
+                # We do it right and extract it from the description
+                uncertainty_type = aux_fields.auxfield2metadata_name(var, unc_field)
                 if uncertainty_type not in homogenised_data_melted.columns:
                     homogenised_data_melted[uncertainty_type] = numpy.nan
                 homogenised_data_melted.loc[
