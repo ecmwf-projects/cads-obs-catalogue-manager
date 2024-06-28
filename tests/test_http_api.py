@@ -63,6 +63,7 @@ def test_capabilities_datasets(test_config, test_repository):
     expected = [
         "insitu-observations-woudc-ozone-total-column-and-profiles",
         "insitu-observations-gnss",
+        "insitu-observations-near-surface-temperature-us-climate-reference-network",
     ]
     assert actual == expected
 
@@ -78,3 +79,58 @@ def test_get_cdm_lite():
     actual = client.get("cdm/lite_variables").json()
     expected = cdm_lite_variables
     assert actual == expected
+
+
+def test_get_dataset_auxiliary_variables_mapping():
+    dataset = (
+        "insitu-observations-near-surface-temperature-us-climate-reference-network"
+    )
+    actual = client.get(f"{dataset}/USCRN_DAILY/aux_variables_mapping").json()
+    expected = {
+        "accumulated_precipitation": [],
+        "air_temperature": [
+            {
+                "auxvar": "air_temperature_mean_positive_total_uncertainty",
+                "metadata_name": "positive_total_uncertainty",
+            },
+            {
+                "auxvar": "air_temperature_mean_negative_total_uncertainty",
+                "metadata_name": "negative_total_uncertainty",
+            },
+        ],
+        "daily_maximum_air_temperature": [
+            {
+                "auxvar": "air_temperature_max_positive_total_uncertainty",
+                "metadata_name": "positive_total_uncertainty",
+            },
+            {
+                "auxvar": "air_temperature_max_negative_total_uncertainty",
+                "metadata_name": "negative_total_uncertainty",
+            },
+        ],
+        "daily_maximum_relative_humidity": [],
+        "daily_minimum_air_temperature": [
+            {
+                "auxvar": "air_temperature_min_positive_total_uncertainty",
+                "metadata_name": "positive_total_uncertainty",
+            },
+            {
+                "auxvar": "air_temperature_min_negative_total_uncertainty",
+                "metadata_name": "negative_total_uncertainty",
+            },
+        ],
+        "daily_minimum_relative_humidity": [],
+        "relative_humidity": [],
+        "soil_moisture_100cm_from_earth_surface": [],
+        "soil_moisture_10cm_from_earth_surface": [],
+        "soil_moisture_20cm_from_earth_surface": [],
+        "soil_moisture_50cm_from_earth_surface": [],
+        "soil_moisture_5cm_from_earth_surface": [],
+        "soil_temperature": [],
+        "soil_temperature_100cm_from_earth_surface": [],
+        "soil_temperature_10cm_from_earth_surface": [],
+        "soil_temperature_20cm_from_earth_surface": [],
+        "soil_temperature_50cm_from_earth_surface": [],
+        "soil_temperature_5cm_from_earth_surface": [],
+    }
+    assert expected == actual

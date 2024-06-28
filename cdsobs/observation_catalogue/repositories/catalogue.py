@@ -63,7 +63,7 @@ class CatalogueRepository(BaseRepository):
             result = self.session.scalars(query).all()
             return result
         except Exception as e:
-            raise CatalogueException("Invalid query parameters") from e
+            raise CatalogueException(f"Invalid query parameters: \n {e}")
 
     def get_all_assets(self, skip: int = 0, limit: int = 100) -> Sequence[str]:
         results = self.session.scalars(

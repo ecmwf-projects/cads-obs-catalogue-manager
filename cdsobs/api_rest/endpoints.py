@@ -7,9 +7,11 @@ import sqlalchemy.orm
 from fastapi import APIRouter, Depends, HTTPException
 
 from cdsobs.api_rest.models import RetrievePayload
+from cdsobs.cdm.api import get_auxiliary_variables_mapping
 from cdsobs.cdm.lite import cdm_lite_variables
 from cdsobs.cli._utils import ConfigNotFound
 from cdsobs.config import CDSObsConfig, validate_config
+from cdsobs.ingestion.core import get_variables_from_service_definition
 from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.retrieve.retrieve_services import (
@@ -87,6 +89,20 @@ def get_dataset_service_definition(dataset: str) -> ServiceDefinition:
         raise HTTPException(
             status_code=404, detail=f"Service definition not found for {dataset=}"
         )
+
+
+@router.get("/{dataset}/{source}/aux_variables_mapping")
+def get_dataset_auxiliary_variables_mapping(
+    dataset: str, source: str
+) -> dict[str, list[dict[str, str]]]:
+    """Get the service definition for a dataset."""
+    service_definition = get_service_definition(dataset)
+    source_definition = service_definition.sources[source]
+    variables = get_variables_from_service_definition(service_definition, source)
+    auxiliary_variables_mapping = get_auxiliary_variables_mapping(
+        source_definition, variables
+    )
+    return auxiliary_variables_mapping
 
 
 @router.get("/cdm/lite_variables")
