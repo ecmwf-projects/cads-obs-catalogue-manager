@@ -71,7 +71,7 @@ def test_adaptor_uscrn(tmp_path):
     test_adaptor_config = {
         "entry_point": "cads_adaptors:ObservationsAdaptor",
         "collection_id": "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "obs_api_url": "http://localhost:8000",
+        "obs_api_url": "http://obscatalogue.cads-obs.compute.cci2.ecmwf.int",
         "mapping": {
             "remap": {
                 "time_aggregation": {
