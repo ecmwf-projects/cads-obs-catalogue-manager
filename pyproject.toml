@@ -36,11 +36,11 @@ exclude = 'tests/docker'
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
+collect_ignore = ['test/scripts']
 log_cli = false
 log_level = "INFO"
 norecursedirs = [
-  'tests/docker',
-  'test/scripts/*'
+  'tests/docker'
 ]
 
 [tool.ruff]
