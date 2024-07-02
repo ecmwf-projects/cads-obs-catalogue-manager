@@ -39,7 +39,8 @@ ignore_missing_imports = true
 log_cli = false
 log_level = "INFO"
 norecursedirs = [
-  'tests/docker'
+  'tests/docker',
+  'test/scripts'
 ]
 
 [tool.ruff]
