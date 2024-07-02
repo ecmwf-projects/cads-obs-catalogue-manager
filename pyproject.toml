@@ -40,7 +40,7 @@ log_cli = false
 log_level = "INFO"
 norecursedirs = [
   'tests/docker',
-  'test/scripts'
+  'test/scripts/*'
 ]
 
 [tool.ruff]
