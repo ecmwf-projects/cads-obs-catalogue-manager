@@ -3,8 +3,6 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-import cads_api_client
-
 logging.getLogger("root").setLevel("DEBUG")
 
 
@@ -14,6 +12,8 @@ def run_request(client, collection_id, request):
 
 
 def main():
+    import cads_api_client
+
     url = "https://cds-dev-bopen.copernicus-climate.eu/api/"
     ifile = Path(
         "load_test_requests_insitu-observations-woudc-ozone-total-column-and-profiles.jsonl"
