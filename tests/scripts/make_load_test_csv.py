@@ -2,6 +2,7 @@ import itertools
 import json
 from pathlib import Path
 
+import numpy
 import pandas
 
 
@@ -33,11 +34,19 @@ def expand_constraints_partially(
         )
         constraints_expanded_list.append(constraints_entry_expanded)
     constraints_expanded = pandas.concat(constraints_expanded_list)
+    to_expand = [c for c in constraints_expanded.columns if c not in not_expand]
+    # Aggregate the variables that we do not want to have expanded
+    constraints_expanded = (
+        constraints_expanded.groupby(to_expand)
+        .agg({k: "sum" for k in not_expand})
+        .reset_index()
+    )
     return constraints_expanded
 
 
 def main():
     collection_ids = [
+        "insitu-observations-woudc-ozone-total-column-and-profiles",
         "insitu-observations-igra-baseline-network",
         "insitu-observations-gruan-reference-network",
         "insitu-observations-gnss",
@@ -50,25 +59,29 @@ def main():
 
 def get_load_test_requests_dataset(collection_id):
     constraints_dir = Path("/home/garciam/git/copds/cads-forms-json")
-    requests_per_type = 42
+    requests_per_type = 33
 
     with Path(constraints_dir, collection_id, "constraints.json").open("r") as cfile:
         constraints = json.load(cfile)
     # Generate requests
     load_test_requests = []
-    # small requests, one day
-    small_requests = expand_constraints_partially(constraints, ["day"]).iloc[
+    # small requests, one day, europe
+    small_requests = expand_constraints_partially(constraints, ["variable"]).iloc[
         0:requests_per_type
     ]
+    small_requests["area"] = "60,-20,30,50"
+    small_requests["area"] = small_requests["area"].str.split(",")
     load_test_requests.append(small_requests)
-    # medium requests, one month
-    medium_requests = expand_constraints_partially(
-        constraints, ["variable", "day"]
-    ).iloc[0:requests_per_type]
+    # medium requests, one month, one variable, global
+    medium_requests = expand_constraints_partially(constraints, ["day"])
+    medium_requests = medium_requests.loc[
+        ~medium_requests["variable"].str.contains("uncertainty")
+    ]
+    medium_requests = medium_requests.iloc[0:requests_per_type]
     load_test_requests.append(medium_requests)
-    # large requests, one year
+    # large requests, one month, all variables
     large_requests = expand_constraints_partially(
-        constraints, ["variable", "month", "day"]
+        constraints, ["variable", "day"]
     ).iloc[0:requests_per_type]
     load_test_requests.append(large_requests)
     ofilename = f"load_test_requests_{collection_id}.jsonl"
@@ -76,6 +89,12 @@ def get_load_test_requests_dataset(collection_id):
     with open(ofilename, "w") as ofile:
         for requests_block in load_test_requests:
             for request_params in requests_block.to_dict(orient="records"):
+                # Sometimes (10%) ask for a CSV
+                if numpy.random.binomial(1, 0.1, 1)[0]:
+                    oformat = "csv"
+                else:
+                    oformat = "netcdf"
+                request_params["format"] = oformat
                 line = [collection_id, request_params]
                 ofile.write(json.dumps(line) + "\n")
 
