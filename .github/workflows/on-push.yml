@@ -35,7 +35,7 @@ jobs:
     - name: Download CDM tables
       uses: actions/checkout@v3
       with:
-        repository: git@github.com:ecmwf-projects/cdm-obs.git
+        repository: ecmwf-projects/cdm-obs.git
         ref: 'cadsobs-changes'
         path: common_data_model
     - name: Deploy test ingestion database
