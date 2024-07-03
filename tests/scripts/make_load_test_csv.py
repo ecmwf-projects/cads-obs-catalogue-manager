@@ -58,7 +58,7 @@ def main():
 
 
 def get_load_test_requests_dataset(collection_id):
-    constraints_dir = Path("/home/garciam/git/copds/cads-forms-json")
+    constraints_dir = Path("../../../cads-forms-json")
     requests_per_type = 33
 
     with Path(constraints_dir, collection_id, "constraints.json").open("r") as cfile:
