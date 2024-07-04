@@ -7,9 +7,9 @@ from cdsobs.cli._utils import CliException
 
 
 def validate_service_definition(
-    service_definition_json: str = typer.Argument(..., help="Path to JSON file")
+    service_definition: str = typer.Argument(..., help="Path to JSON file")
 ):
     """Validate a service definition JSON file."""
-    if not Path(service_definition_json).exists():
+    if not Path(service_definition).exists():
         raise CliException("File not found")
-    cdsobs.service_definition.api.validate_service_definition(service_definition_json)
+    cdsobs.service_definition.api.validate_service_definition(service_definition)
