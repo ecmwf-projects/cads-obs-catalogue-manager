@@ -119,7 +119,7 @@ def _process_table(
             # Fix variables with wrong length
             # TODO: This must go, it is just for tests to work.
             # Source data is yet to be fixed so I am leaving this here.
-            data = fix_variables_with_wrong_length(data, fields)
+            # data = fix_variables_with_wrong_length(data, fields)
             var_data[variable] = data
     else:
         time_index = hfile["header_table"]["report_timestamp"][:]
@@ -134,7 +134,7 @@ def _process_table(
             for field in fields
         }
         # Fix variables with wrong length
-        data = fix_variables_with_wrong_length(data, fields)
+        # data = fix_variables_with_wrong_length(data, fields)
         var_data[table_name] = data
     return var_data
 
@@ -156,7 +156,6 @@ def fix_variables_with_wrong_length(data, fields):
                     "constant",
                     constant_values=data[f][-1],
                 )
-            data[f] = numpy.full((proper_len,), 1)
     return data
 
 
