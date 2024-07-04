@@ -116,10 +116,6 @@ def _process_table(
                 field: _get_field_data(field, hfile, selector, table_name)
                 for field in fields
             }
-            # Fix variables with wrong length
-            # TODO: This must go, it is just for tests to work.
-            # Source data is yet to be fixed so I am leaving this here.
-            # data = fix_variables_with_wrong_length(data, fields)
             var_data[variable] = data
     else:
         time_index = hfile["header_table"]["report_timestamp"][:]
@@ -133,8 +129,6 @@ def _process_table(
             field: _get_field_data(field, hfile, selector, table_name)
             for field in fields
         }
-        # Fix variables with wrong length
-        # data = fix_variables_with_wrong_length(data, fields)
         var_data[table_name] = data
     return var_data
 
