@@ -2,14 +2,14 @@ from pathlib import Path
 
 import typer
 
+import cdsobs.service_definition.api
 from cdsobs.cli._utils import CliException
-from cdsobs.service_definition.api import validate_service_definition
 
 
-def validate_service_definition_json(
-    service_definition_json: str = typer.Argument(..., help="Path to JSON file")
+def validate_service_definition(
+    service_definition: str = typer.Argument(..., help="Path to JSON file")
 ):
-    """Validate a service definition JSON file."""
-    if not Path(service_definition_json).exists():
+    """Validate a service definition YAML file."""
+    if not Path(service_definition).exists():
         raise CliException("File not found")
-    validate_service_definition(service_definition_json)
+    cdsobs.service_definition.api.validate_service_definition(service_definition)
