@@ -15,14 +15,14 @@ from cdsobs.cli._make_production import make_production
 from cdsobs.cli._object_storage import check_consistency
 from cdsobs.cli._retrieve import retrieve
 from cdsobs.cli._utils import exception_handler
-from cdsobs.cli._validate import validate_service_definition_json
+from cdsobs.cli._validate import validate_service_definition
 
 app = typer.Typer(
     help="Copernicus Climate & Atmoshpere Data Store Observation Manager"
     " Command Line Interface",
 )
 
-validate_service_definition_json = app.command()(validate_service_definition_json)
+validate_service_definition = app.command()(validate_service_definition)
 make_production = app.command()(make_production)
 retrieve = app.command()(retrieve)
 list_catalogue = app.command()(list_catalogue)
