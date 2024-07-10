@@ -299,6 +299,7 @@ def _get_denormalized_table_file(*args):
 def get_denormalized_table_file(
     cdm_tables, config, file_and_slices, tables_to_use, time_space_batch
 ):
+    logger = get_logger(__name__ + f"process {os.getpid()}")
     dataset_cdm: dict[str, pandas.DataFrame] = {}
     for table_name, table_definition in cdm_tables.items():
         # Fix era5fb having different names in the CDM and in the files
