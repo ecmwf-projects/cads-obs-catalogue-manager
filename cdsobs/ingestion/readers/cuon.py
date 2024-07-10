@@ -234,7 +234,10 @@ def filter_batch_stations(
     lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
     lon_mask = between(station_metadata.lon, lon_start, lon_end)
     lat_mask = between(station_metadata.lat, lat_start, lat_end)
-    time_mask = station_metadata["start of records"] <= selected_end
+    time_mask = numpy.logical_and(
+        station_metadata["start of records"] <= selected_end,
+        station_metadata["end of records"] >= selected_start,
+    )
     mask = lon_mask * lat_mask * time_mask
     batch_stations = station_metadata.loc[mask].index
     return [f for f in files if f.name.split("_")[0] in batch_stations]
