@@ -327,7 +327,7 @@ def get_denormalized_table_file(
         dataset_cdm["header_table"] = dataset_cdm["header_table"].loc[spatial_mask]
     # Denormalize tables
     denormalized_table_file = denormalize_tables(
-        cdm_tables, dataset_cdm, tables_to_use, ignore_errors=True
+        cdm_tables, dataset_cdm, tables_to_use, ignore_errors=False
     )
     # Decode time
     if len(denormalized_table_file) > 0:

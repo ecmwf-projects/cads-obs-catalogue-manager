@@ -134,4 +134,6 @@ def join_table_pair(
             return child_table_data
         else:
             raise
+    if len(joined_table) == 0:
+        logger.warning("Joined table has length 0")
     return joined_table
