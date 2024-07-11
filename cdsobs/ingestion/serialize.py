@@ -68,9 +68,6 @@ def write_pandas_to_netcdf(
     for v in var_selection:
         vardata = input_data[v]
         var_encoding = encoding[v] if v in encoding else {}
-        # Load sparse variables to dense
-        if "Sparse" in str(vardata.values.dtype):
-            vardata = input_data[v].sparse.to_dense()
         fillvalue = _get_default_fillvalue(vardata.values.dtype)
         if str(vardata.values.dtype) not in ["string", "object"]:
             # This is needed so

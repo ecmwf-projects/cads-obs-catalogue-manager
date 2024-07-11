@@ -388,10 +388,6 @@ def _fix_table_data(
         table_data = table_data.drop_duplicates(
             subset=["primary_id", "record_number"], ignore_index=True
         )
-    # Try with sparse arrays to reduce memory usage.
-    for var in table_data:
-        if str(table_data[var].dtype) == "float32" and var != "observation_value":
-            table_data[var] = pandas.arrays.SparseArray(table_data[var])
     # Check primary keys can be used to build a unique index
     primary_keys = table_definition.primary_keys
     if table_name in ["era5fb_table", "advanced_homogenisation"]:
