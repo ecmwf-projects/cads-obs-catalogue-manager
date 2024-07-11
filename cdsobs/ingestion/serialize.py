@@ -199,8 +199,10 @@ def serialize_partition(partition: DatasetPartition, odir: Path) -> SerializedPa
     # Get in memory representation of the CDM
     cdm_dataset = to_cdm_dataset(partition)
     # Save to netcdf
+    logger.info(f"Writing partition to {odir}")
     temp_output_path = to_netcdf(cdm_dataset, odir)
     # Builds an object with extra information about the file
+    logger.info("Getting file size and checksum.")
     file_params = get_file_params(temp_output_path, cdm_dataset)
     return SerializedPartition(
         file_params,
