@@ -45,7 +45,6 @@ dependencies:
 - datetimerange
 - uvicorn
 - python=3.10
-- tenacity
 - pip:
   - sqlalchemy_json
   - "git+https://github.com/ecmwf-projects/cads-adaptors"
