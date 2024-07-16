@@ -62,7 +62,7 @@ jobs:
         mkdir cuon_data && tar xzf test_netcdfs.tar.gz -C cuon_data/
         rm test_netcdfs.tar.gz
     - name: Install Conda environment with Micromamba
-      uses: mamba-org/provision-with-micromamba@main
+      uses: mamba-org/setup-micromamba@v1
       with:
         environment-file: environment.yml
         environment-name: DEVELOP
@@ -99,7 +99,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install Conda environment with Micromamba
-      uses: mamba-org/provision-with-micromamba@v12
+      uses: mamba-org/setup-micromamba@v1
       with:
         environment-file: environment.yml
         environment-name: DEVELOP
@@ -121,7 +121,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install Conda environment with Micromamba
-      uses: mamba-org/provision-with-micromamba@main
+      uses: mamba-org/setup-micromamba@v1
       with:
         environment-file: environment.yml
         environment-name: DEVELOP
