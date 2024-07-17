@@ -10,7 +10,9 @@ logger = get_logger(__name__)
 
 def get_session(settings: DBConfig, reset: bool = False) -> Session:
     """Get a session in the catalogue database."""
-    engine = create_engine(settings.get_url())  # echo=True for more descriptive logs
+    engine = create_engine(
+        settings.get_url(), pool_pre_ping=True
+    )  # echo=True for more descriptive logs
     if reset:
         Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)

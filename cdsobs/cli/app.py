@@ -1,4 +1,5 @@
 import os
+import sys
 
 import typer
 
@@ -44,3 +45,4 @@ def main():
             raise e
         else:
             exception_handler(e)
+            sys.exit(1)

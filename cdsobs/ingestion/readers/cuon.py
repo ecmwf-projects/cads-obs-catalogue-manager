@@ -116,10 +116,6 @@ def _process_table(
                 field: _get_field_data(field, hfile, selector, table_name)
                 for field in fields
             }
-            # Fix variables with wrong length
-            # TODO: This must go, it is just for tests to work.
-            # Source data is yet to be fixed so I am leaving this here.
-            data = fix_variables_with_wrong_length(data, fields)
             var_data[variable] = data
     else:
         time_index = hfile["header_table"]["report_timestamp"][:]
@@ -133,8 +129,6 @@ def _process_table(
             field: _get_field_data(field, hfile, selector, table_name)
             for field in fields
         }
-        # Fix variables with wrong length
-        data = fix_variables_with_wrong_length(data, fields)
         var_data[table_name] = data
     return var_data
 
@@ -156,7 +150,6 @@ def fix_variables_with_wrong_length(data, fields):
                     "constant",
                     constant_values=data[f][-1],
                 )
-            data[f] = numpy.full((proper_len,), 1)
     return data
 
 
@@ -241,7 +234,10 @@ def filter_batch_stations(
     lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
     lon_mask = between(station_metadata.lon, lon_start, lon_end)
     lat_mask = between(station_metadata.lat, lat_start, lat_end)
-    time_mask = station_metadata["start of records"] <= selected_end
+    time_mask = numpy.logical_and(
+        station_metadata["start of records"] <= selected_end,
+        station_metadata["end of records"] >= selected_start,
+    )
     mask = lon_mask * lat_mask * time_mask
     batch_stations = station_metadata.loc[mask].index
     return [f for f in files if f.name.split("_")[0] in batch_stations]
@@ -316,7 +312,12 @@ def get_denormalized_table_file(
         )
         # Make sure that latitude and longiture always carry on their table name.
         table_data = _fix_table_data(
-            dataset_cdm, table_data, table_definition, table_name
+            dataset_cdm,
+            table_data,
+            table_definition,
+            table_name,
+            file_and_slices.path,
+            time_space_batch,
         )
         dataset_cdm[table_name] = table_data
     # Filter stations outside ofthe Batch
@@ -328,13 +329,13 @@ def get_denormalized_table_file(
     spatial_mask = lon_mask * lat_mask
     if spatial_mask.sum() < len(spatial_mask):
         logger.info(
-            "Stations have been found outside the SpatialBatch ranges, "
+            f"Stations have been found outside the SpatialBatch ranges for {file_and_slices.path}, "
             "filtering out."
         )
         dataset_cdm["header_table"] = dataset_cdm["header_table"].loc[spatial_mask]
     # Denormalize tables
     denormalized_table_file = denormalize_tables(
-        cdm_tables, dataset_cdm, tables_to_use, ignore_errors=True
+        cdm_tables, dataset_cdm, tables_to_use, ignore_errors=False
     )
     # Decode time
     if len(denormalized_table_file) > 0:
@@ -363,6 +364,8 @@ def _fix_table_data(
     table_data: pandas.DataFrame,
     table_definition: CDMTable,
     table_name: str,
+    file_path: Path,
+    time_space_batch: TimeSpaceBatch,
 ):
     for coord in ["latitude", "longitude", "source_id"]:
         if coord in table_data:
@@ -371,10 +374,10 @@ def _fix_table_data(
     if table_name == "observations_table":
         # If there is nothing here it is a waste of time to continue
         if len(table_data) == 0:
-            logger.warning("No data found in file for this times.")
+            logger.warning(f"No data found in {file_path} for {time_space_batch}.")
             raise NoDataInFileException
         if not table_data.observation_id.is_unique:
-            logger.warning("observation_id is not unique, fixing")
+            logger.warning(f"observation_id is not unique in {file_path}, fixing")
             table_data["observation_id"] = numpy.arange(
                 len(table_data), dtype="int"
             ).astype("bytes")
@@ -385,10 +388,6 @@ def _fix_table_data(
         table_data = table_data.drop_duplicates(
             subset=["primary_id", "record_number"], ignore_index=True
         )
-    # Try with sparse arrays to reduce memory usage.
-    for var in table_data:
-        if str(table_data[var].dtype) == "float32" and var != "observation_value":
-            table_data[var] = pandas.arrays.SparseArray(table_data[var])
     # Check primary keys can be used to build a unique index
     primary_keys = table_definition.primary_keys
     if table_name in ["era5fb_table", "advanced_homogenisation"]:
@@ -396,12 +395,12 @@ def _fix_table_data(
         table_data_len = len(table_data)
         obs_table_len = len(dataset_cdm["observations_table"])
         logger.warning(
-            "Filling era5fb table index with observation_id from observations_table"
+            f"Filling era5fb table index with observation_id from observations_table in {file_path}"
         )
         obs_id_name = "obs_id" if table_name == "era5fb_table" else "observation_id"
         if table_data_len < obs_table_len:
             logger.warning(
-                "era5fb is shorter than observations_table "
+                f"era5fb is shorter than observations_table in {file_path}"
                 "truncating observation_ids"
             )
             observation_ids = dataset_cdm["observations_table"].observation_id.values[
@@ -425,7 +424,7 @@ def _fix_table_data(
     )
     if not primary_keys_are_unique:
         logger.warning(
-            "Unable to build a unique index with primary_keys "
+            f"Unable to build a unique index with primary_keys in {file_path}"
             f"{table_definition.primary_keys} in table {table_name}"
         )
     return table_data
@@ -452,22 +451,21 @@ def read_nc_file_slices(
                 if fv not in vals_to_exclude
             ]
             record_times = hfile["recordindices"]["recordtimestamp"]
-            first_timestamp = record_times[0]
-            last_timestamp = record_times[-1]
-            if numpy.isnan(last_timestamp):
-                last_timestamp = record_times[-2]
+            # load record record_times
+            record_times = record_times[:]
+            first_timestamp = record_times.min()
+            last_timestamp = record_times.max()
+            # if numpy.isnan(last_timestamp):
+            #     last_timestamp = record_times[-2]
 
             if first_timestamp > selected_end or last_timestamp < selected_start:
                 # Return None if there are no times inside the batch
                 logger.warning(
-                    f"No times found inside the batch: "
+                    f"No times found in {nc_file} inside the batch: "
                     f"{first_timestamp=} {last_timestamp=} {selected_start=} {selected_end=}"
                 )
                 result = None
             else:
-                # load record record_times
-                record_times = record_times[:]
-
                 ris = {
                     filevar: hfile["recordindices"][filevar][:] for filevar in file_vars
                 }
