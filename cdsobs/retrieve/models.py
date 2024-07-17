@@ -12,7 +12,7 @@ from cdsobs.utils.types import BoundedLat, BoundedLon
 RetrieveFormat = Literal["netCDF", "csv"]
 
 
-class RetrieveParams(BaseModel, extra="forbid"):
+class RetrieveParams(BaseModel, extra="ignore"):
     dataset_source: str
     stations: None | List[str] = None
     variables: List[str] | None = None
