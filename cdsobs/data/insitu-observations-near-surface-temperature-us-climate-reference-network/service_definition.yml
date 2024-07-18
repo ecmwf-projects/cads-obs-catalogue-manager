@@ -60,6 +60,7 @@ out_columns_order:
 - soil_temperature_processing_level_quality_flag
 - wind_speed_2_meters_from_earth_surface
 - wind_speed_2_meters_from_earth_surface_quality_flag
+- wetness
 - wetness_quality_flag
 - accumulated_precipitation
 - daily_global_solar_radiation_rates
@@ -787,7 +788,7 @@ sources:
         latitude: latitude|station_configuration
         longitude: longitude|station_configuration
         p_monthly_calc: accumulated_precipitation
-        quasisys_n: air_temperature_negative_quasisystematic_uncertainty
+        quasisys_m: air_temperature_negative_quasisystematic_uncertainty
         quasisys_p: air_temperature_positive_quasisystematic_uncertainty
         random_m: air_temperature_negative_random_uncertainty
         random_p: air_temperature_positive_random_uncertainty
@@ -1027,6 +1028,7 @@ sources:
         terr_m: air_temperature_negative_total_uncertainty
         terr_p: air_temperature_positive_total_uncertainty
         wbanno: primary_station_id
+        wetness: wetness
         wet_flag: wetness_quality_flag
         wind_1_5: wind_speed_2_meters_from_earth_surface
         wind_flag: wind_speed_2_meters_from_earth_surface_quality_flag
@@ -1158,6 +1160,12 @@ sources:
         description: Station identification code
         dtype: object
         long_name: wbanno
+      wetness:
+        description: This parameter indicates the presence or absence of moisture due to precipitation, in Ohms. High values (>= 1000) indicate an absence of moisture. Low values (< 1000) indicate the presence of moisture.
+        dtype: float32
+        long_name: wetness
+        quality_flag: wet_flag
+        units: Ohms
       wetness_quality_flag:
         description: QC flag for the wetness measurement
         dtype: float32
@@ -1190,6 +1198,7 @@ sources:
       - relative_humidity
       - soil_moisture_5
       - soil_temperature_5
+      - wetness
       - wind_1_5
       group_name: variables
     - columns:
