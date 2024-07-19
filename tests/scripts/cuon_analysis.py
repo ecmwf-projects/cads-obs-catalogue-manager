@@ -41,9 +41,7 @@ def get_char_var_data(inc_group, variable):
 
 
 def check_primary_keys_consistency():
-    idir = Path(
-        "/home/garciam/git/copds/cads-obs-catalogue-manager/tests/data/cuon_data"
-    )
+    idir = Path("/data/public/converted_v19")
     for ipath in idir.glob("*.nc"):
         with h5netcdf.File(ipath) as inc:
             station_table = inc.groups["station_configuration"]
