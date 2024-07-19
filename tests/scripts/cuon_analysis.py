@@ -7,7 +7,7 @@ import pandas
 from matplotlib import pyplot
 
 from cdsobs.constants import TIME_UNITS
-from cdsobs.ingestion.readers.cuon import get_cuon_stations
+from cdsobs.ingestion.readers.cuon import _maybe_concat_chars, get_cuon_stations
 from cdsobs.utils.logutils import get_logger
 
 logger = get_logger(__name__)
@@ -36,8 +36,7 @@ def plot_station_number():
 
 
 def get_char_var_data(inc_group, variable):
-    str_len = inc_group[variable].shape[1]
-    return inc_group[variable][:].view(f"S{str_len}").T[0]
+    return _maybe_concat_chars(inc_group[variable][:])
 
 
 def check_primary_keys_consistency():
