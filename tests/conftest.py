@@ -127,7 +127,7 @@ def test_repository(test_session, test_s3_client, test_config):
         "insitu-observations-near-surface-temperature-us-climate-reference-network"
     )
     service_definition = get_service_definition(dataset_name)
-    for dataset_source in ["USCRN_DAILY", "USCRN_SUBHOURLY"]:
+    for dataset_source in ["uscrn_daily", "uscrn_subhourly"]:
         start_year, end_year = get_test_years(dataset_source)
         run_ingestion_pipeline(
             dataset_name,

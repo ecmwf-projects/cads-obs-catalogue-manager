@@ -70,6 +70,8 @@ def main(old_path):
             new_values["dtype"] = "float32"
             new_values["long_name"] = rawname
             new_descriptions[cdm_name] = new_values
+            if "name_for_output" in new_values:
+                new_values.pop("name_for_output")
         # remap mandatory columns
         new_data["sources"][source]["mandatory_columns"] = []
         for mcol in old_data["sources"][source]["mandatory_columns"]:
@@ -89,7 +91,10 @@ def main(old_path):
 
 
 if __name__ == "__main__":
-    input_sd_files = "insitu-observations-gnss/service_definition.json"
+    input_sd_files = (
+        "insitu-observations-near-surface-temperature-us-climate-"
+        "reference-network/service_definition.json"
+    )
     for file in files("cdsobs").joinpath("data").glob(input_sd_files):  # type: ignore
         print(file)
         main(file)

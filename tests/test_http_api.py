@@ -85,7 +85,7 @@ def test_get_dataset_auxiliary_variables_mapping():
     dataset = (
         "insitu-observations-near-surface-temperature-us-climate-reference-network"
     )
-    actual = client.get(f"{dataset}/USCRN_DAILY/aux_variables_mapping").json()
+    actual = client.get(f"{dataset}/uscrn_daily/aux_variables_mapping").json()
     expected = {
         "accumulated_precipitation": [],
         "air_temperature": [

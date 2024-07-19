@@ -47,7 +47,7 @@ def test_get_aux_fields_mapping_from_service_definition():
     dataset_name = (
         "insitu-observations-near-surface-temperature-us-climate-reference-network"
     )
-    source = "USCRN_HOURLY"
+    source = "uscrn_hourly"
     expected = {
         "accumulated_precipitation": [],
         "air_temperature": [
@@ -223,7 +223,7 @@ def test_get_aux_vars_from_service_definition():
     dataset_name = (
         "insitu-observations-near-surface-temperature-us-climate-reference-network"
     )
-    source = "USCRN_HOURLY"
+    source = "uscrn_hourly"
     service_definition = get_service_definition(dataset_name)
     actual = get_aux_vars_from_service_definition(service_definition, source)
     print(actual)

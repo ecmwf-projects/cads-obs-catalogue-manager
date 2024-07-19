@@ -49,17 +49,17 @@ datasets:
   - uncertainty_table
 - name: insitu-observations-near-surface-temperature-us-climate-reference-network
   lon_tile_size:
-    USCRN_MONTHLY: 90
-    USCRN_DAILY: 90
-    USCRN_HOURLY: 90
-    USCRN_SUBHOURLY:
+    uscrn_monthly: 90
+    uscrn_daily: 90
+    uscrn_hourly: 90
+    uscrn_subhourly:
       2006-2010: 30
       2010-2030: 20
   lat_tile_size:
-    USCRN_MONTHLY: 90
-    USCRN_DAILY: 90
-    USCRN_HOURLY: 90
-    USCRN_SUBHOURLY:
+    uscrn_monthly: 90
+    uscrn_daily: 90
+    uscrn_hourly: 90
+    uscrn_subhourly:
       2006-2010: 30
       2010-2030: 20
   available_cdm_tables:

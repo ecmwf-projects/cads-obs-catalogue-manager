@@ -26,16 +26,16 @@ def get_test_years(source: str) -> Tuple[int, int]:
         case "GRUAN":
             start_year = 2010
             end_year = 2011
-        case "USCRN_SUBHOURLY":
+        case "uscrn_subhourly":
             start_year = 2007
             end_year = 2007
-        case "USCRN_HOURLY":
+        case "uscrn_hourly":
             start_year = 2006
             end_year = 2006
-        case "USCRN_DAILY":
+        case "uscrn_daily":
             start_year = 2007
             end_year = 2007
-        case "USCRN_MONTHLY":
+        case "uscrn_monthly":
             start_year = 2006
             end_year = 2006
         case "IGS":

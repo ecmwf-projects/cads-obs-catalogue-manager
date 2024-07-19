@@ -40,12 +40,12 @@ out_columns_order:
 - soil_temperature_max_quality_flag
 - soil_temperature_min
 - soil_temperature_min_quality_flag
-- downward_shortwave_irradiance_at_earth_surface
-- downward_shortwave_irradiance_at_earth_surface_quality_flag
-- downward_shortwave_irradiance_at_earth_surface_max
-- downward_shortwave_irradiance_at_earth_surface_max_quality_flag
-- downward_shortwave_irradiance_at_earth_surface_min
-- downward_shortwave_irradiance_at_earth_surface_min_quality_flag
+- solar_irradiance
+- solar_irradiance_quality_flag
+- maximum_solar_irradiance
+- maximum_solar_irradiance_quality_flag
+- minimum_solar_irradiance
+- minimum_solar_irradiance_quality_flag
 - soil_moisture_5cm_from_earth_surface
 - soil_moisture_10cm_from_earth_surface
 - soil_moisture_20cm_from_earth_surface
@@ -86,7 +86,7 @@ products_hierarchy:
 - positive_quasisystematic_uncertainty
 - negative_quasisystematic_uncertainty
 sources:
-  USCRN_DAILY:
+  uscrn_daily:
     cdm_mapping:
       melt_columns: true
       rename:
@@ -114,12 +114,16 @@ sources:
         soil_temp_20_daily: soil_temperature_20cm_from_earth_surface
         soil_temp_50_daily: soil_temperature_50cm_from_earth_surface
         soil_temp_5_daily: soil_temperature_5cm_from_earth_surface
+        solarad_daily: daily_global_solar_radiation
         sur_temp_daily_avg: soil_temperature
+        sur_temp_daily_max: maximum_soil_temperature
+        sur_temp_daily_min: minimum_soil_temperature
         sur_temp_daily_type: soil_temperature_processing_level
         sys_m: air_temperature_negative_systematic_uncertainty
         sys_p: air_temperature_positive_systematic_uncertainty
+        t: air_temperature
         t_daily_max: daily_maximum_air_temperature
-        t_daily_mean: air_temperature
+        t_daily_mean: daily_mean_air_temperature
         t_daily_min: daily_minimum_air_temperature
         terr_m: air_temperature_negative_total_uncertainty
         terr_p: air_temperature_positive_total_uncertainty
@@ -136,206 +140,338 @@ sources:
             mm: mm
           offset: 0
           scale: 1
+        air_temperature:
+          names:
+            K: K
+          offset: 0
+          scale: 1
+        daily_global_solar_radiation:
+          names:
+            MJ m-2: MJ m-2
+          offset: 0
+          scale: 1
+        maximum_air_temperature:
+          names:
+            K: K
+          offset: 0
+          scale: 1
+        maximum_relative_humidity:
+          names:
+            '%': '%'
+          offset: 0
+          scale: 1
+        maximum_soil_temperature:
+          names:
+            K: K
+          offset: 0
+          scale: 1
+        mean_air_temperature:
+          names:
+            K: K
+          offset: 0
+          scale: 1
+        minimum_air_temperature:
+          names:
+            K: K
+          offset: 0
+          scale: 1
+        minimum_relative_humidity:
+          names:
+            '%': '%'
+          offset: 0
+          scale: 1
+        minimum_soil_temperature:
+          names:
+            K: K
+          offset: 0
+          scale: 1
+        relative_humidity:
+          names:
+            '%': '%'
+          offset: 0
+          scale: 1
+        soil_moisture_100cm_from_earth_surface:
+          names:
+            m3 m-3: m3 m-3
+          offset: 0
+          scale: 1
+        soil_moisture_10cm_from_earth_surface:
+          names:
+            m3 m-3: m3 m-3
+          offset: 0
+          scale: 1
+        soil_moisture_20cm_from_earth_surface:
+          names:
+            m3 m-3: m3 m-3
+          offset: 0
+          scale: 1
+        soil_moisture_50cm_from_earth_surface:
+          names:
+            m3 m-3: m3 m-3
+          offset: 0
+          scale: 1
+        soil_moisture_5cm_from_earth_surface:
+          names:
+            m3 m-3: m3 m-3
+          offset: 0
+          scale: 1
+        soil_temperature:
+          names:
+            K: K
+          offset: 0
+          scale: 1
+        soil_temperature_100cm_from_earth_surface:
+          names:
+            K: K
+          offset: 0
+          scale: 1
+        soil_temperature_10cm_from_earth_surface:
+          names:
+            K: K
+          offset: 0
+          scale: 1
+        soil_temperature_20cm_from_earth_surface:
+          names:
+            K: K
+          offset: 0
+          scale: 1
+        soil_temperature_50cm_from_earth_surface:
+          names:
+            K: K
+          offset: 0
+          scale: 1
+        soil_temperature_5cm_from_earth_surface:
+          names:
+            K: K
+          offset: 0
+          scale: 1
     data_table: unc_daily
     descriptions:
       accumulated_precipitation:
-        description: Total amount of precipitation
+        description: This parameter is the accumulated precipitation that was measured as having reached the Earth's surface at the station. It includes all forms of precipitation (rain and snow). This parameter is accumulated over the aggregation period selected by the user. The units of this parameter are depth in millimetre of water equivalent. Care should be taken when comparing such observations with model or reanalysis parameters, because observations are by definition local to a particular point in space, rather than representing averages over a large geographical area.
         dtype: float32
-        long_name: accumulated_precipitation
+        long_name: p_daily_calc
         units: mm
       air_temperature:
-        description: 'Mean air temperature calculated using the typical historical approach: (T_DAILY_MAX + T_DAILY_MIN) / 2'
+        description: "This parameter is the temperature of the air measured at the station, typically at about 1.5 metres above the ground surface. This parameter is the mean of measurements made at 10-second intervals during the time aggregation chosen by the user. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Several error estimates are provided in addition, to help users take into account uncertainties."
         dtype: float32
-        long_name: mean_air_temperature
-        negative_total_uncertainty: tmeanerr_m
-        positive_total_uncertainty: tmeanerr_p
-        units: K
-      air_temperature_max_negative_total_uncertainty:
-        description: negative uncertainties in tmax which are related to temperature
-        dtype: float32
-        long_name: air_temperature_max_negative_total_uncertainty
-        units: K
-      air_temperature_max_positive_total_uncertainty:
-        description: positive uncertainties in tmax which are related to temperature
-        dtype: float32
-        long_name: air_temperature_max_positive_total_uncertainty
-        units: K
-      air_temperature_mean_negative_total_uncertainty:
-        description: tmeanerr_m, tmean is (tmax+tmin)/2 and the uncertianty is the average of the uncertaities of tmax and tmin (negative per using the Hourly data)
-        dtype: float32
-        long_name: mean_air_temperature_negative_total_uncertainty
-        units: K
-      air_temperature_mean_positive_total_uncertainty:
-        description: tmean is (tmax+tmin)/2 and the uncertianty is the average of the uncertaities of tmax and tmin (positive part using the Hourly data)
-        dtype: float32
-        long_name: mean_air_temperature_positive_total_uncertainty
-        units: K
-      air_temperature_min_negative_total_uncertainty:
-        description: negative uncertainties in tmin which are related to temperature
-        dtype: float32
-        long_name: minimum_air_temperature_negative_total_uncertainty
-        units: K
-      air_temperature_min_positive_total_uncertainty:
-        description: positive uncertainties in tmin which are related to temperature
-        dtype: float32
-        long_name: minimum_air_temperature_positive_total_uncertainty
+        long_name: t
+        negative_random_uncertainty: random_m
+        negative_systematic_uncertainty: sys_m
+        negative_total_uncertainty: terr_m
+        positive_random_uncertainty: random_p
+        positive_systematic_uncertainty: sys_p
+        positive_total_uncertainty: terr_p
         units: K
       air_temperature_negative_quasisystematic_uncertainty:
-        description: -ve/-ve Quasi-systematic
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative quasisystematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_negative_quasisystematic_uncertainty
+        long_name: quasisys_m
         units: K
       air_temperature_negative_random_uncertainty:
-        description: -ve Random uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative random uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_negative_random_uncertainty
+        long_name: random_m
         units: K
       air_temperature_negative_systematic_uncertainty:
-        description: -ve Systematic uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Negative systematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_negative_systematic_uncertainty
+        long_name: sys_m
         units: K
       air_temperature_negative_total_uncertainty:
-        description: negative uncertainty of temperature
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_negative_total_uncertainty
+        long_name: terr_m
         units: K
       air_temperature_positive_quasisystematic_uncertainty:
-        description: +ve Quasi-systematic uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive quasisystematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_positive_quasisystematic_uncertainty
+        long_name: quasisys_p
         units: K
       air_temperature_positive_random_uncertainty:
-        description: +ve Random uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive random uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_positive_random_uncertainty
+        long_name: random_p
         units: K
       air_temperature_positive_systematic_uncertainty:
-        description: +ve Systematic uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive systematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_positive_systematic_uncertainty
+        long_name: sys_p
         units: K
       air_temperature_positive_total_uncertainty:
-        description: positive uncertainty of temperature
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_positive_total_uncertainty
+        long_name: terr_p
         units: K
       alternative_name:
-        description: Alternative name for station
+        description: This describes the location of the station where measurements were taken. There are four elements separated by an underscore. The first element (two letters) indicates the State, the second element indicates the nearest city, and the last two elements describe a vector from the city to the station. The distance is given in statute miles (1 statute mile = 1609.344 metres) and the bearing is given in the 16-element compass rose. For example, station "VA_Charlottesville_2_SSE" refers to a station located 2 miles South-South-East of Charlottesville, Virginia.
         dtype: object
         long_name: sitename
-      daily_maximum_air_temperature:
-        description: Maximum air temperature
+      daily_global_solar_radiation:
+        description: This parameter is the total solar energy(direct and diffuse) measured at the Earth's surface per unit of area. in MJ/meter^2, calculated from the hourly average global solar radiation rates and converted to energy by integrating over time. For simplicity of use, the values are provided in Mega-Joules per square metre (MJ/m**2).
         dtype: float32
-        long_name: air_temperature_max
-        negative_total_uncertainty: tmaxerr_m
-        positive_total_uncertainty: tmaxerr_p
-        units: K
-      daily_minimum_air_temperature:
-        description: Minimum air temperature
-        dtype: float32
-        long_name: minimum_air_temperature
-        negative_total_uncertainty: tminerr_m
-        positive_total_uncertainty: tminerr_p
-        units: K
-      location_latitude:
-        description: Latitude of the station (deg. North)
+        long_name: solarad_daily
+        units: MJ m-2
+      latitude:
+        description: Latitude of the measurement station, -90 to 90.
         dtype: float32
         long_name: latitude
         units: degree_north
-      location_longitude:
-        description: Longitude of the station (deg. East)
+      logbook_version:
+        description: LogBook software and version.
+        dtype: float32
+        long_name: crx_vn
+      longitude:
+        description: Longitude of the measurement station, -180.0 to 180.0.
         dtype: float32
         long_name: longitude
         units: degree_east
-      logbook_version:
-        description: The version number of the station datalogger program that was in effect at the time of the observation
-        dtype: object
-        long_name: crx_vn
+      maximum_air_temperature:
+        description: "This parameter is the highest of all sub-hourly (5-minute) values of air temperature recorded at the station during the aggregation period selected by the user. It is based on measurements made at the station, typically at about 1.5 metres above the ground surface. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Two error estimates are provided in addition, to help users take into account uncertainties."
+        dtype: float32
+        long_name: t_daily_max
+        negative_total_uncertainty: tmaxerr_m
+        positive_total_uncertainty: tmaxerr_p
+        units: K
+      maximum_air_temperature_negative_total_uncertainty:
+        description: "For \"Maximum air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Negative total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tmaxerr_m
+        units: K
+      maximum_air_temperature_positive_total_uncertainty:
+        description: "For \"Maximum air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Positive total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tmaxerr_p
+        units: K
+      maximum_relative_humidity:
+        description: From measurements of "Relative humidity" (described in this list), this parameter provides the highest value measured during the aggregation period.
+        dtype: float32
+        long_name: rh_daily_max
+        units: '%'
+      maximum_soil_temperature:
+        description: From measurements of "soil temperature" (described in this list), this parameter provides the highest value measured during the aggregation period.
+        dtype: float32
+        long_name: sur_temp_daily_max
+        units: K
+      mean_air_temperature:
+        description: "This parameter is the average of all sub-hourly (5-minute) values of air temperature recorded at the station during the aggregation period selected by the user. It is based on measurements made at the station, typically at about 1.5 metres above the ground surface. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Two error estimates are provided in addition, to help users take into account uncertainties."
+        dtype: float32
+        long_name: t_daily_mean
+        negative_total_uncertainty: tmeanerr_m
+        positive_total_uncertainty: tmeanerr_p
+        units: K
+      mean_air_temperature_negative_total_uncertainty:
+        description: "For \"Mean air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Negative total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tmeanerr_m
+        units: K
+      mean_air_temperature_positive_total_uncertainty:
+        description: "For \"Mean air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Positive total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tmeanerr_p
+        units: K
+      minimum_air_temperature:
+        description: "This parameter is the lowest of all sub-hourly (5-minute) values of air temperature recorded at the station during the aggregation period selected by the user. It is based on measurements made at the station, typically at about 1.5 metres above the ground surface. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Two error estimates are provided in addition, to help users take into account uncertainties."
+        dtype: float32
+        long_name: t_daily_min
+        negative_total_uncertainty: tminerr_m
+        positive_total_uncertainty: tminerr_p
+        units: K
+      minimum_air_temperature_negative_total_uncertainty:
+        description: "For \"Minimum air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tminerr_m
+        units: K
+      minimum_air_temperature_positive_total_uncertainty:
+        description: "For \"Minimum air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tminerr_p
+        units: K
+      minimum_relative_humidity:
+        description: From measurements of "Relative humidity" (described in this list), this parameter provides the lowest value measured during the aggregation period.
+        dtype: float32
+        long_name: rh_daily_min
+        units: '%'
+      minimum_soil_temperature:
+        description: From measurements of "soil temperature" (described in this list), this parameter provides the lowest value measured during the aggregation period.
+        dtype: float32
+        long_name: sur_temp_daily_min
+        units: K
       relative_humidity:
-        description: Relative humidity is computed from 5-minute values in almost all cases. All USCRN stations now report 5-minute averages, however the two Asheville, NC stations reported only hourly RH values until 2007-02-22.
+        description: This parameter is the ratio of the amount of atmospheric moisture present in the air relative to the amount that would be present if the air were saturated with respect to water or ice. This ratio is multiplied by 100 to provide numbers in percent (%). The measurements are taken at a height of 2 metres above the ground surface. The instrument is a capacitive thin-film device. It measures the flow of electricity across two electrodes separated by a polymer film. The capacitance of the film is converted to relative humidity by a calibration equation. The values are averaged over 5-minute periods, obtained by selecting "sub-hourly" aggregation period. Other aggregation periods ("hourly", "daily") are also available, in which case the results are based on further averages of the 5-minute data. A quality flag is also available for this variable.
         dtype: float32
-        long_name: average_relative_humidity
-        units: '%'
-      daily_maximum_relative_humidity:
-        description: Maximum relative humidity
-        dtype: float32
-        long_name: maximum_relative_humidity
-        units: '%'
-      daily_minimum_relative_humidity:
-        description: Minimum relative humidity
-        dtype: float32
-        long_name: minimum_relative_humidity
+        long_name: rh_daily_avg
         units: '%'
       report_id:
-        description: Identifier in the USCRN meta-database
+        description: Link to header information.
+        dtype: float32
         long_name: id
       report_timestamp:
-        description: observation date time UTC
+        description: This parameter provides the observation date and time, including time zone information with respect to UTC (e.g. 1991-01-01 12:00:00+0).
         dtype: datetime64[ns]
         long_name: date_of_observation
       soil_moisture_100cm_from_earth_surface:
-        description: Average soil moisture, in fractional volumetric water content (m^3 m^-3), at 100 cm below the surface.
+        description: Average content of liquid water in a surface soil layer of 0 to 100 cm depth expressed as m3 water per m3 soil aggregation period.
         dtype: float32
-        long_name: soil_moisture_100cm_from_earth_surface
+        long_name: soil_moisture_100_daily
         units: m3 m-3
       soil_moisture_10cm_from_earth_surface:
-        description: Average soil moisture, in fractional volumetric water content (m^3 m^-3), at 10 cm below the surface.
+        description: Average content of liquid water in a surface soil layer of 0 to 10 cm depth expressed as m3 water per m3 soil aggregation period.
         dtype: float32
-        long_name: soil_moisture_10cm_from_earth_surface
+        long_name: soil_moisture_10_daily
         units: m3 m-3
       soil_moisture_20cm_from_earth_surface:
-        description: Average soil moisture, in fractional volumetric water content (m^3 m^-3), at 20 cm below the surface.
+        description: Average content of liquid water in a surface soil layer of 0 to 20 cm depth expressed as m3 water per m3 soil aggregation period.
         dtype: float32
-        long_name: soil_moisture_20cm_from_earth_surface
+        long_name: soil_moisture_20_daily
         units: m3 m-3
       soil_moisture_50cm_from_earth_surface:
-        description: Average soil moisture, in fractional volumetric water content (m^3 m^-3), at 50 cm below the surface.
+        description: Average content of liquid water in a surface soil layer of 0 to 50 cm depth expressed as m3 water per m3 soil aggregation period.
         dtype: float32
-        long_name: soil_moisture_50cm_from_earth_surface
+        long_name: soil_moisture_50_daily
         units: m3 m-3
       soil_moisture_5cm_from_earth_surface:
-        description: Average soil moisture, in fractional volumetric water content (m^3 m^-3), at 5 cm below the surface.
+        description: Average content of liquid water in a surface soil layer of 0 to 5 cm depth expressed as m3 water per m3 soil aggregation period.
         dtype: float32
-        long_name: soil_moisture_5cm_from_earth_surface
+        long_name: soil_moisture_5_daily
         units: m3 m-3
       soil_temperature:
-        description: Average infrared surface temperature
+        description: Average infrared temperature of the soil measured using infrared thermal imaging technology, over the aggregation period.
         dtype: float32
-        long_name: average_soil_temperature
+        long_name: sur_temp_daily_avg
         processing_level: sur_temp_daily_type
         units: K
       soil_temperature_100cm_from_earth_surface:
-        description: Average soil temperature, in degrees C, at 100 cm below the surface.
+        description: Average soil temperature measured at 100 cm below the surface level over the aggregation period.
         dtype: float32
-        long_name: soil_temperature_100cm_from_earth_surface
+        long_name: soil_temp_100_daily
         units: K
       soil_temperature_10cm_from_earth_surface:
-        description: Average soil temperature, in degrees C, at 10 cm below the surface.
+        description: Average soil temperature measured at 10 cm below the surface level over the aggregation period.
         dtype: float32
-        long_name: soil_temperature_10cm_from_earth_surface
+        long_name: soil_temp_10_daily
         units: K
       soil_temperature_20cm_from_earth_surface:
-        description: Average soil temperature, in degrees C, at 20 cm below the surface.
+        description: Average soil temperature measured at 20 cm below the surface level over the aggregation period.
         dtype: float32
-        long_name: soil_temperature_20cm_from_earth_surface
+        long_name: soil_temp_20_daily
         units: K
       soil_temperature_50cm_from_earth_surface:
-        description: Average soil temperature, in degrees C, at 50 cm below the surface.
+        description: Average soil temperature measured at 50 cm below the surface level over the aggregation period.
         dtype: float32
-        long_name: soil_temperature_50cm_from_earth_surface
+        long_name: soil_temp_50_daily
         units: K
       soil_temperature_5cm_from_earth_surface:
-        description: Average soil temperature, in degrees C, at 5 cm below the surface.
+        description: Average soil temperature measured at 5 cm below the surface level over the aggregation period.
         dtype: float32
-        long_name: soil_temperature_5cm_from_earth_surface
+        long_name: soil_temp_5_daily
         units: K
       soil_temperature_processing_level:
-        description: Type of infrared surface temperature measurement.
+        description: 'This parameter indicates the level of processing applied to the soil temperature measurement: raw data (''R''), corrected data (''C''). A letter ''U'' indicates that this information is unknown.'
         dtype: float32
-        long_name: soil_temperature_processing_level
+        long_name: sur_temp_daily_type
       primary_station_id:
-        description: Station identification code
+        description: This is the station identification code.
         dtype: object
         long_name: wbanno
     mandatory_columns:
@@ -349,10 +485,14 @@ sources:
     - report_timestamp
     products:
     - columns:
+      - t
       - t_daily_max
       - t_daily_min
       - t_daily_mean
       - p_daily_calc
+      - solarad_daily
+      - sur_temp_daily_max
+      - sur_temp_daily_min
       - sur_temp_daily_avg
       - rh_daily_max
       - rh_daily_min
@@ -401,7 +541,7 @@ sources:
     - columns:
       - sur_temp_daily_type
       group_name: processing_level
-  USCRN_HOURLY:
+  uscrn_hourly:
     cdm_mapping:
       melt_columns: true
       rename:
@@ -427,12 +567,12 @@ sources:
         soil_temp_20: soil_temperature_20cm_from_earth_surface
         soil_temp_5: soil_temperature_5cm_from_earth_surface
         soil_temp_50: soil_temperature_50cm_from_earth_surface
-        solarad: downward_shortwave_irradiance_at_earth_surface
-        solarad_flag: downward_shortwave_irradiance_at_earth_surface_quality_flag
-        solarad_max: hourly_maximum_downward_shortwave_irradiance_at_earth_surface
-        solarad_max_flag: hourly_maximum_downward_shortwave_irradiance_at_earth_surface_quality_flag
-        solarad_min: hourly_minimum_downward_shortwave_irradiance_at_earth_surface
-        solarad_min_flag: hourly_minimum_downward_shortwave_irradiance_at_earth_surface_quality_flag
+        solarad: solar_irradiance
+        solarad_flag: solar_irradiance_quality_flag
+        solarad_max: maximum_solar_irradiance
+        solarad_max_flag: maximum_solar_irradiance_quality_flag
+        solarad_min: minimum_solar_irradiance
+        solarad_min_flag: minimum_solar_irradiance_quality_flag
         sur_temp: soil_temperature
         sur_temp_flag: soil_temperature_quality_flag
         sur_temp_max: hourly_maximum_soil_temperature
@@ -461,18 +601,14 @@ sources:
     data_table: unc_hourly
     descriptions:
       accumulated_precipitation:
-        description: Total amount of precipitation, in mm, recorded during the hour
+        description: This parameter is the accumulated precipitation that was measured as having reached the Earth's surface at the station. It includes all forms of precipitation (rain and snow). This parameter is accumulated over the aggregation period selected by the user. The units of this parameter are depth in millimetre of water equivalent. Care should be taken when comparing such observations with model or reanalysis parameters, because observations are by definition local to a particular point in space, rather than representing averages over a large geographical area.
         dtype: float32
-        long_name: accumulated_precipitation
+        long_name: p_calc
         units: mm
       air_temperature:
-        description: Near surface temperature
+        description: "This parameter is the temperature of the air measured at the station, typically at about 1.5 metres above the ground surface. This parameter is the mean of measurements made at 10-second intervals during the time aggregation chosen by the user. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Several error estimates are provided in addition, to help users take into account uncertainties."
         dtype: float32
-        long_name: average_air_temperature
-        max_negative_total_uncertainty: tmaxerr_m
-        max_positive_total_uncertainty: tmaxerr_p
-        min_negative_total_uncertainty: tminerr_m
-        min_positive_total_uncertainty: tminerr_p
+        long_name: t
         negative_quasisystematic_uncertainty: quasisys_m
         negative_systematic_uncertainty: sys_m
         negative_total_uncertainty: terr_m
@@ -481,223 +617,228 @@ sources:
         positive_total_uncertainty: terr_p
         random_uncertainty: random_pm
         units: K
-      air_temperature_max_negative_total_uncertainty:
-        description: negative uncertainties in tmax which are related to temperature
-        dtype: float32
-        long_name: air_temperature_max_negative_total_uncertainty
-        units: K
-      air_temperature_max_positive_total_uncertainty:
-        description: positive uncertainties in tmax which are related to temperature
-        dtype: float32
-        long_name: air_temperature_max_positive_total_uncertainty
-        units: K
-      air_temperature_min_negative_total_uncertainty:
-        description: negative uncertainties in tmin which are related to temperature
-        dtype: float32
-        long_name: minimum_air_temperature_negative_total_uncertainty
-        units: K
-      air_temperature_min_positive_total_uncertainty:
-        description: positive uncertainties in tmin which are related to temperature
-        dtype: float32
-        long_name: minimum_air_temperature_positive_total_uncertainty
-        units: K
       air_temperature_negative_quasisystematic_uncertainty:
-        description: -ve/-ve Quasi-systematic
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative quasisystematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_negative_quasisystematic_uncertainty
+        long_name: quasisys_m
         units: K
       air_temperature_negative_systematic_uncertainty:
-        description: -ve Systematic uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Negative systematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_negative_systematic_uncertainty
+        long_name: sys_m
         units: K
       air_temperature_negative_total_uncertainty:
-        description: negative uncertainty of temperature
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_negative_total_uncertainty
+        long_name: terr_m
         units: K
       air_temperature_positive_quasisystematic_uncertainty:
-        description: +ve Quasi-systematic uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive quasisystematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_positive_quasisystematic_uncertainty
+        long_name: quasisys_p
         units: K
       air_temperature_positive_systematic_uncertainty:
-        description: +ve Systematic uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive systematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_positive_systematic_uncertainty
+        long_name: sys_p
         units: K
       air_temperature_positive_total_uncertainty:
-        description: positive uncertainty of temperature
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_positive_total_uncertainty
+        long_name: terr_p
         units: K
       air_temperature_random_uncertainty:
-        description: +ve/-ve Random
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Random uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_random_uncertainty
+        long_name: random_pm
         units: K
       alternative_name:
-        description: Alternative name for station
+        description: This describes the location of the station where measurements were taken. There are four elements separated by an underscore. The first element (two letters) indicates the State, the second element indicates the nearest city, and the last two elements describe a vector from the city to the station. The distance is given in statute miles (1 statute mile = 1609.344 metres) and the bearing is given in the 16-element compass rose. For example, station "VA_Charlottesville_2_SSE" refers to a station located 2 miles South-South-East of Charlottesville, Virginia.
         dtype: object
         long_name: sitename
-      daily_maximum_air_temperature:
-        description: Maximum air temperature during the hour
-        dtype: float32
-        long_name: air_temperature_max
-        units: K
-      daily_minimum_air_temperature:
-        description: Minimum air temperature during the hour
-        dtype: float32
-        long_name: minimum_air_temperature
-        units: K
-      downward_shortwave_irradiance_at_earth_surface:
-        description: Average global solar radiation
-        dtype: float32
-        flag: solarad_flag
-        long_name: downward_shortwave_irradiance_at_earth_surface
-        units: W m-2
-      hourly_maximum_downward_shortwave_irradiance_at_earth_surface:
-        description: Maximum global solar radiation
-        dtype: float32
-        flag: solarad_max_flag
-        long_name: maximum_downward_shortwave_irradiance_at_earth_surface
-        units: W m-2
-      hourly_maximum_downward_shortwave_irradiance_at_earth_surface_quality_flag:
-        description: QC flag for maximum global solar radiation. 0 denotes good data and 3 denotes erroneous data.
-        dtype: float32
-        long_name: maximum_downward_shortwave_irradiance_at_earth_surface_quality_flag
-      hourly_minimum_downward_shortwave_irradiance_at_earth_surface:
-        description: Minimum global solar radiation
-        dtype: float32
-        flag: solarad_min_flag
-        long_name: minimum_downward_shortwave_irradiance_at_earth_surface
-        units: W m-2
-      hourly_minimum_downward_shortwave_irradiance_at_earth_surface_quality_flag:
-        description: QC flag for minimum global solar radiation. 0 denotes good data and 3 denotes erroneous data.
-        dtype: float32
-        long_name: minimum_downward_shortwave_irradiance_at_earth_surface_quality_flag
-      downward_shortwave_irradiance_at_earth_surface_quality_flag:
-        description: QC flag for average global solar radiation. 0 denotes good data and 3 denotes erroneous data.
-        dtype: float32
-        long_name: downward_shortwave_irradiance_at_earth_surface
-      location_latitude:
-        description: Latitude of the station (deg. North)
+      latitude:
+        description: Latitude of the measurement station, -90 to 90.
         dtype: float32
         long_name: latitude
         units: degree_north
-      location_longitude:
-        description: Longitude of the station (deg. East)
+      logbook_version:
+        description: The version number of the station datalogger program that was in effect at the time of the observation.
+        dtype: float32
+        long_name: crx_vn
+      longitude:
+        description: Longitude of the measurement station, -180.0 to 180.0.
         dtype: float32
         long_name: longitude
         units: degree_east
-      logbook_version:
-        description: The version number of the station datalogger program that was in effect at the time of the observation
-        dtype: object
-        long_name: crx_vn
-      relative_humidity:
-        description: Hourly relative humidity is computed from 5-minute averages in almost all cases, however the two Asheville, NC stations reported only hourly RH values until 2007-02-22.
+      maximum_air_temperature:
+        description: "This parameter is the highest of all sub-hourly (5-minute) values of air temperature recorded at the station during the aggregation period selected by the user. It is based on measurements made at the station, typically at about 1.5 metres above the ground surface. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Two error estimates are provided in addition, to help users take into account uncertainties."
         dtype: float32
-        flag: rh_hr_avg_flag
-        long_name: average_relative_humidity
+        long_name: t_max
+        max_negative_total_uncertainty: tmaxerr_m
+        max_positive_total_uncertainty: tmaxerr_p
+        units: K
+      maximum_air_temperature_negative_total_uncertainty:
+        description: "For \"Maximum air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Negative total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tmaxerr_m
+        units: K
+      maximum_air_temperature_positive_total_uncertainty:
+        description: "For \"Maximum air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Positive total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tmaxerr_p
+        units: K
+      maximum_soil_temperature:
+        description: From measurements of "soil temperature" (described in this list), this parameter provides the highest value measured during the aggregation period.
+        dtype: float32
+        long_name: sur_temp_max
+        quality_flag: sur_temp_max_flag
+        units: K
+      maximum_soil_temperature_quality_flag:
+        description: This parameter indicates if the "Maximum soil temperature" (described in this list) may be used because it is based on good data (value of 0) or if it should be treated with suspicion because erroneous data were detected (value of 3). denotes good data and 3 denotes erroneous data.
+        dtype: float32
+        long_name: sur_temp_max_flag
+      maximum_solar_irradiance:
+        description: Maximum power per unit area (surface power density) received from the Sun in the form of electromagnetic radiation in the wavelength range of the measuring instrument. Solar irradiance is measured in watts per square metre (W/m2) in SI units at the Earth surface over specified period.
+        dtype: float32
+        long_name: solarad_max
+        quality_flag: solarad_max_flag
+        units: W m-2
+      maximum_solar_irradiance_quality_flag:
+        description: Quality indicator for the variable 'maximum_solar_irradiance'. 0 denotes good data and 3 denotes erroneous data.
+        dtype: float32
+        long_name: solarad_max_flag
+      minimum_air_temperature:
+        description: "This parameter is the lowest of all sub-hourly (5-minute) values of air temperature recorded at the station during the aggregation period selected by the user. It is based on measurements made at the station, typically at about 1.5 metres above the ground surface. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Two error estimates are provided in addition, to help users take into account uncertainties."
+        dtype: float32
+        long_name: t_min
+        min_negative_total_uncertainty: tminerr_m
+        min_positive_total_uncertainty: tminerr_p
+        units: K
+      minimum_air_temperature_negative_total_uncertainty:
+        description: "For \"Minimum air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tminerr_m
+        units: K
+      minimum_air_temperature_positive_total_uncertainty:
+        description: "For \"Minimum air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tminerr_p
+        units: K
+      minimum_soil_temperature:
+        description: From measurements of "soil temperature" (described in this list), this parameter provides the lowest value measured during the aggregation period.
+        dtype: float32
+        long_name: sur_temp_min
+        quality_flag: sur_temp_min_flag
+        units: K
+      minimum_soil_temperature_quality_flag:
+        description: This parameter indicates if the "Minimum soil temperature" (described in this list) may be used because it is based on good data (value of 0) or if it should be treated with suspicion because erroneous data were detected (value of 3).
+        dtype: float32
+        long_name: sur_temp_min_flag
+      minimum_solar_irradiance:
+        description: Minimum power per unit area (surface power density) received from the Sun in the form of electromagnetic radiation in the wavelength range of the measuring instrument. Solar irradiance is measured in watts per square metre (W/m2) in SI unitsat the Earth surface.
+        dtype: float32
+        long_name: solarad_min
+        quality_flag: solarad_min_flag
+        units: W m-2
+      minimum_solar_irradiance_quality_flag:
+        description: Quality indicator for variable 'minimum_solar_irradiance'. 0 denotes good data and 3 denotes erroneous data.
+        dtype: float32
+        long_name: solarad_min_flag
+      relative_humidity:
+        description: This parameter is the ratio of the amount of atmospheric moisture present in the air relative to the amount that would be present if the air were saturated with respect to water or ice. This ratio is multiplied by 100 to provide numbers in percent (%). The measurements are taken at a height of 2 metres above the ground surface. The instrument is a capacitive thin-film device. It measures the flow of electricity across two electrodes separated by a polymer film. The capacitance of the film is converted to relative humidity by a calibration equation. The values are averaged over 5-minute periods, obtained by selecting "sub-hourly" aggregation period. Other aggregation periods ("hourly", "daily") are also available, in which case the results are based on further averages of the 5-minute data. A quality flag is also available for this variable.
+        dtype: float32
+        long_name: rh_hr_avg
+        quality_flag: rh_hr_avg_flag
         units: '%'
       relative_humidity_quality_flag:
-        description: QC flag for RH average. 0 denotes good data and 3 denotes erroneous data.
+        description: This parameter indicates if the "Relative humidity" (described in this list) may be used because it is based on an average of good data (value of 0), or if it should be treated with suspicion because erroneous data were detected (value of 3).
         dtype: float32
-        long_name: average_relative_humidity_quality_flag
+        long_name: rh_hr_avg_flag
       report_id:
-        description: Identifier in the USCRN meta-database
+        description: Link to header information.
+        dtype: float32
         long_name: id
       report_timestamp:
-        description: observation date time UTC
+        description: This parameter provides the observation date and time, including time zone information with respect to UTC (e.g. 1991-01-01 12:00:00+0).
         dtype: datetime64[ns]
         long_name: date_of_observation
       soil_moisture_100cm_from_earth_surface:
-        description: Average soil moisture at 100 cm below the surface
+        description: Average content of liquid water in a surface soil layer of 0 to 100 cm depth expressed as m3 water per m3 soil aggregation period.
         dtype: float32
-        long_name: soil_moisture_100cm_from_earth_surface
+        long_name: soil_moisture_100
         units: m3 m-3
       soil_moisture_10cm_from_earth_surface:
-        description: Average soil moisture at 10 cm below the surface
+        description: Average content of liquid water in a surface soil layer of 0 to 10 cm depth expressed as m3 water per m3 soil aggregation period.
         dtype: float32
-        long_name: soil_moisture_10cm_from_earth_surface
+        long_name: soil_moisture_10
         units: m3 m-3
       soil_moisture_20cm_from_earth_surface:
-        description: Average soil moisture at 20 cm below the surface
+        description: Average content of liquid water in a surface soil layer of 0 to 20 cm depth expressed as m3 water per m3 soil aggregation period.
         dtype: float32
-        long_name: soil_moisture_20cm_from_earth_surface
+        long_name: soil_moisture_20
         units: m3 m-3
       soil_moisture_50cm_from_earth_surface:
-        description: Average soil moisture at 50 cm below the surface
+        description: Average content of liquid water in a surface soil layer of 0 to 50 cm depth expressed as m3 water per m3 soil aggregation period.
         dtype: float32
-        long_name: soil_moisture_50cm_from_earth_surface
+        long_name: soil_moisture_50
         units: m3 m-3
       soil_moisture_5cm_from_earth_surface:
-        description: Average soil moisture at 5 cm below the surface
+        description: Average content of liquid water in a surface soil layer of 0 to 5 cm depth expressed as m3 water per m3 soil aggregation period.
         dtype: float32
-        long_name: soil_moisture_5cm_from_earth_surface
+        long_name: soil_moisture_5
         units: m3 m-3
       soil_temperature:
-        description: On 2013-01-07 at 1500 UTC, USCRN began reporting corrected surface temperature measurements for some stations. These changes  impact previous users of the data because the corrected values differ from uncorrected values. To distinguish between uncorrected (raw) and corrected surface temperature measurements, a surface temperature type field was added to the data product. The possible values of the this field are "R" to denote raw surface temperature measurements, "C" to denote corrected surface temperature measurements, and "U" for unknown/missing.
+        description: Average infrared temperature of the soil measured using infrared thermal imaging technology, over the aggregation period.
         dtype: float32
-        flag: sur_temp_flag
-        long_name: average_soil_temperature
+        long_name: sur_temp
         processing_level: sur_temp_type
+        quality_flag: sur_temp_flag
         units: K
       soil_temperature_100cm_from_earth_surface:
-        description: Average soil temperature at 100 cm below the surface
+        description: Average soil temperature measured at 100 cm below the surface level over the aggregation period.
         dtype: float32
-        long_name: soil_temperature_100cm_from_earth_surface
+        long_name: soil_temp_100
         units: K
       soil_temperature_10cm_from_earth_surface:
-        description: Average soil temperature at 10 cm below the surface
+        description: Average soil temperature measured at 10 cm below the surface level over the aggregation period.
         dtype: float32
-        long_name: soil_temperature_10cm_from_earth_surface
+        long_name: soil_temp_10
         units: K
       soil_temperature_20cm_from_earth_surface:
-        description: Average soil temperature at 20 cm below the surface
+        description: Average soil temperature measured at 20 cm below the surface level over the aggregation period.
         dtype: float32
-        long_name: soil_temperature_20cm_from_earth_surface
+        long_name: soil_temp_20
         units: K
       soil_temperature_50cm_from_earth_surface:
-        description: Average soil temperature at 50 cm below the surface
+        description: Average soil temperature measured at 50 cm below the surface level over the aggregation period.
         dtype: float32
-        long_name: soil_temperature_50cm_from_earth_surface
+        long_name: soil_temp_50
         units: K
       soil_temperature_5cm_from_earth_surface:
-        description: Average soil temperature at 5 cm below the surface
+        description: Average soil temperature measured at 5 cm below the surface level over the aggregation period.
         dtype: float32
-        long_name: soil_temperature_5cm_from_earth_surface
+        long_name: soil_temp_5
         units: K
-      hourly_maximum_soil_temperature:
-        description: Maximum infrared surface temperature
-        dtype: float32
-        flag: sur_temp_max_flag
-        long_name: maximum_soil_temperature
-        units: K
-      hourly_maximum_soil_temperature_flag:
-        description: QC flag for infrared surface temperature maximum. 0 denotes good data and 3 denotes erroneous data.
-        dtype: float32
-        long_name: maximum_soil_temperature_quality_flag
-      hourly_minimum_soil_temperature:
-        description: Minimum infrared surface temperature
-        dtype: float32
-        flag: sur_temp_min_flag
-        long_name: minimum_soil_temperature
-        units: K
-      hourly_minimum_soil_temperature_quality_flag:
-        description: QC flag for infrared surface temperature minimum. 0 denotes good data and 3 denotes erroneous data.
-        dtype: float32
-        long_name: minimum_soil_temperature_quality_flag
       soil_temperature_processing_level:
-        description: Type of infrared surface temperature measurement
+        description: 'This parameter indicates the level of processing applied to the soil temperature measurement: raw data (''R''), corrected data (''C''). A letter ''U'' indicates that this information is unknown.'
         dtype: float32
-        long_name: soil_temperature_processing_level
+        long_name: sur_temp_type
       soil_temperature_quality_flag:
-        description: QC flag for infrared surface temperature. 0 denotes good data and 3 denotes erroneous data.
+        description: This parameter indicates if the "Soil temperature" (described in this list) may be used because it is based on good data (value of 0) or if it should be treated with suspicion because erroneous data were detected (value of 3).
         dtype: float32
-        long_name: average_soil_temperature_quality_flag
+        long_name: sur_temp_flag
+      solar_irradiance:
+        description: The quantity with standard name solar_irradiance, often called Total Solar Irradiance (TSI), is the radiation from the sun integrated over the whole electromagnetic spectrum and over the entire solar disk. The quantity applies outside the atmosphere, by default at a distance of one astronomical unit from the sun, but a coordinate or scalar coordinate variable of distance_from_sun can be used to specify a value other than the default. "Irradiance" means the power per unit area (called radiative flux in other standard names), the area being normal to the direction of flow of the radiant energy.
+        dtype: float32
+        long_name: solarad
+        quality_flag: solarad_flag
+        units: W m-2
+      solar_irradiance_quality_flag:
+        description: Quality indicator variable 'solar_irradiance'. 0 denotes good data and 3 denotes erroneous data.
+        dtype: float32
+        long_name: solarad_flag
       primary_station_id:
-        description: Station identification code
+        description: This is the station identification code.
         dtype: object
         long_name: wbanno
     mandatory_columns:
@@ -778,7 +919,7 @@ sources:
     - columns:
       - sur_temp_type
       group_name: processing_level
-  USCRN_MONTHLY:
+  uscrn_monthly:
     cdm_mapping:
       melt_columns: true
       rename:
@@ -793,12 +934,14 @@ sources:
         random_m: air_temperature_negative_random_uncertainty
         random_p: air_temperature_positive_random_uncertainty
         sitename: alternative_name
+        solrad_monthly_avg: monthly_global_solar_radiation
         sur_temp_monthly_avg: soil_temperature
         sur_temp_monthly_max: monthly_maximum_soil_temperature
         sur_temp_monthly_min: monthly_minimum_soil_temperature
         sur_temp_monthly_type: soil_temperature_processing_level
         sys_m: air_temperature_negative_systematic_uncertainty
         sys_p: air_temperature_positive_systematic_uncertainty
+        t: air_temperature
         t_monthly_max: daily_maximum_air_temperature
         t_monthly_mean: air_temperature
         t_monthly_min: daily_minimum_air_temperature
@@ -818,136 +961,155 @@ sources:
     data_table: unc_monthly
     descriptions:
       accumulated_precipitation:
-        description: The total amount of precipitation
+        description: This parameter is the accumulated precipitation that was measured as having reached the Earth's surface at the station. It includes all forms of precipitation (rain and snow). This parameter is accumulated over the aggregation period selected by the user. The units of this parameter are depth in millimetre of water equivalent. Care should be taken when comparing such observations with model or reanalysis parameters, because observations are by definition local to a particular point in space, rather than representing averages over a large geographical area.
         dtype: float32
-        long_name: accumulated_precipitation
+        long_name: p_monthly_calc
         units: mm
       air_temperature:
-        description: The mean air temperature calculated using the typical historical approach of (T_MONTHLY_MAX + T_MONTHLY_MIN) / 2
+        description: "This parameter is the temperature of the air measured at the station, typically at about 1.5 metres above the ground surface. This parameter is the mean of measurements made at 10-second intervals during the time aggregation chosen by the user. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Several error estimates are provided in addition, to help users take into account uncertainties."
         dtype: float32
-        long_name: mean_air_temperature
-        units: K
-      air_temperature_max_negative_total_uncertainty:
-        description: negative uncertainties in tmax which are related to temperature
-        dtype: float32
-        long_name: air_temperature_max_negative_total_uncertainty
-        units: K
-      air_temperature_max_positive_total_uncertainty:
-        description: positive uncertainties in tmax which are related to temperature
-        dtype: float32
-        long_name: air_temperature_max_positive_total_uncertainty
-        units: K
-      air_temperature_min_negative_total_uncertainty:
-        description: negative uncertainties in tmin which are related to temperature
-        dtype: float32
-        long_name: minimum_air_temperature_negative_total_uncertainty
-        units: K
-      air_temperature_min_positive_total_uncertainty:
-        description: positive uncertainties in tmin which are related to temperature
-        dtype: float32
-        long_name: minimum_air_temperature_positive_total_uncertainty
+        long_name: t
+        negative_quasisystematic_uncertainty: quasisys_m
+        negative_random_uncertainty: random_m
+        negative_systematic_uncertainty: sys_m
+        negative_total_uncertainty: terr_m
+        positive_quasisystematic_uncertainty: quasisys_p
+        positive_random_uncertainty: random_p
+        positive_systematic_uncertainty: sys_p
+        positive_total_uncertainty: terr_p
         units: K
       air_temperature_negative_quasisystematic_uncertainty:
-        description: -ve/-ve Quasi-systematic
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative quasisystematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_negative_quasisystematic_uncertainty
+        long_name: quasisys_m
         units: K
       air_temperature_negative_random_uncertainty:
-        description: -ve Random uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative random uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_negative_random_uncertainty
+        long_name: random_m
         units: K
       air_temperature_negative_systematic_uncertainty:
-        description: -ve Systematic uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Negative systematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_negative_systematic_uncertainty
+        long_name: sys_m
         units: K
       air_temperature_negative_total_uncertainty:
-        description: negative uncertainty of temperature
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_negative_total_uncertainty
+        long_name: terr_m
         units: K
       air_temperature_positive_quasisystematic_uncertainty:
-        description: +ve Quasi-systematic uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive quasisystematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_positive_quasisystematic_uncertainty
+        long_name: quasisys_p
         units: K
       air_temperature_positive_random_uncertainty:
-        description: +ve Random uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive random uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_positive_random_uncertainty
+        long_name: random_p
         units: K
       air_temperature_positive_systematic_uncertainty:
-        description: +ve Systematic uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive systematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_positive_systematic_uncertainty
+        long_name: sys_p
         units: K
       air_temperature_positive_total_uncertainty:
-        description: positive uncertainty of temperature
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_positive_total_uncertainty
+        long_name: terr_p
         units: K
       alternative_name:
-        description: Alternative name for station
+        description: This describes the location of the station where measurements were taken. There are four elements separated by an underscore. The first element (two letters) indicates the State, the second element indicates the nearest city, and the last two elements describe a vector from the city to the station. The distance is given in statute miles (1 statute mile = 1609.344 metres) and the bearing is given in the 16-element compass rose. For example, station "VA_Charlottesville_2_SSE" refers to a station located 2 miles South-South-East of Charlottesville, Virginia.
         dtype: object
         long_name: sitename
-      daily_maximum_air_temperature:
-        description: The maximum air temperature
-        dtype: float32
-        long_name: air_temperature_max
-        negative_total_uncertainty: tmaxerr_m
-        positive_total_uncertainty: tmaxerr_p
-        units: K
-      daily_minimum_air_temperature:
-        description: The minimum air temperature
-        dtype: float32
-        long_name: minimum_air_temperature
-        negative_total_uncertainty: tminerr_m
-        positive_total_uncertainty: tminerr_p
-        units: K
-      location_latitude:
-        description: Station latitude, using WGS-84, with a precision of 4 decimal places
+      latitude:
+        description: Latitude of the measurement station, -90 to 90.
         dtype: float32
         long_name: latitude
         units: degree_north
-      location_longitude:
-        description: Station longitude, using WGS-84, with a precision of 4 decimal places
+      logbook_version:
+        description: LogBook software and version.
+        dtype: float32
+        long_name: crx_vn_monthly
+      longitude:
+        description: Longitude of the measurement station, -180.0 to 180.0.
         dtype: float32
         long_name: longitude
         units: degree_east
-      logbook_version:
-        description: The version number of the station datalogger program that was in effect at the time of the observation
-        dtype: object
-        long_name: crx_vn_monthly
+      maximum_air_temperature:
+        description: "This parameter is the highest of all sub-hourly (5-minute) values of air temperature recorded at the station during the aggregation period selected by the user. It is based on measurements made at the station, typically at about 1.5 metres above the ground surface. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Two error estimates are provided in addition, to help users take into account uncertainties."
+        dtype: float32
+        long_name: t_monthly_max
+        negative_total_uncertainty: tmaxerr_m
+        positive_total_uncertainty: tmaxerr_p
+        units: K
+      maximum_air_temperature_negative_total_uncertainty:
+        description: "For \"Maximum air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Negative total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tmaxerr_m
+        units: K
+      maximum_air_temperature_positive_total_uncertainty:
+        description: "For \"Maximum air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Positive total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tmaxerr_p
+        units: K
+      maximum_soil_temperature:
+        description: From measurements of "soil temperature" (described in this list), this parameter provides the highest value measured during the aggregation period.
+        dtype: float32
+        long_name: sur_temp_monthly_max
+        units: K
+      mean_air_temperature:
+        description: "This parameter is the average of all sub-hourly (5-minute) values of air temperature recorded at the station during the aggregation period selected by the user. It is based on measurements made at the station, typically at about 1.5 metres above the ground surface. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Two error estimates are provided in addition, to help users take into account uncertainties."
+        dtype: float32
+        long_name: t_monthly_mean
+        units: K
+      minimum_air_temperature:
+        description: "This parameter is the lowest of all sub-hourly (5-minute) values of air temperature recorded at the station during the aggregation period selected by the user. It is based on measurements made at the station, typically at about 1.5 metres above the ground surface. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Two error estimates are provided in addition, to help users take into account uncertainties."
+        dtype: float32
+        long_name: t_monthly_min
+        negative_total_uncertainty: tminerr_m
+        positive_total_uncertainty: tminerr_p
+        units: K
+      minimum_air_temperature_negative_total_uncertainty:
+        description: "For \"Minimum air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tminerr_m
+        units: K
+      minimum_air_temperature_positive_total_uncertainty:
+        description: "For \"Minimum air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: tminerr_p
+        units: K
+      minimum_soil_temperature:
+        description: From measurements of "soil temperature" (described in this list), this parameter provides the lowest value measured during the aggregation period.
+        dtype: float32
+        long_name: sur_temp_monthly_min
+        units: K
+      monthly_global_solar_radiation:
+        description: This parameter is the total solar energy(direct and diffuse) measured at the Earth's surface per unit of area. in MJ/meter^2, calculated from the daily average global solar radiation rates and converted to energy by integrating over time. For simplicity of use, the values are provided in Mega-Joules per square metre (MJ/m**2).
+        dtype: float32
+        long_name: solrad_monthly_avg
+        units: MJ m-2
       report_id:
-        description: Identifier in the USCRN meta-database
+        description: Link to header information.
+        dtype: float32
         long_name: id
       report_timestamp:
-        description: observation date time UTC
+        description: This parameter provides the observation date and time, including time zone information with respect to UTC (e.g. 1991-01-01 12:00:00+0).
         dtype: datetime64[ns]
         long_name: date_of_observation
       soil_temperature:
-        description: Monthly maximum/minimum/average surface temperatures are the average of all available daily max/min/avg values. To be considered valid, there must be fewer than 4 consecutive values missing, and no more than 5 total values missing.
+        description: Average infrared temperature of the soil measured using infrared thermal imaging technology, over the aggregation period.
         dtype: float32
-        long_name: average_soil_temperature
+        long_name: sur_temp_monthly_avg
         processing_level: sur_temp_monthly_type
         units: K
-      monthly_maximum_soil_temperature:
-        description: The maximum infrared surface temperature
-        dtype: float32
-        long_name: maximum_soil_temperature
-        units: K
-      monthly_minimum_soil_temperature:
-        description: The minimum infrared surface temperature
-        dtype: float32
-        long_name: minimum_soil_temperature
-        units: K
       soil_temperature_processing_level:
-        description: Type of infrared surface temperature measurement
+        description: 'This parameter indicates the level of processing applied to the soil temperature measurement: raw data (''R''), corrected data (''C''). A letter ''U'' indicates that this information is unknown.'
         dtype: float32
-        long_name: soil_temperature_processing_level
+        long_name: sur_temp_monthly_type
       primary_station_id:
-        description: Station identification code
+        description: This is the station identification code.
         dtype: object
         long_name: wbanno
     mandatory_columns:
@@ -961,10 +1123,12 @@ sources:
     - report_timestamp
     products:
     - columns:
+      - t
       - t_monthly_max
       - t_monthly_min
       - t_monthly_mean
       - p_monthly_calc
+      - solrad_monthly_avg
       - sur_temp_monthly_max
       - sur_temp_monthly_min
       - sur_temp_monthly_avg
@@ -1000,7 +1164,7 @@ sources:
     - columns:
       - sur_temp_monthly_type
       group_name: processing_level
-  USCRN_SUBHOURLY:
+  uscrn_subhourly:
     cdm_mapping:
       melt_columns: true
       rename:
@@ -1017,8 +1181,8 @@ sources:
         sitename: alternative_name
         soil_moisture_5: soil_moisture_5cm_from_earth_surface
         soil_temperature_5: soil_temperature_5cm_from_earth_surface
-        solar_radiation: downward_shortwave_irradiance_at_earth_surface
-        sr_flag: downward_shortwave_irradiance_at_earth_surface_quality_flag
+        solar_radiation: solar_irradiance
+        sr_flag: solar_irradiance_quality_flag
         st_flag: soil_temperature_processing_level_quality_flag
         st_type: soil_temperature_processing_level
         surface_temperature: soil_temperature
@@ -1028,8 +1192,8 @@ sources:
         terr_m: air_temperature_negative_total_uncertainty
         terr_p: air_temperature_positive_total_uncertainty
         wbanno: primary_station_id
-        wetness: wetness
         wet_flag: wetness_quality_flag
+        wetness: wetness
         wind_1_5: wind_speed_2_meters_from_earth_surface
         wind_flag: wind_speed_2_meters_from_earth_surface_quality_flag
       unit_changes:
@@ -1040,124 +1204,129 @@ sources:
           scale: 1
     data_table: unc_subhourly
     descriptions:
-      accumulated_precipitation:
-        description: Total amount of precipitation
+      2m_wind_speed:
+        description: This parameter is the horizontal velocity of the air near the surface. It is measured using a 3-cup anemometer placed at the same height at the air temperature shield intake. The exact measurement height is 1.5 metres above the ground surface.
         dtype: float32
-        long_name: accumulated_precipitation
+        long_name: wind_1_5
+        quality_flag: wind_flag
+        units: m s-1
+      2m_wind_speed_quality_flag:
+        description: This parameter indicates if the "2m wind speed" (described in this list) may be used because it is based on good data (value of 0) or if it should be treated with suspicion because erroneous data were detected (non-zero value).
+        dtype: float32
+        long_name: wind_flag
+      accumulated_precipitation:
+        description: This parameter is the accumulated precipitation that was measured as having reached the Earth's surface at the station. It includes all forms of precipitation (rain and snow). This parameter is accumulated over the aggregation period selected by the user. The units of this parameter are depth in millimetre of water equivalent. Care should be taken when comparing such observations with model or reanalysis parameters, because observations are by definition local to a particular point in space, rather than representing averages over a large geographical area.
+        dtype: float32
+        long_name: precipitation
         units: mm
       air_temperature:
-        description: air temperature
+        description: "This parameter is the temperature of the air measured at the station, typically at about 1.5 metres above the ground surface. This parameter is the mean of measurements made at 10-second intervals during the time aggregation chosen by the user. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Several error estimates are provided in addition, to help users take into account uncertainties."
         dtype: float32
-        long_name: average_air_temperature
+        long_name: t
         negative_systematic_uncertainty: sys_m
         negative_total_uncertainty: terr_m
         positive_systematic_uncertainty: sys_p
         positive_total_uncertainty: terr_p
-        quasisystematic_uncertainty: quasisys_pm
         random_uncertainty: random_pm
         units: K
       air_temperature_negative_systematic_uncertainty:
-        description: -ve Systematic uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Negative systematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_negative_systematic_uncertainty
+        long_name: sys_m
         units: K
       air_temperature_negative_total_uncertainty:
-        description: negative uncertainty of temperature
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_negative_total_uncertainty
+        long_name: terr_m
         units: K
       air_temperature_positive_systematic_uncertainty:
-        description: +ve Systematic uncertainty
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive systematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_positive_systematic_uncertainty
+        long_name: sys_p
         units: K
       air_temperature_positive_total_uncertainty:
-        description: positive uncertainty of temperature
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_positive_total_uncertainty
-        units: K
-      air_temperature_quasisystematic_uncertainty:
-        description: +ve/-ve Quasi-systematic
-        dtype: float32
-        long_name: air_temperature_quasisystematic_uncertainty
+        long_name: terr_p
         units: K
       air_temperature_random_uncertainty:
-        description: +ve/-ve Random
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Random uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
         dtype: float32
-        long_name: air_temperature_random_uncertainty
+        long_name: random_pm
         units: K
       alternative_name:
-        description: Alternative name for station
+        description: This describes the location of the station where measurements were taken. There are four elements separated by an underscore. The first element (two letters) indicates the State, the second element indicates the nearest city, and the last two elements describe a vector from the city to the station. The distance is given in statute miles (1 statute mile = 1609.344 metres) and the bearing is given in the 16-element compass rose. For example, station "VA_Charlottesville_2_SSE" refers to a station located 2 miles South-South-East of Charlottesville, Virginia.
         dtype: object
         long_name: sitename
-      downward_shortwave_irradiance_at_earth_surface:
-        description: Average global solar radiation received
-        dtype: float32
-        flag: sr_flag
-        long_name: downward_shortwave_irradiance_at_earth_surface
-        units: W m-2
-      downward_shortwave_irradiance_at_earth_surface_quality_flag:
-        description: QC flag for the average global solar radiation measurement
-        dtype: float32
-        long_name: downward_shortwave_irradiance_at_earth_surface_quality_flag
-      location_latitude:
-        description: Latitude of the station (deg. North)
+      latitude:
+        description: Latitude of the measurement station, -90 to 90.
         dtype: float32
         long_name: latitude
         units: degree_north
-      location_longitude:
-        description: Longitude of the station (deg. East)
+      logbook_version:
+        description: LogBook software and version.
+        dtype: float32
+        long_name: crx_vn
+      longitude:
+        description: Longitude of the measurement station, -180.0 to 180.0.
         dtype: float32
         long_name: longitude
         units: degree_east
-      logbook_version:
-        description: The version number of the station datalogger program that was in effect at the time of the observation
-        dtype: object
-        long_name: crx_vn
       relative_humidity:
-        description: All USCRN stations now report 5-minute relative humidity averages, however the two Asheville, NC stations reported only hourly RH values until 2007-02-22.
+        description: This parameter is the ratio of the amount of atmospheric moisture present in the air relative to the amount that would be present if the air were saturated with respect to water or ice. This ratio is multiplied by 100 to provide numbers in percent (%). The measurements are taken at a height of 2 metres above the ground surface. The instrument is a capacitive thin-film device. It measures the flow of electricity across two electrodes separated by a polymer film. The capacitance of the film is converted to relative humidity by a calibration equation. The values are averaged over 5-minute periods, obtained by selecting "sub-hourly" aggregation period. Other aggregation periods ("hourly", "daily") are also available, in which case the results are based on further averages of the 5-minute data. A quality flag is also available for this variable.
         dtype: float32
-        flag: rh_flag
-        long_name: average_relative_humidity
+        long_name: relative_humidity
+        quality_flag: rh_flag
         units: '%'
       relative_humidity_quality_flag:
-        description: QC flag for the relative humidity measurement
+        description: This parameter indicates if the "Relative humidity" (described in this list) may be used because it is based on an average of good data (value of 0), or if it should be treated with suspicion because erroneous data were detected (value of 3).
         dtype: float32
-        long_name: average_relative_humidity_quality_flag
+        long_name: rh_flag
       report_id:
-        description: Identifier in the USCRN meta-database
+        description: Link to header information.
+        dtype: float32
         long_name: id
       report_timestamp:
-        description: observation date time UTC
+        description: This parameter provides the observation date and time, including time zone information with respect to UTC (e.g. 1991-01-01 12:00:00+0).
         dtype: datetime64[ns]
         long_name: date_of_observation
       soil_moisture_5cm_from_earth_surface:
-        description: Average soil moisture at 5 cm below the surface
+        description: Average content of liquid water in a surface soil layer of 0 to 5 cm depth expressed as m3 water per m3 soil aggregation period.
         dtype: float32
-        long_name: soil_moisture_5cm_from_earth_surface
+        long_name: soil_moisture_5
         units: m3 m-3
       soil_temperature:
-        description: USCRN stations have multiple co-located soil sensors that record independent measurements. The soil values reported in this dataset are calculated from these multiple independent measurements. Soil moisture is the ratio of water volume over sample volume (m^3 water m^-3 soil).
+        description: Average infrared temperature of the soil measured using infrared thermal imaging technology, over the aggregation period.
         dtype: float32
-        flag: st_flag
-        long_name: average_soil_temperature
+        long_name: surface_temperature
         processing_level: st_type
+        quality_flag: st_flag
         units: K
       soil_temperature_5cm_from_earth_surface:
-        description: Average soil temperature at 5 cm below the surface
+        description: Average soil temperature measured at 5 cm below the surface level over the aggregation period.
         dtype: float32
-        long_name: soil_temperature_5cm_from_earth_surface
+        long_name: soil_temperature_5
         units: K
       soil_temperature_processing_level:
-        description: The type of infrared surface temperature measurement
+        description: 'This parameter indicates the level of processing applied to the soil temperature measurement: raw data (''R''), corrected data (''C''). A letter ''U'' indicates that this information is unknown.'
         dtype: float32
-        long_name: soil_temperature_processing_level
+        long_name: st_type
       soil_temperature_processing_level_quality_flag:
-        description: QC flag for the surface temperature measurement
+        description: A value of 0 in this parameter indicates that the data processing of soil temperature did not return any error.
         dtype: float32
-        long_name: soil_temperature_processing_level_quality_flag
+        long_name: st_flag
+      solar_irradiance:
+        description: The quantity with standard name solar_irradiance, often called Total Solar Irradiance (TSI), is the radiation from the sun integrated over the whole electromagnetic spectrum and over the entire solar disk. The quantity applies outside the atmosphere, by default at a distance of one astronomical unit from the sun, but a coordinate or scalar coordinate variable of distance_from_sun can be used to specify a value other than the default. "Irradiance" means the power per unit area (called radiative flux in other standard names), the area being normal to the direction of flow of the radiant energy.
+        dtype: float32
+        long_name: solar_radiation
+        quality_flag: sr_flag
+        units: W m-2
+      solar_irradiance_quality_flag:
+        description: Quality indicator variable 'solar_irradiance'. 0 denotes good data and 3 denotes erroneous data.
+        dtype: float32
+        long_name: sr_flag
       primary_station_id:
-        description: Station identification code
+        description: This is the station identification code.
         dtype: object
         long_name: wbanno
       wetness:
@@ -1167,19 +1336,9 @@ sources:
         quality_flag: wet_flag
         units: Ohms
       wetness_quality_flag:
-        description: QC flag for the wetness measurement
+        description: This parameter indicates if the "Wetness" (described in this list) may be used because it is based on good data (value of 0) or if it should be treated with suspicion because erroneous data were detected (non-zero value).
         dtype: float32
-        long_name: wetness_quality_flag
-      wind_speed_2_meters_from_earth_surface:
-        description: Average wind speed, in meters per second, at a height of 1.5 meters
-        dtype: float32
-        flag: wind_flag
-        long_name: wind_speed_2_meters_from_earth_surface
-        units: m s-1
-      wind_speed_2_meters_from_earth_surface_quality_flag:
-        description: QC flag for the wind speed measurement
-        dtype: float32
-        long_name: wind_speed_2_meters_from_earth_surface_quality_flag
+        long_name: wet_flag
     mandatory_columns:
     - alternative_name
     - primary_station_id
@@ -1210,6 +1369,9 @@ sources:
     - columns:
       - terr_p
       group_name: positive_total_uncertainty
+    - columns:
+      - terr_m
+      group_name: negative_total_uncertainty
     - columns:
       - quasisys_pm
       group_name: quasisystematic_uncertainty

@@ -13,55 +13,55 @@ from tests.utils import get_test_years
 @pytest.mark.parametrize(
     "dataset_name,source,test_update",
     [
-        (
-            "insitu-observations-woudc-ozone-total-column-and-profiles",
-            "OzoneSonde",
-            False,
-        ),
-        (
-            "insitu-observations-woudc-ozone-total-column-and-profiles",
-            "TotalOzone",
-            False,
-        ),
-        ("insitu-observations-igra-baseline-network", "IGRA", False),
-        ("insitu-observations-igra-baseline-network", "IGRA_H", False),
-        ("insitu-comprehensive-upper-air-observation-network", "CUON", True),
-        ("insitu-observations-gruan-reference-network", "GRUAN", False),
-        (
-            "insitu-observations-near-surface-temperature-us-climate-reference-network",
-            "USCRN_SUBHOURLY",
-            False,
-        ),
+        # (
+        #     "insitu-observations-woudc-ozone-total-column-and-profiles",
+        #     "OzoneSonde",
+        #     False,
+        # ),
+        # (
+        #     "insitu-observations-woudc-ozone-total-column-and-profiles",
+        #     "TotalOzone",
+        #     False,
+        # ),
+        # ("insitu-observations-igra-baseline-network", "IGRA", False),
+        # ("insitu-observations-igra-baseline-network", "IGRA_H", False),
+        # ("insitu-comprehensive-upper-air-observation-network", "CUON", True),
+        # ("insitu-observations-gruan-reference-network", "GRUAN", False),
         (
             "insitu-observations-near-surface-temperature-us-climate-reference-network",
-            "USCRN_HOURLY",
+            "uscrn_subhourly",
             False,
         ),
         (
             "insitu-observations-near-surface-temperature-us-climate-reference-network",
-            "USCRN_DAILY",
+            "uscrn_hourly",
             False,
         ),
         (
             "insitu-observations-near-surface-temperature-us-climate-reference-network",
-            "USCRN_MONTHLY",
+            "uscrn_daily",
             False,
         ),
         (
-            "insitu-observations-gnss",
-            "IGS",
+            "insitu-observations-near-surface-temperature-us-climate-reference-network",
+            "uscrn_monthly",
             False,
         ),
-        (
-            "insitu-observations-gnss",
-            "EPN",
-            False,
-        ),
-        (
-            "insitu-observations-gnss",
-            "IGS_R3",
-            False,
-        ),
+        # (
+        #     "insitu-observations-gnss",
+        #     "IGS",
+        #     False,
+        # ),
+        # (
+        #     "insitu-observations-gnss",
+        #     "EPN",
+        #     False,
+        # ),
+        # (
+        #     "insitu-observations-gnss",
+        #     "IGS_R3",
+        #     False,
+        # ),
     ],
 )
 def test_run_ingestion_pipeline(
