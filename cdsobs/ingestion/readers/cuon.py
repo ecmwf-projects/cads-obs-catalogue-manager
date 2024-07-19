@@ -213,6 +213,23 @@ def read_table_data(
 def filter_batch_stations(
     files: Iterable[Path], time_space_batch: TimeSpaceBatch
 ) -> list[Path]:
+    station_metadata = get_cuon_stations()
+    selected_end, selected_start = _get_times_in_seconds_from(
+        time_space_batch.time_batch
+    )
+    lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
+    lon_mask = between(station_metadata.lon, lon_start, lon_end)
+    lat_mask = between(station_metadata.lat, lat_start, lat_end)
+    time_mask = numpy.logical_and(
+        station_metadata["start of records"] <= selected_end,
+        station_metadata["end of records"] >= selected_start,
+    )
+    mask = lon_mask * lat_mask * time_mask
+    batch_stations = station_metadata.loc[mask].index
+    return [f for f in files if f.name.split("_")[0] in batch_stations]
+
+
+def get_cuon_stations():
     # Read file with CUON stations locations
     columns = [
         "start of records",
@@ -228,19 +245,7 @@ def filter_batch_stations(
     )
     station_metadata = pandas.read_json(cuon_stations_file, orient="index")
     station_metadata.columns = columns
-    selected_end, selected_start = _get_times_in_seconds_from(
-        time_space_batch.time_batch
-    )
-    lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
-    lon_mask = between(station_metadata.lon, lon_start, lon_end)
-    lat_mask = between(station_metadata.lat, lat_start, lat_end)
-    time_mask = numpy.logical_and(
-        station_metadata["start of records"] <= selected_end,
-        station_metadata["end of records"] >= selected_start,
-    )
-    mask = lon_mask * lat_mask * time_mask
-    batch_stations = station_metadata.loc[mask].index
-    return [f for f in files if f.name.split("_")[0] in batch_stations]
+    return station_metadata
 
 
 def read_cuon_netcdfs(
