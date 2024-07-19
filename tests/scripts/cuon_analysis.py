@@ -43,31 +43,37 @@ def get_char_var_data(inc_group, variable):
 def check_primary_keys_consistency():
     idir = Path("/data/public/converted_v19")
     for ipath in idir.glob("*.nc"):
-        with h5netcdf.File(ipath) as inc:
-            station_table = inc.groups["station_configuration"]
-            header_table = inc.groups["header_table"]
-            observations_table = inc.groups["observations_table"]
-            station_ids_station_table = get_char_var_data(station_table, "primary_id")
-            station_ids_header_table = get_char_var_data(
-                header_table, "primary_station_id"
-            )
-            ids_ok = set(station_ids_station_table) == set(station_ids_header_table)
-            if not ids_ok:
-                logger.warning(f"Station ids wrong for {ipath}")
-            records_ok = set(station_table["record_number"][:]) == set(
-                header_table["station_record_number"][:]
-            )
-            if not records_ok:
-                logger.warning(f"Station record number wrong for {ipath}")
-            report_ids_observations_table = get_char_var_data(
-                observations_table, "report_id"
-            )
-            report_ids_header_table = get_char_var_data(header_table, "report_id")
-            report_ids_ok = set(report_ids_observations_table) == set(
-                report_ids_header_table
-            )
-            if not report_ids_ok:
-                logger.warning(f"Station record ids wrong for {ipath}")
+        logger.info(f"Checking {ipath}")
+        try:
+            check_primary_keys_consistency_file(ipath)
+        except Exception as e:
+            logger.info(f"Exception captured for {ipath}: {e}")
+
+
+def check_primary_keys_consistency_file(ipath):
+    with h5netcdf.File(ipath) as inc:
+        station_table = inc.groups["station_configuration"]
+        header_table = inc.groups["header_table"]
+        observations_table = inc.groups["observations_table"]
+        station_ids_station_table = get_char_var_data(station_table, "primary_id")
+        station_ids_header_table = get_char_var_data(header_table, "primary_station_id")
+        ids_ok = set(station_ids_station_table) == set(station_ids_header_table)
+        if not ids_ok:
+            logger.warning(f"Station ids wrong for {ipath}")
+        records_ok = set(station_table["record_number"][:]) == set(
+            header_table["station_record_number"][:]
+        )
+        if not records_ok:
+            logger.warning(f"Station record number wrong for {ipath}")
+        report_ids_observations_table = get_char_var_data(
+            observations_table, "report_id"
+        )
+        report_ids_header_table = get_char_var_data(header_table, "report_id")
+        report_ids_ok = set(report_ids_observations_table) == set(
+            report_ids_header_table
+        )
+        if not report_ids_ok:
+            logger.warning(f"Station record ids wrong for {ipath}")
 
 
 if __name__ == "__main__":
