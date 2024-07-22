@@ -15,8 +15,8 @@ from cdsobs import constants
 from cdsobs.utils.types import ByteSize
 
 
-def compute_hash(ipath: Path, hash_function=hashlib.sha256, block_size=1048576):
-    """Compute a hash in a memory efficient way using 1Mb blocks."""
+def compute_hash(ipath: Path, hash_function=hashlib.sha256, block_size=10048576):
+    """Compute a hash in a memory efficient way using 10Mb blocks."""
     with ipath.open("rb") as f:
         file_hash = hash_function()
         while True:

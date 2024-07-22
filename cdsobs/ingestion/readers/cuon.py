@@ -339,7 +339,7 @@ def get_denormalized_table_file(
     spatial_mask = lon_mask * lat_mask
     if spatial_mask.sum() < len(spatial_mask):
         logger.info(
-            f"Stations have been found outside the SpatialBatch ranges for {file_and_slices.path}, "
+            f"Records have been found outside the SpatialBatch ranges for {file_and_slices.path}, "
             "filtering out."
         )
         dataset_cdm["header_table"] = dataset_cdm["header_table"].loc[spatial_mask]
