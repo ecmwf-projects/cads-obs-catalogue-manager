@@ -12,9 +12,13 @@ from cdsobs.observation_catalogue.repositories.catalogue import CatalogueReposit
 from cdsobs.observation_catalogue.schemas.constraints import ConstraintsSchema
 from cdsobs.retrieve.filter_datasets import between
 from cdsobs.retrieve.models import RetrieveArgs
-from cdsobs.utils.logutils import SizeError, get_logger
+from cdsobs.utils.logutils import SizeError, get_logger, sizeof_fmt
 
 logger = get_logger(__name__)
+
+
+class DataNotFoundException(RuntimeError):
+    pass
 
 
 def estimate_data_size(
@@ -177,7 +181,9 @@ def _check_data_size(
     estimated_data_size = estimate_data_size(entries, retrieve_args)
     logger.info(f"Estimated size of the data to retrieve is {estimated_data_size}B")
     if estimated_data_size > size_limit:
-        raise SizeError("Requested data size is over the size limit.")
+        raise SizeError(
+            f"Requested data size is over the size limit ({sizeof_fmt(size_limit)})."
+        )
 
 
 def _get_catalogue_entries(
@@ -189,7 +195,7 @@ def _get_catalogue_entries(
         sort=True,
     )
     if len(entries) == 0:
-        raise RuntimeError(
+        raise DataNotFoundException(
             "No entries found in catalogue for this parameter combination."
         )
     logger.info("Retrieved list of required partitions from the catalogue.")

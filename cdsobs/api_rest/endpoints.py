@@ -15,12 +15,14 @@ from cdsobs.ingestion.core import get_variables_from_service_definition
 from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.retrieve.retrieve_services import (
+    DataNotFoundException,
     _get_catalogue_entries,
     get_urls_and_check_size,
 )
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.storage import S3Client
+from cdsobs.utils.logutils import SizeError
 from cdsobs.utils.utils import get_database_session
 
 router = APIRouter()
@@ -55,12 +57,26 @@ def get_object_urls_and_check_size(
 ) -> list[str]:
     # Query the storage to get the URLS of the files that contain the data requested
     retrieve_args = retrieve_payload.retrieve_args
-    catalogue_repository = CatalogueRepository(session.catalogue_session)
-    entries = _get_catalogue_entries(catalogue_repository, retrieve_args)
+    try:
+        catalogue_repository = CatalogueRepository(session.catalogue_session)
+        entries = _get_catalogue_entries(catalogue_repository, retrieve_args)
+    except DataNotFoundException as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error: Observations API failed: {e}"
+        )
     s3client = S3Client.from_config(session.cdsobs_config.s3config)
-    object_urls = get_urls_and_check_size(
-        entries, retrieve_args, retrieve_payload.config.size_limit, s3client.base
-    )
+    try:
+        object_urls = get_urls_and_check_size(
+            entries, retrieve_args, retrieve_payload.config.size_limit, s3client.base
+        )
+    except SizeError as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error: Observations API failed: {e}"
+        )
     return object_urls
 
 
