@@ -17,7 +17,8 @@ from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRe
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.schemas.catalogue import CatalogueSchema
 from cdsobs.storage import S3Client
-from cdsobs.utils.logutils import ConfigError, get_logger
+from cdsobs.utils.exceptions import ConfigError
+from cdsobs.utils.logutils import get_logger
 
 logger = get_logger(__name__)
 
