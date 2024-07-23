@@ -12,13 +12,10 @@ from cdsobs.observation_catalogue.repositories.catalogue import CatalogueReposit
 from cdsobs.observation_catalogue.schemas.constraints import ConstraintsSchema
 from cdsobs.retrieve.filter_datasets import between
 from cdsobs.retrieve.models import RetrieveArgs
-from cdsobs.utils.logutils import SizeError, get_logger, sizeof_fmt
+from cdsobs.utils.exceptions import DataNotFoundException, SizeError
+from cdsobs.utils.logutils import get_logger, sizeof_fmt
 
 logger = get_logger(__name__)
-
-
-class DataNotFoundException(RuntimeError):
-    pass
 
 
 def estimate_data_size(

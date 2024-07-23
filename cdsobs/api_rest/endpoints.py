@@ -15,14 +15,13 @@ from cdsobs.ingestion.core import get_variables_from_service_definition
 from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.retrieve.retrieve_services import (
-    DataNotFoundException,
     _get_catalogue_entries,
     get_urls_and_check_size,
 )
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.storage import S3Client
-from cdsobs.utils.logutils import SizeError
+from cdsobs.utils.exceptions import DataNotFoundException, SizeError
 from cdsobs.utils.utils import get_database_session
 
 router = APIRouter()
