@@ -20,7 +20,7 @@ from cdsobs.observation_catalogue.schemas.catalogue import (
     CliCatalogueFilters,
 )
 from cdsobs.storage import S3Client
-from cdsobs.utils.logutils import ConfigError
+from cdsobs.utils.exceptions import ConfigError
 
 console = Console()
 

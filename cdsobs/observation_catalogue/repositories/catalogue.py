@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from cdsobs.observation_catalogue.models import Catalogue
 from cdsobs.observation_catalogue.repositories.base_repository import BaseRepository
-from cdsobs.utils.logutils import CatalogueException
+from cdsobs.utils.exceptions import CatalogueException
 
 
 class CatalogueRepository(BaseRepository):
