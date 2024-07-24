@@ -85,7 +85,7 @@ def main(old_path):
             new_header_columns = [list(hc.values())[0] for hc in header_columns]
             new_data["sources"][source]["header_columns"] = new_header_columns
     # Dump to YAML
-    output_path = Path(str(old_path).replace(".json", ".yml"))
+    output_path = Path((str(old_path) + "new").replace(".json", ".yml"))
     with output_path.open("w") as op:
         op.write(yaml.dump(new_data))
 

@@ -50,12 +50,12 @@
     "maximum_soil_temperature_quality_flag",
     "minimum_soil_temperature",
     "minimum_soil_temperature_quality_flag",
-    "solar_irradiance",
-    "solar_irradiance_quality_flag",
-    "maximum_solar_irradiance",
-    "maximum_solar_irradiance_quality_flag",
-    "minimum_solar_irradiance",
-    "minimum_solar_irradiance_quality_flag",
+    "downward_shortwave_irradiance_at_earth_surface",
+    "downward_shortwave_irradiance_at_earth_surface_quality_flag",
+    "downward_shortwave_irradiance_at_earth_surface_max",
+    "downward_shortwave_irradiance_at_earth_surface_max_quality_flag",
+    "downward_shortwave_irradiance_at_earth_surface_min",
+    "downward_shortwave_irradiance_at_earth_surface_min_quality_flag",
     "soil_moisture_5cm_from_earth_surface",
     "soil_moisture_10cm_from_earth_surface",
     "soil_moisture_20cm_from_earth_surface",
@@ -244,9 +244,9 @@
         },
         "solar_radiation": {
           "units": "W m-2",
-          "name_for_output": "solar_irradiance",
-          "long_name": "solar_irradiance",
-          "description": "The quantity with standard name solar_irradiance, often called Total Solar Irradiance (TSI), is the radiation from the sun integrated over the whole electromagnetic spectrum and over the entire solar disk. The quantity applies outside the atmosphere, by default at a distance of one astronomical unit from the sun, but a coordinate or scalar coordinate variable of distance_from_sun can be used to specify a value other than the default. \"Irradiance\" means the power per unit area (called radiative flux in other standard names), the area being normal to the direction of flow of the radiant energy.",
+          "name_for_output": "downward_shortwave_irradiance_at_earth_surface",
+          "long_name": "downward_shortwave_irradiance_at_earth_surface",
+          "description": "The quantity with standard name downward_shortwave_irradiance_at_earth_surface, often called Total Solar Irradiance (TSI), is the radiation from the sun integrated over the whole electromagnetic spectrum and over the entire solar disk. The quantity applies outside the atmosphere, by default at a distance of one astronomical unit from the sun, but a coordinate or scalar coordinate variable of distance_from_sun can be used to specify a value other than the default. \"Irradiance\" means the power per unit area (called radiative flux in other standard names), the area being normal to the direction of flow of the radiant energy.",
           "quality_flag": "sr_flag"
         },
         "surface_temperature": {
@@ -291,9 +291,9 @@
           "quality_flag": "wind_flag"
         },
         "sr_flag": {
-          "name_for_output": "solar_irradiance_quality_flag",
-          "long_name": "solar_irradiance_quality_flag",
-          "description": "Quality indicator variable 'solar_irradiance'. 0 denotes good data and 3 denotes erroneous data."
+          "name_for_output": "downward_shortwave_irradiance_at_earth_surface_quality_flag",
+          "long_name": "downward_shortwave_irradiance_at_earth_surface_quality_flag",
+          "description": "Quality indicator variable 'downward_shortwave_irradiance_at_earth_surface'. 0 denotes good data and 3 denotes erroneous data."
         },
         "st_flag": {
           "name_for_output": "soil_temperature_processing_level_quality_flag",
@@ -583,39 +583,39 @@
         },
         "solarad": {
           "units": "W m-2",
-          "name_for_output": "solar_irradiance",
-          "long_name": "solar_irradiance",
-          "description": "The quantity with standard name solar_irradiance, often called Total Solar Irradiance (TSI), is the radiation from the sun integrated over the whole electromagnetic spectrum and over the entire solar disk. The quantity applies outside the atmosphere, by default at a distance of one astronomical unit from the sun, but a coordinate or scalar coordinate variable of distance_from_sun can be used to specify a value other than the default. \"Irradiance\" means the power per unit area (called radiative flux in other standard names), the area being normal to the direction of flow of the radiant energy.",
+          "name_for_output": "downward_shortwave_irradiance_at_earth_surface",
+          "long_name": "downward_shortwave_irradiance_at_earth_surface",
+          "description": "The quantity with standard name downward_shortwave_irradiance_at_earth_surface, often called Total Solar Irradiance (TSI), is the radiation from the sun integrated over the whole electromagnetic spectrum and over the entire solar disk. The quantity applies outside the atmosphere, by default at a distance of one astronomical unit from the sun, but a coordinate or scalar coordinate variable of distance_from_sun can be used to specify a value other than the default. \"Irradiance\" means the power per unit area (called radiative flux in other standard names), the area being normal to the direction of flow of the radiant energy.",
           "quality_flag": "solarad_flag"
         },
         "solarad_flag": {
-          "name_for_output": "solar_irradiance_quality_flag",
-          "long_name": "solar_irradiance_quality_flag",
-          "description": "Quality indicator variable 'solar_irradiance'. 0 denotes good data and 3 denotes erroneous data."
+          "name_for_output": "downward_shortwave_irradiance_at_earth_surface_quality_flag",
+          "long_name": "downward_shortwave_irradiance_at_earth_surface_quality_flag",
+          "description": "Quality indicator variable 'downward_shortwave_irradiance_at_earth_surface'. 0 denotes good data and 3 denotes erroneous data."
         },
         "solarad_max": {
           "units": "W m-2",
-          "name_for_output": "maximum_solar_irradiance",
-          "long_name": "maximum_solar_irradiance",
+          "name_for_output": "downward_shortwave_irradiance_at_earth_surface_max",
+          "long_name": "downward_shortwave_irradiance_at_earth_surface_max",
           "description": "Maximum power per unit area (surface power density) received from the Sun in the form of electromagnetic radiation in the wavelength range of the measuring instrument. Solar irradiance is measured in watts per square metre (W/m2) in SI units at the Earth surface over specified period.",
           "quality_flag": "solarad_max_flag"
         },
         "solarad_max_flag": {
-          "name_for_output": "maximum_solar_irradiance_quality_flag",
-          "long_name": "maximum_solar_irradiance_quality_flag",
-          "description": "Quality indicator for the variable 'maximum_solar_irradiance'. 0 denotes good data and 3 denotes erroneous data."
+          "name_for_output": "downward_shortwave_irradiance_at_earth_surface_max_quality_flag",
+          "long_name": "downward_shortwave_irradiance_at_earth_surface_max_quality_flag",
+          "description": "Quality indicator for the variable 'downward_shortwave_irradiance_at_earth_surface_max'. 0 denotes good data and 3 denotes erroneous data."
         },
         "solarad_min": {
           "units": "W m-2",
-          "name_for_output": "minimum_solar_irradiance",
-          "long_name": "minimum_downward_shortwave_irradiance_at_earth_surfac",
+          "name_for_output": "downward_shortwave_irradiance_at_earth_surface_min",
+          "long_name": "downward_shortwave_irradiance_at_earth_surface_min",
           "description": "Minimum power per unit area (surface power density) received from the Sun in the form of electromagnetic radiation in the wavelength range of the measuring instrument. Solar irradiance is measured in watts per square metre (W/m2) in SI unitsat the Earth surface.",
           "quality_flag": "solarad_min_flag"
         },
         "solarad_min_flag": {
-          "name_for_output": "minimum_solar_irradiance_quality_flag",
-          "long_name": "minimum_solar_irradiance_quality_flag",
-          "description": "Quality indicator for variable 'minimum_solar_irradiance'. 0 denotes good data and 3 denotes erroneous data."
+          "name_for_output": "downward_shortwave_irradiance_at_earth_surface_min_quality_flag",
+          "long_name": "downward_shortwave_irradiance_at_earth_surface_min_quality_flag",
+          "description": "Quality indicator for variable 'downward_shortwave_irradiance_at_earth_surface_min'. 0 denotes good data and 3 denotes erroneous data."
         },
         "sur_temp": {
           "units": "K",
