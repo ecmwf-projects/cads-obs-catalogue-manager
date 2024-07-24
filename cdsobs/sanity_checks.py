@@ -107,7 +107,7 @@ def check_retrieved_dataset(
     if not times_are_in_bounds:
         logger.warning("report_timestamp file has dates outside the expected interval")
     if times_index.isnull().any():
-        logger.warning("Null values foung in report_timestamp")
+        logger.warning("Null values found in report_timestamp")
     # Check observed_variables
     observed_variables = output_dataset.observed_variable
     if observed_variables.dtype.kind != "S":

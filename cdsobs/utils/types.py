@@ -4,8 +4,8 @@ import pydantic
 from pydantic import AfterValidator
 from pydantic_core import PydanticCustomError
 
-LonTileSize = Literal[360, 180, 90, 45, 30, 20, 15, 10, 5]
-LatTileSize = Literal[180, 90, 45, 30, 20, 15, 10, 5]
+LonTileSize = Literal[360, 180, 90, 45, 30, 20, 15, 10, 5, 3, 2, 1]
+LatTileSize = Literal[180, 90, 45, 30, 20, 15, 10, 5, 3, 2, 1]
 TimeTileSize = Literal["month", "year"]
 ByteSize = Annotated[int, pydantic.Field(gt=0)]
 StrNotBlank = Annotated[str, pydantic.Field(min_length=1)]
