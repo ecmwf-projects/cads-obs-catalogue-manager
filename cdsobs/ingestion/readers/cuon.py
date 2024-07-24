@@ -4,7 +4,7 @@ import os
 import statistics
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, List
 
 import cftime
 import dask
@@ -213,6 +213,23 @@ def read_table_data(
 def filter_batch_stations(
     files: Iterable[Path], time_space_batch: TimeSpaceBatch
 ) -> list[Path]:
+    station_metadata = get_cuon_stations()
+    selected_end, selected_start = _get_times_in_seconds_from(
+        time_space_batch.time_batch
+    )
+    lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
+    lon_mask = between(station_metadata.lon, lon_start, lon_end)
+    lat_mask = between(station_metadata.lat, lat_start, lat_end)
+    time_mask = numpy.logical_and(
+        station_metadata["start of records"] <= selected_end,
+        station_metadata["end of records"] >= selected_start,
+    )
+    mask = lon_mask * lat_mask * time_mask
+    batch_stations = station_metadata.loc[mask].index
+    return [f for f in files if f.name.split("_")[0] in batch_stations]
+
+
+def get_cuon_stations():
     # Read file with CUON stations locations
     columns = [
         "start of records",
@@ -228,19 +245,7 @@ def filter_batch_stations(
     )
     station_metadata = pandas.read_json(cuon_stations_file, orient="index")
     station_metadata.columns = columns
-    selected_end, selected_start = _get_times_in_seconds_from(
-        time_space_batch.time_batch
-    )
-    lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
-    lon_mask = between(station_metadata.lon, lon_start, lon_end)
-    lat_mask = between(station_metadata.lat, lat_start, lat_end)
-    time_mask = numpy.logical_and(
-        station_metadata["start of records"] <= selected_end,
-        station_metadata["end of records"] >= selected_start,
-    )
-    mask = lon_mask * lat_mask * time_mask
-    batch_stations = station_metadata.loc[mask].index
-    return [f for f in files if f.name.split("_")[0] in batch_stations]
+    return station_metadata
 
 
 def read_cuon_netcdfs(
@@ -262,12 +267,7 @@ def read_cuon_netcdfs(
     cdm_tables = read_cdm_tables(config.cdm_tables_location, tables_to_use)
     files_and_slices = read_all_nc_slices(files, time_space_batch.time_batch)
     denormalized_tables_futures = []
-    if os.environ.get("CADSOBS_AVOID_MULTIPROCESS"):
-        # This is for the tests.
-        scheduler = "synchronous"
-    else:
-        # Do not use threads as HDF5 is not yet thread safe.
-        scheduler = "processes"
+    scheduler = get_scheduler()
     # Check for emptiness
     if len(files_and_slices) == 0:
         raise EmptyBatchException
@@ -287,6 +287,16 @@ def read_cuon_netcdfs(
     if all([dt is None for dt in denormalized_tables]):
         raise EmptyBatchException
     return pandas.concat(denormalized_tables)
+
+
+def get_scheduler():
+    if os.environ.get("CADSOBS_AVOID_MULTIPROCESS"):
+        # This is for the tests.
+        scheduler = "synchronous"
+    else:
+        # Do not use threads as HDF5 is not yet thread safe.
+        scheduler = "processes"
+    return scheduler
 
 
 def _get_denormalized_table_file(*args):
@@ -329,7 +339,7 @@ def get_denormalized_table_file(
     spatial_mask = lon_mask * lat_mask
     if spatial_mask.sum() < len(spatial_mask):
         logger.info(
-            f"Stations have been found outside the SpatialBatch ranges for {file_and_slices.path}, "
+            f"Records have been found outside the SpatialBatch ranges for {file_and_slices.path}, "
             "filtering out."
         )
         dataset_cdm["header_table"] = dataset_cdm["header_table"].loc[spatial_mask]
@@ -487,17 +497,16 @@ def read_nc_file_slices(
     return result
 
 
-def read_all_nc_slices(
-    files: Iterable, time_batch: TimeBatch
-) -> list[CUONFileandSlices]:
+def read_all_nc_slices(files: List, time_batch: TimeBatch) -> list[CUONFileandSlices]:
     """Read variable slices of all station files using h5py."""
     tocs = []
 
     for file in files:
         logger.info(f"Reading slices from {file=}")
-        toc = read_nc_file_slices(Path(file), time_batch)
-        if toc is not None:
-            tocs.append(toc)
-        else:
-            logger.warning("")
+        toc = dask.delayed(read_nc_file_slices)(Path(file), time_batch)
+        tocs.append(toc)
+
+    scheduler = get_scheduler()
+    tocs = dask.compute(*tocs, scheduler=scheduler, num_workers=min(len(files), 32))
+    tocs = [t for t in tocs if t is not None]
     return tocs

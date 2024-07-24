@@ -16,8 +16,9 @@ from cdsobs.observation_catalogue.models import (
 from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.schemas.catalogue import CliCatalogueFilters
-from cdsobs.utils.logutils import ConfigError, get_logger
+from cdsobs.utils.logutils import get_logger
 
+from ..utils.exceptions import ConfigError
 from ._utils import (
     PAGE_SIZE,
     CliException,
