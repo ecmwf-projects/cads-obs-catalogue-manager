@@ -161,7 +161,6 @@ def copy_outside(init_config, dest_config, dataset, dest_dataset):
             # namespace may be different, so we need another 3 client here
             dest_s3client = S3Client.from_config(dest_config.s3config)
             new_assets = s3_copy(dest_s3client, entries, dest_dataset)
-            dest_s3client = init_s3client
         else:
             # get new destination client as current client
             dest_s3client = S3Client.from_config(dest_config.s3config)
