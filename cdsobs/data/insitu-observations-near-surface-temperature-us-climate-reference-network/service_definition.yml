@@ -466,10 +466,10 @@ sources:
         solarad_min_flag: minimum_solar_irradiance_quality_flag
         sur_temp: soil_temperature
         sur_temp_flag: soil_temperature_quality_flag
-        sur_temp_max: hourly_maximum_soil_temperature
-        sur_temp_max_flag: hourly_maximum_soil_temperature_flag
-        sur_temp_min: hourly_minimum_soil_temperature
-        sur_temp_min_flag: hourly_minimum_soil_temperature_quality_flag
+        sur_temp_max: maximum_soil_temperature
+        sur_temp_max_flag: maximum_soil_temperature_flag
+        sur_temp_min: minimum_soil_temperature
+        sur_temp_min_flag: minimum_soil_temperature_quality_flag
         sur_temp_type: soil_temperature_processing_level
         sys_m: air_temperature_negative_systematic_uncertainty
         sys_p: air_temperature_positive_systematic_uncertainty
@@ -608,13 +608,13 @@ sources:
         dtype: float32
         long_name: tmaxerr_p
         units: K
-      hourly_maximum_soil_temperature:
+      maximum_soil_temperature:
         description: From measurements of "soil temperature" (described in this list), this parameter provides the highest value measured during the aggregation period.
         dtype: float32
         long_name: sur_temp_max
         quality_flag: sur_temp_max_flag
         units: K
-      hourly_maximum_soil_temperature_quality_flag:
+      maximum_soil_temperature_quality_flag:
         description: This parameter indicates if the "Maximum soil temperature" (described in this list) may be used because it is based on good data (value of 0) or if it should be treated with suspicion because erroneous data were detected (value of 3). denotes good data and 3 denotes erroneous data.
         dtype: float32
         long_name: sur_temp_max_flag
@@ -635,13 +635,13 @@ sources:
         dtype: float32
         long_name: tminerr_p
         units: K
-      hourly_minimum_soil_temperature:
+      minimum_soil_temperature:
         description: From measurements of "soil temperature" (described in this list), this parameter provides the lowest value measured during the aggregation period.
         dtype: float32
         long_name: sur_temp_min
         quality_flag: sur_temp_min_flag
         units: K
-      hourly_minimum_soil_temperature_quality_flag:
+      minimum_soil_temperature_quality_flag:
         description: This parameter indicates if the "Minimum soil temperature" (described in this list) may be used because it is based on good data (value of 0) or if it should be treated with suspicion because erroneous data were detected (value of 3).
         dtype: float32
         long_name: sur_temp_min_flag
@@ -827,8 +827,8 @@ sources:
         sitename: alternative_name
         solrad_monthly_avg: monthly_global_solar_radiation
         sur_temp_monthly_avg: soil_temperature
-        sur_temp_monthly_max: monthly_maximum_soil_temperature
-        sur_temp_monthly_min: monthly_minimum_soil_temperature
+        sur_temp_monthly_max: maximum_soil_temperature
+        sur_temp_monthly_min: minimum_soil_temperature
         sur_temp_monthly_type: soil_temperature_processing_level
         sys_m: air_temperature_negative_systematic_uncertainty
         sys_p: air_temperature_positive_systematic_uncertainty
@@ -944,7 +944,7 @@ sources:
         dtype: float32
         long_name: tmaxerr_p
         units: K
-      monthly_maximum_soil_temperature:
+      maximum_soil_temperature:
         description: From measurements of "soil temperature" (described in this list), this parameter provides the highest value measured during the aggregation period.
         dtype: float32
         long_name: sur_temp_monthly_max
@@ -971,7 +971,7 @@ sources:
         dtype: float32
         long_name: tminerr_p
         units: K
-      monthly_minimum_soil_temperature:
+      minimum_soil_temperature:
         description: From measurements of "soil temperature" (described in this list), this parameter provides the lowest value measured during the aggregation period.
         dtype: float32
         long_name: sur_temp_monthly_min
