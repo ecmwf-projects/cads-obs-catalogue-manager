@@ -13,20 +13,20 @@ from tests.utils import get_test_years
 @pytest.mark.parametrize(
     "dataset_name,source,test_update",
     [
-        # (
-        #     "insitu-observations-woudc-ozone-total-column-and-profiles",
-        #     "OzoneSonde",
-        #     False,
-        # ),
-        # (
-        #     "insitu-observations-woudc-ozone-total-column-and-profiles",
-        #     "TotalOzone",
-        #     False,
-        # ),
-        # ("insitu-observations-igra-baseline-network", "IGRA", False),
-        # ("insitu-observations-igra-baseline-network", "IGRA_H", False),
-        # ("insitu-comprehensive-upper-air-observation-network", "CUON", True),
-        # ("insitu-observations-gruan-reference-network", "GRUAN", False),
+        (
+            "insitu-observations-woudc-ozone-total-column-and-profiles",
+            "OzoneSonde",
+            False,
+        ),
+        (
+            "insitu-observations-woudc-ozone-total-column-and-profiles",
+            "TotalOzone",
+            False,
+        ),
+        ("insitu-observations-igra-baseline-network", "IGRA", False),
+        ("insitu-observations-igra-baseline-network", "IGRA_H", False),
+        ("insitu-comprehensive-upper-air-observation-network", "CUON", True),
+        ("insitu-observations-gruan-reference-network", "GRUAN", False),
         (
             "insitu-observations-near-surface-temperature-us-climate-reference-network",
             "uscrn_subhourly",
@@ -47,21 +47,21 @@ from tests.utils import get_test_years
             "uscrn_monthly",
             False,
         ),
-        # (
-        #     "insitu-observations-gnss",
-        #     "IGS",
-        #     False,
-        # ),
-        # (
-        #     "insitu-observations-gnss",
-        #     "EPN",
-        #     False,
-        # ),
-        # (
-        #     "insitu-observations-gnss",
-        #     "IGS_R3",
-        #     False,
-        # ),
+        (
+            "insitu-observations-gnss",
+            "IGS",
+            False,
+        ),
+        (
+            "insitu-observations-gnss",
+            "EPN",
+            False,
+        ),
+        (
+            "insitu-observations-gnss",
+            "IGS_R3",
+            False,
+        ),
     ],
 )
 def test_run_ingestion_pipeline(

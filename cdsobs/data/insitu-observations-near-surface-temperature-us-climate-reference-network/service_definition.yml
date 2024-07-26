@@ -3,7 +3,7 @@ global_attributes:
   licence_list: 20180314_Copernicus_License_V1.1
   responsible_organisation: ECMWF
 out_columns_order:
-- station_name
+- primary_station_id
 - alternative_name
 - report_timestamp
 - report_id
@@ -121,12 +121,12 @@ sources:
         t_daily_min: daily_minimum_air_temperature
         terr_m: air_temperature_negative_total_uncertainty
         terr_p: air_temperature_positive_total_uncertainty
-        tmaxerr_m: air_temperature_max_negative_total_uncertainty
-        tmaxerr_p: air_temperature_max_positive_total_uncertainty
-        tmeanerr_m: air_temperature_mean_negative_total_uncertainty
-        tmeanerr_p: air_temperature_mean_positive_total_uncertainty
-        tminerr_m: air_temperature_min_negative_total_uncertainty
-        tminerr_p: air_temperature_min_positive_total_uncertainty
+        tmaxerr_m: daily_maximum_air_temperature_negative_total_uncertainty
+        tmaxerr_p: daily_maximum_air_temperature_positive_total_uncertainty
+        tmeanerr_m: mean_air_temperature_negative_total_uncertainty
+        tmeanerr_p: mean_air_temperature_positive_total_uncertainty
+        tminerr_m: daily_minimum_air_temperature_negative_total_uncertainty
+        tminerr_p: daily_minimum_air_temperature_positive_total_uncertainty
         wbanno: primary_station_id
         wind_1_5: wind_speed_2_meters_from_earth_surface
         wind_flag: wind_speed_2_meters_from_earth_surface_quality_flag
@@ -203,7 +203,7 @@ sources:
         dtype: float32
         long_name: solarad_daily
         units: MJ m-2
-      latitude:
+      latitude|station_configuration:
         description: Latitude of the measurement station, -90 to 90.
         dtype: float32
         long_name: latitude
@@ -212,7 +212,7 @@ sources:
         description: LogBook software and version.
         dtype: float32
         long_name: crx_vn
-      longitude:
+      longitude|station_configuration:
         description: Longitude of the measurement station, -180.0 to 180.0.
         dtype: float32
         long_name: longitude
@@ -361,7 +361,7 @@ sources:
         description: 'This parameter indicates the level of processing applied to the soil temperature measurement: raw data (''R''), corrected data (''C''). A letter ''U'' indicates that this information is unknown.'
         dtype: float32
         long_name: sur_temp_daily_type
-      station_name:
+      primary_station_id:
         description: This is the station identification code.
         dtype: object
         long_name: wbanno
@@ -478,10 +478,10 @@ sources:
         t_min: daily_minimum_air_temperature
         terr_m: air_temperature_negative_total_uncertainty
         terr_p: air_temperature_positive_total_uncertainty
-        tmaxerr_m: air_temperature_max_negative_total_uncertainty
-        tmaxerr_p: air_temperature_max_positive_total_uncertainty
-        tminerr_m: air_temperature_min_negative_total_uncertainty
-        tminerr_p: air_temperature_min_positive_total_uncertainty
+        tmaxerr_m: daily_maximum_air_temperature_negative_total_uncertainty
+        tmaxerr_p: daily_maximum_air_temperature_positive_total_uncertainty
+        tminerr_m: daily_minimum_air_temperature_negative_total_uncertainty
+        tminerr_p: daily_minimum_air_temperature_positive_total_uncertainty
         wbanno: primary_station_id
       unit_changes:
         accumulated_precipitation:
@@ -577,7 +577,7 @@ sources:
         description: Quality indicator variable 'downward_shortwave_irradiance_at_earth_surface'. 0 denotes good data and 3 denotes erroneous data.
         dtype: float32
         long_name: solarad_flag
-      latitude:
+      latitude|station_configuration:
         description: Latitude of the measurement station, -90 to 90.
         dtype: float32
         long_name: latitude
@@ -586,7 +586,7 @@ sources:
         description: The version number of the station datalogger program that was in effect at the time of the observation.
         dtype: float32
         long_name: crx_vn
-      longitude:
+      longitude|station_configuration:
         description: Longitude of the measurement station, -180.0 to 180.0.
         dtype: float32
         long_name: longitude
@@ -728,18 +728,18 @@ sources:
         description: This parameter indicates if the "Soil temperature" (described in this list) may be used because it is based on good data (value of 0) or if it should be treated with suspicion because erroneous data were detected (value of 3).
         dtype: float32
         long_name: sur_temp_flag
-      station_name:
+      primary_station_id:
         description: This is the station identification code.
-        dtype: float32
+        dtype: object
         long_name: wbanno
     mandatory_columns:
     - alternative_name
-    - station_name
+    - primary_station_id
     - longitude
     - latitude
     - report_timestamp
     order_by:
-    - station_name
+    - primary_station_id
     - report_timestamp
     products:
     - columns:
@@ -838,10 +838,10 @@ sources:
         t_monthly_min: daily_minimum_air_temperature
         terr_m: air_temperature_negative_total_uncertainty
         terr_p: air_temperature_positive_total_uncertainty
-        tmaxerr_m: air_temperature_max_negative_total_uncertainty
-        tmaxerr_p: air_temperature_max_positive_total_uncertainty
-        tminerr_m: air_temperature_min_negative_total_uncertainty
-        tminerr_p: air_temperature_min_positive_total_uncertainty
+        tmaxerr_m: daily_maximum_air_temperature_total_uncertainty
+        tmaxerr_p: daily_maximum_air_temperature_positive_total_uncertainty
+        tminerr_m: daily_minimum_air_temperature_negative_total_uncertainty
+        tminerr_p: daily_minimum_air_temperature_positive_total_uncertainty
         wbanno: primary_station_id
       unit_changes:
         accumulated_precipitation:
@@ -913,7 +913,7 @@ sources:
         description: This describes the location of the station where measurements were taken. There are four elements separated by an underscore. The first element (two letters) indicates the State, the second element indicates the nearest city, and the last two elements describe a vector from the city to the station. The distance is given in statute miles (1 statute mile = 1609.344 metres) and the bearing is given in the 16-element compass rose. For example, station "VA_Charlottesville_2_SSE" refers to a station located 2 miles South-South-East of Charlottesville, Virginia.
         dtype: object
         long_name: sitename
-      latitude:
+      latitude|station_configuration:
         description: Latitude of the measurement station, -90 to 90.
         dtype: float32
         long_name: latitude
@@ -922,7 +922,7 @@ sources:
         description: LogBook software and version.
         dtype: float32
         long_name: crx_vn_monthly
-      longitude:
+      longitude|station_configuration:
         description: Longitude of the measurement station, -180.0 to 180.0.
         dtype: float32
         long_name: longitude
@@ -1145,6 +1145,11 @@ sources:
         dtype: float32
         long_name: random_pm
         units: K
+      air_temperature_quasisystematic_uncertainty:
+        description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Positive quasisystematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
+        dtype: float32
+        long_name: quasisys_pm
+        units: K
       alternative_name:
         description: This describes the location of the station where measurements were taken. There are four elements separated by an underscore. The first element (two letters) indicates the State, the second element indicates the nearest city, and the last two elements describe a vector from the city to the station. The distance is given in statute miles (1 statute mile = 1609.344 metres) and the bearing is given in the 16-element compass rose. For example, station "VA_Charlottesville_2_SSE" refers to a station located 2 miles South-South-East of Charlottesville, Virginia.
         dtype: object
@@ -1159,7 +1164,7 @@ sources:
         description: Quality indicator variable 'downward_shortwave_irradiance_at_earth_surface'. 0 denotes good data and 3 denotes erroneous data.
         dtype: float32
         long_name: sr_flag
-      latitude:
+      latitude|station_configuration:
         description: Latitude of the measurement station, -90 to 90.
         dtype: float32
         long_name: latitude
@@ -1168,7 +1173,7 @@ sources:
         description: LogBook software and version.
         dtype: float32
         long_name: crx_vn
-      longitude:
+      longitude|station_configuration:
         description: Longitude of the measurement station, -180.0 to 180.0.
         dtype: float32
         long_name: longitude
