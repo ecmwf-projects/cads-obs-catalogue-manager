@@ -158,7 +158,9 @@ def copy_outside(init_config, dest_config, dataset, dest_dataset):
     with get_session(init_config.catalogue_db) as init_session:
         entries = CatalogueRepository(init_session).get_by_dataset(dataset)
         if init_config.s3config == dest_config.s3config:
-            new_assets = s3_copy(dest_config.s3config, entries, dest_dataset)
+            # namespace may be different, so we need another 3 client here
+            dest_s3client = S3Client.from_config(init_config.s3config)
+            new_assets = s3_copy(dest_s3client, entries, dest_dataset)
             dest_s3client = init_s3client
         else:
             # get new destination client as current client
