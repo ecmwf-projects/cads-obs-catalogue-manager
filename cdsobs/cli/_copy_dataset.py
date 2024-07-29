@@ -9,7 +9,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from typer import Option
 
-from cdsobs.cli._utils import CliException, ConfigNotFound, config_yml_typer
+from cdsobs.cli._utils import config_yml_typer
 from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.models import Catalogue
@@ -17,7 +17,7 @@ from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRe
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.schemas.catalogue import CatalogueSchema
 from cdsobs.storage import S3Client
-from cdsobs.utils.exceptions import ConfigError
+from cdsobs.utils.exceptions import CliException, ConfigError, ConfigNotFound
 from cdsobs.utils.logutils import get_logger
 
 logger = get_logger(__name__)

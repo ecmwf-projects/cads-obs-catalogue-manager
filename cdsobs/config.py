@@ -7,8 +7,7 @@ import pydantic_settings
 import yaml
 from pydantic_core.core_schema import ValidationInfo
 
-from cdsobs.cli._utils import ConfigNotFound
-from cdsobs.utils.exceptions import ConfigError
+from cdsobs.utils.exceptions import ConfigError, ConfigNotFound
 from cdsobs.utils.types import LatTileSize, LonTileSize, TimeTileSize
 
 

@@ -3,7 +3,7 @@ from pathlib import Path
 import typer
 
 import cdsobs.service_definition.api
-from cdsobs.cli._utils import CliException
+from cdsobs.utils.exceptions import CliException
 
 
 def validate_service_definition(

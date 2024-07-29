@@ -12,3 +12,13 @@ class CatalogueException(Exception):
 
 class DataNotFoundException(RuntimeError):
     pass
+
+
+class CliException(Exception):
+    pass
+
+
+class ConfigNotFound(CliException):
+    def __init__(self, msg="Configuration yaml not found"):
+        self.message = msg
+        super().__init__(self.message)

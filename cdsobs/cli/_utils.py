@@ -3,15 +3,7 @@ from botocore.exceptions import BotoCoreError
 from rich.console import Console
 from sqlalchemy.exc import OperationalError
 
-
-class CliException(Exception):
-    pass
-
-
-class ConfigNotFound(CliException):
-    def __init__(self, msg="Configuration yaml not found"):
-        self.message = msg
-        super().__init__(self.message)
+from cdsobs.utils.exceptions import CliException
 
 
 def exception_handler(exception):
