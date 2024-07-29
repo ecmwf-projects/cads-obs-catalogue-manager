@@ -44,7 +44,7 @@ dependencies:
 - pydantic-settings
 - datetimerange
 - uvicorn
-- python=3.10
+- python=3.12
 - pip:
   - sqlalchemy_json
   - "git+https://github.com/ecmwf-projects/cads-adaptors"
