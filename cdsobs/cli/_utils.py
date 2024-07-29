@@ -1,11 +1,7 @@
-from pathlib import Path
-
 import typer
 from botocore.exceptions import BotoCoreError
 from rich.console import Console
 from sqlalchemy.exc import OperationalError
-
-from cdsobs.config import CDSObsConfig, validate_config
 
 
 class CliException(Exception):
@@ -60,13 +56,3 @@ def list_parser(arg: str):
         return []
     else:
         return arg.split(",")
-
-
-def read_and_validate_config(cdsobs_config_yml: Path | None) -> CDSObsConfig:
-    # read and validate config yaml
-    if cdsobs_config_yml is None:
-        cdsobs_config_yml = Path.home().joinpath(".cdsobs/cdsobs_config.yml")
-    if not Path(cdsobs_config_yml).exists():
-        raise ConfigNotFound()
-    config = validate_config(cdsobs_config_yml)
-    return config

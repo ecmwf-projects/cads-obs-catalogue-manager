@@ -7,6 +7,7 @@ import pydantic_settings
 import yaml
 from pydantic_core.core_schema import ValidationInfo
 
+from cdsobs.cli._utils import ConfigNotFound
 from cdsobs.utils.exceptions import ConfigError
 from cdsobs.utils.types import LatTileSize, LonTileSize, TimeTileSize
 
@@ -220,3 +221,13 @@ def validate_config(config_file: Path):
     with config_file.open() as f:
         config_dict = yaml.safe_load(f)
     return CDSObsConfig(**config_dict)
+
+
+def read_and_validate_config(cdsobs_config_yml: Path | None) -> CDSObsConfig:
+    # read and validate config yaml
+    if cdsobs_config_yml is None:
+        cdsobs_config_yml = Path.home().joinpath(".cdsobs/cdsobs_config.yml")
+    if not Path(cdsobs_config_yml).exists():
+        raise ConfigNotFound()
+    config = validate_config(cdsobs_config_yml)
+    return config

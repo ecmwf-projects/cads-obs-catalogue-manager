@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 from cdsobs.api import run_ingestion_pipeline
 from cdsobs.cli._delete_dataset import delete_from_catalogue
-from cdsobs.cli._utils import read_and_validate_config
+from cdsobs.config import read_and_validate_config
 from cdsobs.constants import TEST_DATASETS, TEST_YEARS, VARS2DATASET
 from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.models import Catalogue
