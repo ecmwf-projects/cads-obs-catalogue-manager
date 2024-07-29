@@ -1,15 +1,15 @@
 from pathlib import Path
 
 import typer
-from rich.console import Console
 
 from cdsobs.cli._utils import config_yml_typer
 from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.storage import S3Client, StorageClient
+from cdsobs.utils.logutils import get_logger
 
-console = Console()
+logger = get_logger(__name__)
 
 
 def check_consistency(
@@ -38,14 +38,14 @@ def check_if_missing_in_object_storage(
 ):
     red_flag = False
     if dataset is None:
-        console.print(
-            "Check if every dataset in the catalogue is in the object storage"
+        logger.info(
+            "Checking if every dataset in the catalogue is in the object storage"
         )
         page = 0
         page_size = 10000
         assets = catalogue_repo.get_all_assets(limit=page_size)
         while len(assets):
-            console.print(f"Checking page {page+1} ({page_size} records per page)")
+            logger.info(f"Checking page {page+1} ({page_size} records per page)")
             red_flag = assets_in_s3(assets, s3client)
             page += 1
             assets = catalogue_repo.get_all_assets(
@@ -55,7 +55,7 @@ def check_if_missing_in_object_storage(
         assets = catalogue_repo.get_dataset_assets(dataset)
         red_flag = assets_in_s3(assets, s3client)
     if not red_flag:
-        console.print("[bold green] Found all assets in object storage [/bold green]")
+        logger.info("Found all assets in object storage.")
 
 
 def assets_in_s3(assets, s3client) -> bool:
@@ -63,9 +63,7 @@ def assets_in_s3(assets, s3client) -> bool:
     for asset in assets:
         bucket, name = asset.split("/")
         if not s3client.object_exists(bucket, name):
-            console.print(
-                f"[bold red] Missing {str(asset)} in object storage [/bold red]"
-            )
+            logger.warning(f"Missing {str(asset)} in object storage.")
             red_flag = True
     return red_flag
 
@@ -77,7 +75,7 @@ def check_if_missing_in_catalogue(
 ):
     red_flag = False
     if dataset is None:
-        console.print(
+        logger.info(
             "Check if every dataset in the object storage has a catalogue entry"
         )
         buckets = s3client.list_buckets()
@@ -91,7 +89,7 @@ def check_if_missing_in_catalogue(
         objects = s3client.list_directory_objects(bucket)
         red_flag = objects_in_catalogue(objects, bucket, s3client, catalogue_repo)
     if not red_flag:
-        console.print("[bold green] Found all assets in catalogue [/bold green]")
+        logger.info("Found all assets in catalogue.")
 
 
 def objects_in_catalogue(objects, bucket, s3client, catalogue_repo) -> bool:
@@ -99,6 +97,6 @@ def objects_in_catalogue(objects, bucket, s3client, catalogue_repo) -> bool:
     for obj in objects:
         asset = s3client.get_asset(bucket, obj)
         if not catalogue_repo.exists_asset(asset):
-            console.print(f"[bold red] Missing {asset} entry in catalogue [/bold red]")
+            logger.warning(f"Missing {asset} entry in catalogue.")
             red_flag = True
     return red_flag
