@@ -115,7 +115,14 @@ def test_get_aux_fields_mapping_from_service_definition():
         "soil_moisture_50cm_from_earth_surface": [],
         "soil_moisture_5cm_from_earth_surface": [],
         "soil_temperature": [
-            {"auxvar": "soil_temperature_quality_flag", "metadata_name": "quality_flag"}
+            {
+                "auxvar": "soil_temperature_quality_flag",
+                "metadata_name": "quality_flag",
+            },
+            {
+                "auxvar": "soil_temperature_processing_level",
+                "metadata_name": "processing_level",
+            },
         ],
         "soil_temperature_100cm_from_earth_surface": [],
         "soil_temperature_10cm_from_earth_surface": [],
@@ -147,8 +154,10 @@ def test_get_aux_fields_mapping_from_service_definition():
         "minimum_solar_irradiance_quality_flag",
         "relative_humidity_quality_flag",
         "soil_temperature_quality_flag",
+        "soil_temperature_processing_level",
         "solar_irradiance_quality_flag",
     ]
+
     assert not actual.var_has_uncertainty_field("accumulated_precipitation")
     assert actual.var_has_uncertainty_field("air_temperature")
     assert actual.vars_with_uncertainty_field == ["air_temperature"]

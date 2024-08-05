@@ -349,7 +349,10 @@ class AuxFields(UserDict[str, list[dict[str, str]]]):
 
     def get_var_processing_level_field_name(self, var: str) -> str:
         return [
-            auxf["auxvar"] for auxf in self[var] if "processing_level" in auxf["auxvar"]
+            auxf["auxvar"]
+            for auxf in self[var]
+            if "processing_level" in auxf["auxvar"]
+            and "quality_flag" not in auxf["auxvar"]
         ][0]
 
 

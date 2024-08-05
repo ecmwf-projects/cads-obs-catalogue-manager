@@ -20,20 +20,20 @@ logger = get_logger(__name__)
 @pytest.mark.parametrize(
     "dataset_name,source,test_update",
     [
-        # (
-        #     "insitu-observations-woudc-ozone-total-column-and-profiles",
-        #     "OzoneSonde",
-        #     False,
-        # ),
-        # (
-        #     "insitu-observations-woudc-ozone-total-column-and-profiles",
-        #     "TotalOzone",
-        #     False,
-        # ),
-        # ("insitu-observations-igra-baseline-network", "IGRA", False),
-        # ("insitu-observations-igra-baseline-network", "IGRA_H", False),
-        # ("insitu-comprehensive-upper-air-observation-network", "CUON", True),
-        # ("insitu-observations-gruan-reference-network", "GRUAN", False),
+        (
+            "insitu-observations-woudc-ozone-total-column-and-profiles",
+            "OzoneSonde",
+            False,
+        ),
+        (
+            "insitu-observations-woudc-ozone-total-column-and-profiles",
+            "TotalOzone",
+            False,
+        ),
+        ("insitu-observations-igra-baseline-network", "IGRA", False),
+        ("insitu-observations-igra-baseline-network", "IGRA_H", False),
+        ("insitu-comprehensive-upper-air-observation-network", "CUON", False),
+        ("insitu-observations-gruan-reference-network", "GRUAN", False),
         (
             "insitu-observations-near-surface-temperature-us-climate-reference-network",
             "uscrn_subhourly",
@@ -54,21 +54,21 @@ logger = get_logger(__name__)
             "uscrn_monthly",
             False,
         ),
-        # (
-        #     "insitu-observations-gnss",
-        #     "IGS",
-        #     False,
-        # ),
-        # (
-        #     "insitu-observations-gnss",
-        #     "EPN",
-        #     False,
-        # ),
-        # (
-        #     "insitu-observations-gnss",
-        #     "IGS_R3",
-        #     False,
-        # ),
+        (
+            "insitu-observations-gnss",
+            "IGS",
+            False,
+        ),
+        (
+            "insitu-observations-gnss",
+            "EPN",
+            False,
+        ),
+        (
+            "insitu-observations-gnss",
+            "IGS_R3",
+            False,
+        ),
     ],
 )
 def test_run_ingestion_pipeline(
@@ -88,10 +88,16 @@ def test_run_ingestion_pipeline(
         update=False,
     )
     # assert insertions have been made
-    counter = test_session.scalar(sa.select(sa.func.count()).select_from(Catalogue))
+    counter = test_session.scalar(
+        sa.select(sa.func.count())
+        .select_from(Catalogue)
+        .where(Catalogue.dataset == dataset_name)
+    )
     assert counter > 0
     # Check variables
-    asset = test_session.scalar(sa.select(Catalogue.asset))
+    asset = test_session.scalar(
+        sa.select(Catalogue.asset).where(Catalogue.dataset == dataset_name)
+    )
     s3client = S3Client.from_config(test_config.s3config)
     asset_filename = asset.split("/")[1]
     asset_local_path = Path(tmp_path, asset_filename)

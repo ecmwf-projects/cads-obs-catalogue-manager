@@ -155,7 +155,12 @@ def test_get_dataset_auxiliary_variables_mapping():
         "soil_moisture_20cm_from_earth_surface": [],
         "soil_moisture_50cm_from_earth_surface": [],
         "soil_moisture_5cm_from_earth_surface": [],
-        "soil_temperature": [],
+        "soil_temperature": [
+            {
+                "auxvar": "soil_temperature_processing_level",
+                "metadata_name": "processing_level",
+            }
+        ],
         "soil_temperature_100cm_from_earth_surface": [],
         "soil_temperature_10cm_from_earth_surface": [],
         "soil_temperature_20cm_from_earth_surface": [],

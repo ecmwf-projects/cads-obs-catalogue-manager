@@ -326,11 +326,10 @@ def _melt_variables(
             var_quality_flag = homogenised_data_melted.loc[var_mask, flag_name]
             homogenised_data_melted.loc[var_mask, "quality_flag"] = var_quality_flag
             homogenised_data_melted = homogenised_data_melted.drop(flag_name, axis=1)
-
-        # Ensure is int and fill nans with 3 (missing according to the CDM)
-        homogenised_data_melted["quality_flag"] = (
-            homogenised_data_melted["quality_flag"].fillna(3).astype("int")
-        )
+            # Ensure is int and fill nans with 3 (missing according to the CDM)
+            homogenised_data_melted["quality_flag"] = (
+                homogenised_data_melted["quality_flag"].fillna(3).astype("int")
+            )
         # Add processing level
         vars_with_pl = aux_fields.vars_with_processing_level()
         if len(vars_with_pl) > 0:
@@ -344,7 +343,6 @@ def _melt_variables(
             ] = var_processing_level
             homogenised_data_melted = homogenised_data_melted.drop(pl_name, axis=1)
 
-        homogenised_data_melted["processing_level"] = 6
     # Encode observed_variables
     logger.info("Encoding observed variables using the CDM variable codes.")
     code_table = read_cdm_code_table(cdm_tables_location, "observed_variable").table

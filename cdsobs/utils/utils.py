@@ -62,10 +62,19 @@ def get_code_mapping(
         attrs = incobj["observed_variable"].attrs
     else:
         raise RuntimeError("Unsupported input type")
+    labels = attrs["labels"]
+    codes = attrs["codes"]
+    if not isinstance(attrs["labels"], list):
+        labels = [
+            labels,
+        ]
+        codes = [
+            codes,
+        ]
     if inverse:
-        mapping = {c: v for v, c in zip(attrs["labels"], attrs["codes"])}
+        mapping = {c: v for v, c in zip(labels, codes)}
     else:
-        mapping = {v: c for v, c in zip(attrs["labels"], attrs["codes"])}
+        mapping = {v: c for v, c in zip(labels, codes)}
     return mapping
 
 
