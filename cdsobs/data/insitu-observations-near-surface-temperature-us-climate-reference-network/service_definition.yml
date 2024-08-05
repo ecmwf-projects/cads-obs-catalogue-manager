@@ -722,7 +722,7 @@ sources:
         units: K
       soil_temperature_processing_level:
         description: 'This parameter indicates the level of processing applied to the soil temperature measurement: raw data (''R''), corrected data (''C''). A letter ''U'' indicates that this information is unknown.'
-        dtype: float32
+        dtype: object
         long_name: sur_temp_type
       soil_temperature_quality_flag:
         description: This parameter indicates if the "Soil temperature" (described in this list) may be used because it is based on good data (value of 0) or if it should be treated with suspicion because erroneous data were detected (value of 3).
