@@ -5,11 +5,12 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
-from cdsobs.cli._utils import CliException, ConfigNotFound, config_yml_typer
+from cdsobs.cli._utils import config_yml_typer
 from cdsobs.config import validate_config
 from cdsobs.retrieve.api import retrieve_observations
 from cdsobs.retrieve.models import RetrieveArgs
 from cdsobs.storage import S3Client
+from cdsobs.utils.exceptions import CliException, ConfigNotFound
 
 
 def retrieve(

@@ -36,7 +36,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: ecmwf-projects/cdm-obs.git
-        ref: 'cadsobs-changes'
+        ref: 'new-variables'
         path: common_data_model
     - name: Deploy test ingestion database
       env:
@@ -52,7 +52,7 @@ jobs:
         echo TEST_INGESTION_DB_PASS=$TEST_INGESTION_DB_PASS >> .env
         echo CATALOGUE_PASSWORD=$CATALOGUE_PASSWORD >> .env
         echo STORAGE_PASSWORD=$STORAGE_PASSWORD >> .env
-        docker-compose up -d
+        docker compose up -d
         until pg_isready -U user -d baron -p 25432 -h localhost; do sleep 2; done
     - name: Download test netCDFs
       timeout-minutes: 2

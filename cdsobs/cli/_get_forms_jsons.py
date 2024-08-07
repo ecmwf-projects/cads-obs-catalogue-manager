@@ -3,7 +3,8 @@ from pathlib import Path
 
 import typer
 
-from cdsobs.cli._utils import config_yml_typer, read_and_validate_config
+from cdsobs.cli._utils import config_yml_typer
+from cdsobs.config import read_and_validate_config
 from cdsobs.forms_jsons import get_forms_jsons
 from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository

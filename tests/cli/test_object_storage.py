@@ -1,4 +1,5 @@
 import pytest_mock
+from structlog.testing import capture_logs
 from typer.testing import CliRunner
 
 from cdsobs.cli._object_storage import (
@@ -16,13 +17,14 @@ def test_check_if_missing_in_storage(
     test_session,
     test_s3_client,
     test_repository,
-    capsys,
 ):
     catalogue_repo = CatalogueRepository(test_session)
     mocker.patch.object(test_s3_client, "object_exists", return_value=True)
-    check_if_missing_in_object_storage(catalogue_repo, test_s3_client, DS_TEST_NAME)
-    captured_out = capsys.readouterr().out
-    assert "Found all assets in object storage" in captured_out
+    with capture_logs() as cap_logs:
+        check_if_missing_in_object_storage(catalogue_repo, test_s3_client, DS_TEST_NAME)
+    assert cap_logs == [
+        {"event": "Found all assets in object storage.", "log_level": "info"}
+    ]
 
 
 def test_check_if_missing_in_catalogue(
@@ -36,7 +38,9 @@ def test_check_if_missing_in_catalogue(
     mocker.patch.object(
         test_s3_client, "list_directory_objects", side_effect=[["test_object"], []]
     )
-    check_if_missing_in_catalogue(catalogue_repo, test_s3_client)
-    captured_out = capsys.readouterr().out
-    assert "Missing" in captured_out
-    assert "test_bucket/test_object entry in catalogue" in captured_out
+    with capture_logs() as cap_logs:
+        check_if_missing_in_catalogue(catalogue_repo, test_s3_client)
+    assert cap_logs[-1] == {
+        "event": "Missing test_bucket/test_object entry in catalogue.",
+        "log_level": "warning",
+    }

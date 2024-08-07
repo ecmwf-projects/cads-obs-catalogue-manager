@@ -317,19 +317,32 @@ def _melt_variables(
                 )
 
         # Add quality flags
-        homogenised_data_melted["quality_flag"] = 3.0
         vars_with_qf = aux_fields.vars_with_quality_field
+        if len(vars_with_qf) > 0:
+            homogenised_data_melted["quality_flag"] = 3.0
         for var in vars_with_qf:
             var_mask = homogenised_data_melted["observed_variable"] == var
             flag_name = aux_fields.get_var_quality_flag_field_name(var)
             var_quality_flag = homogenised_data_melted.loc[var_mask, flag_name]
             homogenised_data_melted.loc[var_mask, "quality_flag"] = var_quality_flag
             homogenised_data_melted = homogenised_data_melted.drop(flag_name, axis=1)
+            # Ensure is int and fill nans with 3 (missing according to the CDM)
+            homogenised_data_melted["quality_flag"] = (
+                homogenised_data_melted["quality_flag"].fillna(3).astype("int")
+            )
+        # Add processing level
+        vars_with_pl = aux_fields.vars_with_processing_level()
+        if len(vars_with_pl) > 0:
+            homogenised_data_melted["processing_level"] = 6
+        for var in vars_with_pl:
+            var_mask = homogenised_data_melted["observed_variable"] == var
+            pl_name = aux_fields.get_var_processing_level_field_name(var)
+            var_processing_level = homogenised_data_melted.loc[var_mask, pl_name]
+            homogenised_data_melted.loc[
+                var_mask, "processing_level"
+            ] = var_processing_level
+            homogenised_data_melted = homogenised_data_melted.drop(pl_name, axis=1)
 
-        # Ensure is int and fill nans with 3 (missing according to the CDM)
-        homogenised_data_melted["quality_flag"] = (
-            homogenised_data_melted["quality_flag"].fillna(3).astype("int")
-        )
     # Encode observed_variables
     logger.info("Encoding observed variables using the CDM variable codes.")
     code_table = read_cdm_code_table(cdm_tables_location, "observed_variable").table

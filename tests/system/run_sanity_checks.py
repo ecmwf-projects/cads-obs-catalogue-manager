@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from cdsobs.cli._utils import read_and_validate_config
+from cdsobs.config import read_and_validate_config
 from cdsobs.constants import TEST_DATASETS, TEST_YEARS
 from cdsobs.sanity_checks import run_sanity_checks
 from cdsobs.utils.logutils import get_logger

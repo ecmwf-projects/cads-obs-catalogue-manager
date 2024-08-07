@@ -65,10 +65,10 @@ TEST_YEARS = dict(
     IGRA_H=1981,
     CUON=1924,
     GRUAN=2010,
-    USCRN_SUBHOURLY=2007,
-    USCRN_HOURLY=2006,
-    USCRN_DAILY=2007,
-    USCRN_MONTHLY=2006,
+    uscrn_subhourly=2007,
+    uscrn_hourly=2006,
+    uscrn_daily=2007,
+    uscrn_monthly=2006,
     IGS=2001,
     EPN=1996,
 )
@@ -96,29 +96,13 @@ VARS2DATASET = {
         "GRUAN": ["wind_speed", "air_temperature"]
     },
     "insitu-observations-near-surface-temperature-us-climate-reference-network": {
-        "USCRN_MONTHLY": ["daily_maximum_air_temperature", "accumulated_precipitation"],
-        "USCRN_DAILY": ["relative_humidity", "air_temperature"],
-        "USCRN_HOURLY": ["relative_humidity", "air_temperature"],
-        "USCRN_SUBHOURLY": ["relative_humidity", "air_temperature"],
+        "uscrn_monthly": ["daily_maximum_air_temperature", "accumulated_precipitation"],
+        "uscrn_daily": ["relative_humidity", "air_temperature"],
+        "uscrn_hourly": ["relative_humidity", "air_temperature"],
+        "uscrn_subhourly": ["relative_humidity", "air_temperature"],
     },
     "insitu-observations-gnss": {
         "IGS": ["precipitable_water_column_era5"],
         "EPN": ["precipitable_water_column"],
     },
 }
-AUX_FIELDS = [
-    "total_uncertainty",
-    "positive_total_uncertainty",
-    "negative_total_uncertainty",
-    "max_positive_total_uncertainty",
-    "max_negative_total_uncertainty",
-    "min_positive_total_uncertainty",
-    "min_negative_total_uncertainty",
-    "random_uncertainty",
-    "positive_systematic_uncertainty",
-    "negative_systematic_uncertainty",
-    "quasisystematic_uncertainty",
-    "positive_quasisystematic_uncertainty",
-    "negative_quasisystematic_uncertainty",
-    "flag",
-]

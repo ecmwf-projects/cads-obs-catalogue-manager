@@ -7,8 +7,6 @@ from fastapi.encoders import jsonable_encoder
 from rich.console import Console
 
 from cdsobs.cli._utils import (
-    CliException,
-    ConfigNotFound,
     config_yml_typer,
     list_parser,
 )
@@ -20,7 +18,7 @@ from cdsobs.observation_catalogue.schemas.catalogue import (
     CliCatalogueFilters,
 )
 from cdsobs.storage import S3Client
-from cdsobs.utils.exceptions import ConfigError
+from cdsobs.utils.exceptions import CliException, ConfigError, ConfigNotFound
 
 console = Console()
 

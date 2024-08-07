@@ -47,7 +47,7 @@ def test_get_aux_fields_mapping_from_service_definition():
     dataset_name = (
         "insitu-observations-near-surface-temperature-us-climate-reference-network"
     )
-    source = "USCRN_HOURLY"
+    source = "uscrn_hourly"
     expected = {
         "accumulated_precipitation": [],
         "air_temperature": [
@@ -82,35 +82,32 @@ def test_get_aux_fields_mapping_from_service_definition():
         ],
         "daily_maximum_air_temperature": [],
         "daily_minimum_air_temperature": [],
-        "downward_shortwave_irradiance_at_earth_surface": [
+        "maximum_soil_temperature": [
+            {"auxvar": "maximum_soil_temperature_flag", "metadata_name": "quality_flag"}
+        ],
+        "maximum_solar_irradiance": [
             {
-                "auxvar": "downward_shortwave_irradiance_at_earth_surface_quality_flag",
-                "metadata_name": "flag",
+                "auxvar": "maximum_solar_irradiance_quality_flag",
+                "metadata_name": "quality_flag",
             }
         ],
-        "hourly_maximum_downward_shortwave_irradiance_at_earth_surface": [
+        "minimum_soil_temperature": [
             {
-                "auxvar": "hourly_maximum_downward_shortwave_irradiance_at_earth_surface_quality_flag",
-                "metadata_name": "flag",
+                "auxvar": "minimum_soil_temperature_quality_flag",
+                "metadata_name": "quality_flag",
             }
         ],
-        "hourly_maximum_soil_temperature": [
-            {"auxvar": "hourly_maximum_soil_temperature_flag", "metadata_name": "flag"}
-        ],
-        "hourly_minimum_downward_shortwave_irradiance_at_earth_surface": [
+        "minimum_solar_irradiance": [
             {
-                "auxvar": "hourly_minimum_downward_shortwave_irradiance_at_earth_surface_quality_flag",
-                "metadata_name": "flag",
-            }
-        ],
-        "hourly_minimum_soil_temperature": [
-            {
-                "auxvar": "hourly_minimum_soil_temperature_quality_flag",
-                "metadata_name": "flag",
+                "auxvar": "minimum_solar_irradiance_quality_flag",
+                "metadata_name": "quality_flag",
             }
         ],
         "relative_humidity": [
-            {"auxvar": "relative_humidity_quality_flag", "metadata_name": "flag"}
+            {
+                "auxvar": "relative_humidity_quality_flag",
+                "metadata_name": "quality_flag",
+            }
         ],
         "soil_moisture_100cm_from_earth_surface": [],
         "soil_moisture_10cm_from_earth_surface": [],
@@ -118,15 +115,24 @@ def test_get_aux_fields_mapping_from_service_definition():
         "soil_moisture_50cm_from_earth_surface": [],
         "soil_moisture_5cm_from_earth_surface": [],
         "soil_temperature": [
-            {"auxvar": "soil_temperature_quality_flag", "metadata_name": "flag"}
+            {
+                "auxvar": "soil_temperature_quality_flag",
+                "metadata_name": "quality_flag",
+            },
+            {
+                "auxvar": "soil_temperature_processing_level",
+                "metadata_name": "processing_level",
+            },
         ],
         "soil_temperature_100cm_from_earth_surface": [],
         "soil_temperature_10cm_from_earth_surface": [],
         "soil_temperature_20cm_from_earth_surface": [],
         "soil_temperature_50cm_from_earth_surface": [],
         "soil_temperature_5cm_from_earth_surface": [],
+        "solar_irradiance": [
+            {"auxvar": "solar_irradiance_quality_flag", "metadata_name": "quality_flag"}
+        ],
     }
-
     service_definition = get_service_definition(dataset_name)
     source_definition = service_definition.sources[source]
     variables = get_variables_from_service_definition(service_definition, source)
@@ -142,44 +148,42 @@ def test_get_aux_fields_mapping_from_service_definition():
         "air_temperature_negative_systematic_uncertainty",
         "air_temperature_positive_quasisystematic_uncertainty",
         "air_temperature_negative_quasisystematic_uncertainty",
-        "downward_shortwave_irradiance_at_earth_surface_quality_flag",
-        "hourly_maximum_downward_shortwave_irradiance_at_earth_surface_quality_flag",
-        "hourly_maximum_soil_temperature_flag",
-        "hourly_minimum_downward_shortwave_irradiance_at_earth_surface_quality_flag",
-        "hourly_minimum_soil_temperature_quality_flag",
+        "maximum_soil_temperature_flag",
+        "maximum_solar_irradiance_quality_flag",
+        "minimum_soil_temperature_quality_flag",
+        "minimum_solar_irradiance_quality_flag",
         "relative_humidity_quality_flag",
         "soil_temperature_quality_flag",
+        "soil_temperature_processing_level",
+        "solar_irradiance_quality_flag",
     ]
+
     assert not actual.var_has_uncertainty_field("accumulated_precipitation")
     assert actual.var_has_uncertainty_field("air_temperature")
     assert actual.vars_with_uncertainty_field == ["air_temperature"]
     assert actual.quality_flag_fields == [
-        "downward_shortwave_irradiance_at_earth_surface_quality_flag",
-        "hourly_maximum_downward_shortwave_irradiance_at_earth_surface_quality_flag",
-        "hourly_maximum_soil_temperature_flag",
-        "hourly_minimum_downward_shortwave_irradiance_at_earth_surface_quality_flag",
-        "hourly_minimum_soil_temperature_quality_flag",
+        "maximum_soil_temperature_flag",
+        "maximum_solar_irradiance_quality_flag",
+        "minimum_soil_temperature_quality_flag",
+        "minimum_solar_irradiance_quality_flag",
         "relative_humidity_quality_flag",
         "soil_temperature_quality_flag",
+        "solar_irradiance_quality_flag",
     ]
     assert not actual.var_has_quality_field("air_temperature")
-    assert actual.var_has_quality_field(
-        "downward_shortwave_irradiance_at_earth_surface"
-    )
+    assert actual.var_has_quality_field("maximum_soil_temperature")
     assert actual.vars_with_quality_field == [
-        "downward_shortwave_irradiance_at_earth_surface",
-        "hourly_maximum_downward_shortwave_irradiance_at_earth_surface",
-        "hourly_maximum_soil_temperature",
-        "hourly_minimum_downward_shortwave_irradiance_at_earth_surface",
-        "hourly_minimum_soil_temperature",
+        "maximum_soil_temperature",
+        "maximum_solar_irradiance",
+        "minimum_soil_temperature",
+        "minimum_solar_irradiance",
         "relative_humidity",
         "soil_temperature",
+        "solar_irradiance",
     ]
     assert (
-        actual.get_var_quality_flag_field_name(
-            "downward_shortwave_irradiance_at_earth_surface"
-        )
-        == "downward_shortwave_irradiance_at_earth_surface_quality_flag"
+        actual.get_var_quality_flag_field_name("maximum_soil_temperature")
+        == "maximum_soil_temperature_flag"
     )
     assert actual.get_var_uncertainty_field_names("air_temperature") == [
         "air_temperature_positive_total_uncertainty",
@@ -223,7 +227,7 @@ def test_get_aux_vars_from_service_definition():
     dataset_name = (
         "insitu-observations-near-surface-temperature-us-climate-reference-network"
     )
-    source = "USCRN_HOURLY"
+    source = "uscrn_hourly"
     service_definition = get_service_definition(dataset_name)
     actual = get_aux_vars_from_service_definition(service_definition, source)
     print(actual)

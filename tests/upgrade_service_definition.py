@@ -70,6 +70,8 @@ def main(old_path):
             new_values["dtype"] = "float32"
             new_values["long_name"] = rawname
             new_descriptions[cdm_name] = new_values
+            if "name_for_output" in new_values:
+                new_values.pop("name_for_output")
         # remap mandatory columns
         new_data["sources"][source]["mandatory_columns"] = []
         for mcol in old_data["sources"][source]["mandatory_columns"]:
@@ -83,13 +85,16 @@ def main(old_path):
             new_header_columns = [list(hc.values())[0] for hc in header_columns]
             new_data["sources"][source]["header_columns"] = new_header_columns
     # Dump to YAML
-    output_path = Path(str(old_path).replace(".json", ".yml"))
+    output_path = Path((str(old_path) + "new").replace(".json", ".yml"))
     with output_path.open("w") as op:
         op.write(yaml.dump(new_data))
 
 
 if __name__ == "__main__":
-    input_sd_files = "insitu-observations-gnss/service_definition.json"
+    input_sd_files = (
+        "insitu-observations-near-surface-temperature-us-climate-"
+        "reference-network/service_definition.json"
+    )
     for file in files("cdsobs").joinpath("data").glob(input_sd_files):  # type: ignore
         print(file)
         main(file)

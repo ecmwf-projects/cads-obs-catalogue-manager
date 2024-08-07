@@ -106,6 +106,9 @@ def write_pandas_to_netcdf(
         if attrs is not None and v in attrs:
             ovar.attrs.update(attrs[v])
 
+    oncobj.sync()
+    oncobj.close()
+
 
 def to_netcdf(
     cdm_dataset: CdmDataset, tempdir: Path, encode_variables: bool = True

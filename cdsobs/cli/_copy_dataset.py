@@ -9,7 +9,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from typer import Option
 
-from cdsobs.cli._utils import CliException, ConfigNotFound, config_yml_typer
+from cdsobs.cli._utils import config_yml_typer
 from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.models import Catalogue
@@ -17,7 +17,7 @@ from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRe
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.schemas.catalogue import CatalogueSchema
 from cdsobs.storage import S3Client
-from cdsobs.utils.exceptions import ConfigError
+from cdsobs.utils.exceptions import CliException, ConfigError, ConfigNotFound
 from cdsobs.utils.logutils import get_logger
 
 logger = get_logger(__name__)
@@ -158,8 +158,9 @@ def copy_outside(init_config, dest_config, dataset, dest_dataset):
     with get_session(init_config.catalogue_db) as init_session:
         entries = CatalogueRepository(init_session).get_by_dataset(dataset)
         if init_config.s3config == dest_config.s3config:
-            new_assets = s3_copy(init_s3client, entries, dest_dataset)
-            dest_s3client = init_s3client
+            # namespace may be different, so we need another 3 client here
+            dest_s3client = S3Client.from_config(dest_config.s3config)
+            new_assets = s3_copy(dest_s3client, entries, dest_dataset)
         else:
             # get new destination client as current client
             dest_s3client = S3Client.from_config(dest_config.s3config)

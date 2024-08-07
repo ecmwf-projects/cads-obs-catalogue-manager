@@ -73,7 +73,9 @@ auxiliary_variable_names = [
     "quasisystematic_uncertainty",
     "positive_quasisystematic_uncertainty",
     "negative_quasisystematic_uncertainty",
-    "flag",
+    "quality_flag",
+    "combined_uncertainty",
+    "processing_level",
 ]
 cdm_lite_variables = dict(
     mandatory=variable_names,

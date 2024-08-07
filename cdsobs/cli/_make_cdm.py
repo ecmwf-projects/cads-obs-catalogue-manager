@@ -4,7 +4,8 @@ from pathlib import Path
 import typer
 
 from cdsobs.api import run_make_cdm
-from cdsobs.cli._utils import config_yml_typer, read_and_validate_config
+from cdsobs.cli._utils import config_yml_typer
+from cdsobs.config import read_and_validate_config
 from cdsobs.service_definition.api import validate_service_definition
 
 

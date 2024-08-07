@@ -18,11 +18,9 @@ from cdsobs.observation_catalogue.repositories.catalogue import CatalogueReposit
 from cdsobs.observation_catalogue.schemas.catalogue import CliCatalogueFilters
 from cdsobs.utils.logutils import get_logger
 
-from ..utils.exceptions import ConfigError
+from ..utils.exceptions import CliException, ConfigError, ConfigNotFound
 from ._utils import (
     PAGE_SIZE,
-    CliException,
-    ConfigNotFound,
     config_yml_typer,
     list_parser,
     print_format_msg,

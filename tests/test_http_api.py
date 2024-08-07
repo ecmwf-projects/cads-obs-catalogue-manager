@@ -85,48 +85,82 @@ def test_get_dataset_auxiliary_variables_mapping():
     dataset = (
         "insitu-observations-near-surface-temperature-us-climate-reference-network"
     )
-    actual = client.get(f"{dataset}/USCRN_DAILY/aux_variables_mapping").json()
+    actual = client.get(f"{dataset}/uscrn_daily/aux_variables_mapping").json()
     expected = {
         "accumulated_precipitation": [],
         "air_temperature": [
             {
-                "auxvar": "air_temperature_mean_positive_total_uncertainty",
+                "auxvar": "air_temperature_positive_total_uncertainty",
                 "metadata_name": "positive_total_uncertainty",
             },
             {
-                "auxvar": "air_temperature_mean_negative_total_uncertainty",
+                "auxvar": "air_temperature_negative_total_uncertainty",
                 "metadata_name": "negative_total_uncertainty",
             },
+            {
+                "auxvar": "air_temperature_positive_random_uncertainty",
+                "metadata_name": "positive_random_uncertainty",
+            },
+            {
+                "auxvar": "air_temperature_negative_random_uncertainty",
+                "metadata_name": "negative_random_uncertainty",
+            },
+            {
+                "auxvar": "air_temperature_positive_systematic_uncertainty",
+                "metadata_name": "positive_systematic_uncertainty",
+            },
+            {
+                "auxvar": "air_temperature_negative_systematic_uncertainty",
+                "metadata_name": "negative_systematic_uncertainty",
+            },
         ],
+        "daily_global_solar_radiation": [],
         "daily_maximum_air_temperature": [
             {
-                "auxvar": "air_temperature_max_positive_total_uncertainty",
+                "auxvar": "daily_maximum_air_temperature_positive_total_uncertainty",
                 "metadata_name": "positive_total_uncertainty",
             },
             {
-                "auxvar": "air_temperature_max_negative_total_uncertainty",
+                "auxvar": "daily_maximum_air_temperature_negative_total_uncertainty",
                 "metadata_name": "negative_total_uncertainty",
             },
         ],
         "daily_maximum_relative_humidity": [],
-        "daily_minimum_air_temperature": [
+        "daily_mean_air_temperature": [
             {
-                "auxvar": "air_temperature_min_positive_total_uncertainty",
+                "auxvar": "mean_air_temperature_positive_total_uncertainty",
                 "metadata_name": "positive_total_uncertainty",
             },
             {
-                "auxvar": "air_temperature_min_negative_total_uncertainty",
+                "auxvar": "mean_air_temperature_negative_total_uncertainty",
+                "metadata_name": "negative_total_uncertainty",
+            },
+        ],
+        "daily_minimum_air_temperature": [
+            {
+                "auxvar": "daily_minimum_air_temperature_positive_total_uncertainty",
+                "metadata_name": "positive_total_uncertainty",
+            },
+            {
+                "auxvar": "daily_minimum_air_temperature_negative_total_uncertainty",
                 "metadata_name": "negative_total_uncertainty",
             },
         ],
         "daily_minimum_relative_humidity": [],
+        "maximum_soil_temperature": [],
+        "minimum_soil_temperature": [],
         "relative_humidity": [],
         "soil_moisture_100cm_from_earth_surface": [],
         "soil_moisture_10cm_from_earth_surface": [],
         "soil_moisture_20cm_from_earth_surface": [],
         "soil_moisture_50cm_from_earth_surface": [],
         "soil_moisture_5cm_from_earth_surface": [],
-        "soil_temperature": [],
+        "soil_temperature": [
+            {
+                "auxvar": "soil_temperature_processing_level",
+                "metadata_name": "processing_level",
+            }
+        ],
         "soil_temperature_100cm_from_earth_surface": [],
         "soil_temperature_10cm_from_earth_surface": [],
         "soil_temperature_20cm_from_earth_surface": [],

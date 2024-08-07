@@ -83,6 +83,13 @@ def to_cdm_dataset(partition: DatasetPartition) -> CdmDataset:
     cdm_variables += cdm_variables_with_table_names
     cdm_variables = unique([v for v in cdm_variables if v in partition.data])
     data = partition.data.loc[:, cdm_variables].set_index("observation_id")
+    original_variables = set(partition.data.columns)
+    removed_variables = original_variables - set(cdm_variables)
+    if len(removed_variables) > 0:
+        logger.warning(
+            "The following variables where read but are not in the CDM and "
+            f"are going to be dropped: {removed_variables}"
+        )
     return CdmDataset(data, partition.partition_params, partition.dataset_metadata)
 
 
@@ -328,6 +335,24 @@ class AuxFields(UserDict[str, list[dict[str, str]]]):
     def auxfield2metadata_name(self, var: str, aux_var: str) -> str:
         return [
             auxf["metadata_name"] for auxf in self[var] if auxf["auxvar"] == aux_var
+        ][0]
+
+    def vars_with_processing_level(self) -> list[str]:
+        return [v for v in self if self.var_has_processing_level(v)]
+
+    def var_has_processing_level(self, var: str) -> bool:
+        return any(auxf["auxvar"] in self.processing_level_fields for auxf in self[var])
+
+    @property
+    def processing_level_fields(self) -> list[str]:
+        return [auxf for auxf in self.all_list if "processing_level" in auxf]
+
+    def get_var_processing_level_field_name(self, var: str) -> str:
+        return [
+            auxf["auxvar"]
+            for auxf in self[var]
+            if "processing_level" in auxf["auxvar"]
+            and "quality_flag" not in auxf["auxvar"]
         ][0]
 
 

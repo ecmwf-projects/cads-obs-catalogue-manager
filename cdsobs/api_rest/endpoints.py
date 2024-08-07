@@ -9,7 +9,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from cdsobs.api_rest.models import RetrievePayload
 from cdsobs.cdm.api import get_auxiliary_variables_mapping
 from cdsobs.cdm.lite import cdm_lite_variables
-from cdsobs.cli._utils import ConfigNotFound
 from cdsobs.config import CDSObsConfig, validate_config
 from cdsobs.ingestion.core import get_variables_from_service_definition
 from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
@@ -21,7 +20,7 @@ from cdsobs.retrieve.retrieve_services import (
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.storage import S3Client
-from cdsobs.utils.exceptions import DataNotFoundException, SizeError
+from cdsobs.utils.exceptions import ConfigNotFound, DataNotFoundException, SizeError
 from cdsobs.utils.utils import get_database_session
 
 router = APIRouter()
