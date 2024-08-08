@@ -44,7 +44,7 @@ def test_adaptor(tmp_path):
     assert xarray.open_dataset(tempfile).observation_id.size > 0
 
 
-@pytest.mark.skip("By hand only.")
+# @pytest.mark.skip("By hand only.")
 def test_adaptor_uscrn(tmp_path):
     """Full test with a local instance of the HTTP API."""
     from cads_adaptors import ObservationsAdaptor
@@ -71,7 +71,7 @@ def test_adaptor_uscrn(tmp_path):
     test_adaptor_config = {
         "entry_point": "cads_adaptors:ObservationsAdaptor",
         "collection_id": "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "obs_api_url": "http://obscatalogue.cads-obs.compute.cci2.ecmwf.int",
+        "obs_api_url": "http://localhost:8000",
         "mapping": {
             "remap": {
                 "time_aggregation": {

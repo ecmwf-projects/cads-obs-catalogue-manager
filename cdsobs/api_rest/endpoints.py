@@ -48,6 +48,18 @@ def session_gen() -> Iterator[HttpAPISession]:
         session.catalogue_session.close()
 
 
+def make_http_exception(
+    status_code: int, message: str, traceback: str | None = None
+) -> HTTPException:
+    detail = dict(message="Error: Observations API failed.")
+    if traceback is not None:
+        detail["traceback"] = traceback
+    http_exception = HTTPException(
+        status_code=status_code, detail=dict(message=message, traceback=traceback)
+    )
+    return http_exception
+
+
 @router.post("/get_object_urls_and_check_size")
 def get_object_urls_and_check_size(
     retrieve_payload: RetrievePayload,
@@ -59,10 +71,12 @@ def get_object_urls_and_check_size(
         catalogue_repository = CatalogueRepository(session.catalogue_session)
         entries = _get_catalogue_entries(catalogue_repository, retrieve_args)
     except DataNotFoundException as e:
-        raise HTTPException(status_code=500, detail=f"Error: {e}")
+        raise make_http_exception(status_code=500, message=f"Error: {e}")
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error: Observations API failed: {e}"
+        raise make_http_exception(
+            status_code=500,
+            message=f"Error: Observations API failed: {e}",
+            traceback=repr(e),
         )
     s3client = S3Client.from_config(session.cdsobs_config.s3config)
     try:
@@ -70,10 +84,10 @@ def get_object_urls_and_check_size(
             entries, retrieve_args, retrieve_payload.config.size_limit, s3client.base
         )
     except SizeError as e:
-        raise HTTPException(status_code=500, detail=f"Error: {e}")
+        raise HTTPException(status_code=500, detail=dict(message=f"Error: {e}"))
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error: Observations API failed: {e}"
+        raise make_http_exception(
+            status_code=500, message="Error: Observations API failed", traceback=repr(e)
         )
     return object_urls
 
@@ -100,8 +114,8 @@ def get_dataset_service_definition(dataset: str) -> ServiceDefinition:
     try:
         return get_service_definition(dataset)
     except FileNotFoundError:
-        raise HTTPException(
-            status_code=404, detail=f"Service definition not found for {dataset=}"
+        raise make_http_exception(
+            status_code=404, message=f"Service definition not found for {dataset=}"
         )
 
 
