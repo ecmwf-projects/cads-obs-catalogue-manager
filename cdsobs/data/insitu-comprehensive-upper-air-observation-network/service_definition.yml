@@ -141,7 +141,6 @@ sources:
         description: Wind speed
         dtype: float32
         long_name: wind_speed
-        wind_bias_estimate: wind_bias_estimate
         units: m s-1
         desroziers_30_uncertainy: desroziers_30_uncertainy
       secondary_id:
