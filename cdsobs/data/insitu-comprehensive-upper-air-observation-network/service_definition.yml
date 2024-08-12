@@ -33,6 +33,8 @@ products_hierarchy:
 sources:
   CUON:
     cdm_mapping:
+      rename:
+        desroziers_30: desroziers_30_uncertainy
       melt_columns: false
       unit_changes:
         aerosol_absorption_optical_depth:
@@ -57,10 +59,17 @@ sources:
         dtype: float32
         long_name: air_temperature
         units: K
+        RISE_bias_estimate: RISE_bias_estimate
+        desroziers_30_uncertainy: desroziers_30_uncertainy
       air_dewpoint:
         description: Dewpoint measurement (from profile measurement)
         dtype: float32
         long_name: air_dewpoint
+        humidity_bias_estimate: humidity_bias_estimate
+      desroziers_30_uncertainy:
+        description: Desroziers uncertainty v 1.0 - 30 days window
+        long_name: desroziers_30_uncertainy
+        dtype: float32
       dew_point_depression:
         description: The difference between air temperature and dew point temperature.  The dew point temperature is the temperature to which a given air parcel must be cooled at constant pressure and constant water vapour content in order for saturation to occur
         long_name: dew_point_depression
@@ -69,6 +78,7 @@ sources:
         description: Wind towards the east
         dtype: float32
         long_name: eastward_wind_speed
+        wind_bias_estimate: wind_bias_estimate
       northward_wind_speed:
         description: Wind towards the north
         dtype: float32
@@ -93,6 +103,7 @@ sources:
         dtype: float32
         long_name: relative_humidity
         units: m
+        humidity_bias_estimate: humidity_bias_estimate
       report_timestamp:
         description: Observation date time UTC
         dtype: datetime64[ns]
@@ -101,6 +112,7 @@ sources:
         description: specific means per unit mass. Specific humidity is the mass fraction of water vapor in (moist) air.
         dtype: float32
         long_name: specific_humidity
+        humidity_bias_estimate: humidity_bias_estimate
       station_name:
         description: Station identification code
         dtype: object
@@ -109,10 +121,12 @@ sources:
         description: "Wind direction with 0°:north, 90°:east, 180°:south, 270°:west"
         dtype: float32
         long_name: wind_from_direction
+        wind_bias_estimate: wind_bias_estimate
       wind_speed:
         description: Wind speed
         dtype: float32
         long_name: wind_speed
+        wind_bias_estimate: wind_bias_estimate
       secondary_id:
         description: Secondary id
         dtype: object
@@ -121,6 +135,18 @@ sources:
         description: Model ID where applicable.
         dtype: object
         long_name: instrument_model
+      RISE_bias_estimate:
+        description: RISE bias estimate
+        long_name: RISE_bias_estimate
+        dtype: float32
+      humidity_bias_estimate:
+        description: Humidity bias estimate
+        long_name: humidity_bias_estimate
+        dtype: float32
+      wind_bias_estimate:
+        description: Wind bias estimate
+        long_name: wind_bias_estimate
+        dtype: float32
 
 
     header_columns:
@@ -157,6 +183,14 @@ sources:
       - specific_humidity
       - wind_from_direction
       group_name: variables
+    - columns:
+      - RISE_bias_estimate
+      - humidity_bias_estimate
+      - wind_bias_estimate
+      group_name: bias_estimates
+    - columns:
+      - desroziers_30_uncertainy
+      group_name: uncertainty
     space_columns:
       y: latitude|station_configuration
       x: longitude|station_configuration

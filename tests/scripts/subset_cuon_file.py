@@ -1,7 +1,6 @@
 # Select a few moths only for the tests
 from pathlib import Path
 
-import cftime
 import netCDF4
 import numpy
 import xarray
@@ -45,16 +44,10 @@ def main(ifile: Path):
 
     with xarray.open_dataset(ifile, group="header_table") as header_ds:
         # Get the first 100 times
-        report_id_mask = header_ds["report_id"].astype("O").sum(axis=1).isin(report_ids)
+        report_id_mask = header_ds["report_id"].isin(report_ids)
         header_ds = header_ds.sel(index=report_id_mask)
         header_ds = concat_chars(header_ds)
-        print(
-            "Dates are:",
-            cftime.num2date(
-                header_ds["report_timestamp"],
-                units="seconds since 1900-01-01",
-            ),
-        )
+        print("Dates are:", header_ds["report_timestamp"]),
         header_ds.to_netcdf(ofile, mode="a", group="header_table")
 
     tables_remaining = [
@@ -94,8 +87,8 @@ def main(ifile: Path):
 
 if __name__ == "__main__":
     ifiles = [
-        Path("../data/cuon_data/old/0-20001-0-53845_CEUAS_merged_v1.nc"),
-        Path("../data/cuon_data/old/0-20001-0-53772_CEUAS_merged_v1.nc"),
+        Path("../data/cuon_data/old/0-20001-0-53845_CEUAS_merged_v3.nc"),
+        Path("../data/cuon_data/old/0-20001-0-53772_CEUAS_merged_v3.nc"),
     ]
     for ifile in ifiles:
         main(ifile)

@@ -400,7 +400,11 @@ def _fix_table_data(
         )
     # Check primary keys can be used to build a unique index
     primary_keys = table_definition.primary_keys
-    if table_name in ["era5fb_table", "advanced_homogenisation"]:
+    if table_name in [
+        "era5fb_table",
+        "advanced_homogenisation",
+        "advanced_uncertainty",
+    ]:
         table_data = table_data.reset_index()
         table_data_len = len(table_data)
         obs_table_len = len(dataset_cdm["observations_table"])
