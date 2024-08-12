@@ -65,45 +65,56 @@ sources:
         description: Dewpoint measurement (from profile measurement)
         dtype: float32
         long_name: air_dewpoint
+        units: K
         humidity_bias_estimate: humidity_bias_estimate
+        desroziers_30_uncertainy: desroziers_30_uncertainy
       desroziers_30_uncertainy:
         description: Desroziers uncertainty v 1.0 - 30 days window
         long_name: desroziers_30_uncertainy
         dtype: float32
+        units: same as the variable
       dew_point_depression:
         description: The difference between air temperature and dew point temperature.  The dew point temperature is the temperature to which a given air parcel must be cooled at constant pressure and constant water vapour content in order for saturation to occur
         long_name: dew_point_depression
         dtype: float32
+        units: K
+        desroziers_30_uncertainy: desroziers_30_uncertainy
       eastward_wind_speed:
         description: Wind towards the east
         dtype: float32
         long_name: eastward_wind_speed
         wind_bias_estimate: wind_bias_estimate
+        units: m s-1
+        desroziers_30_uncertainy: desroziers_30_uncertainy
       northward_wind_speed:
         description: Wind towards the north
         dtype: float32
         long_name: northward_wind_speed
+        units: m s-1
+        desroziers_30_uncertainy: desroziers_30_uncertainy
       geopotential_height:
         description: Height of a standard or significant pressure level in meters
         dtype: float32
         long_name: geopotential_height
-        units: m
+        units: gpm
+        desroziers_30_uncertainy: desroziers_30_uncertainy
       location_latitude:
         description: Latitude of the station (deg. North)
         dtype: float32
         long_name: latitude
-        units: degree_north
+        units: degrees_north
       location_longitude:
         description: Longitude of the station (deg. East)
         dtype: float32
         long_name: longitude
-        units: degree_east
+        units: degrees_east
       relative_humidity:
         description: Relative humidity (from profile measurement)
         dtype: float32
         long_name: relative_humidity
-        units: m
+        units: '1'
         humidity_bias_estimate: humidity_bias_estimate
+        desroziers_30_uncertainy: desroziers_30_uncertainy
       report_timestamp:
         description: Observation date time UTC
         dtype: datetime64[ns]
@@ -113,6 +124,8 @@ sources:
         dtype: float32
         long_name: specific_humidity
         humidity_bias_estimate: humidity_bias_estimate
+        units: kg kg-1
+        desroziers_30_uncertainy: desroziers_30_uncertainy
       station_name:
         description: Station identification code
         dtype: object
@@ -122,11 +135,15 @@ sources:
         dtype: float32
         long_name: wind_from_direction
         wind_bias_estimate: wind_bias_estimate
+        units: deg
+        desroziers_30_uncertainy: desroziers_30_uncertainy
       wind_speed:
         description: Wind speed
         dtype: float32
         long_name: wind_speed
         wind_bias_estimate: wind_bias_estimate
+        units: m s-1
+        desroziers_30_uncertainy: desroziers_30_uncertainy
       secondary_id:
         description: Secondary id
         dtype: object
@@ -139,14 +156,17 @@ sources:
         description: RISE bias estimate
         long_name: RISE_bias_estimate
         dtype: float32
+        units: same as the variable
       humidity_bias_estimate:
         description: Humidity bias estimate
         long_name: humidity_bias_estimate
         dtype: float32
+        units: same as the variable
       wind_bias_estimate:
         description: Wind bias estimate
         long_name: wind_bias_estimate
         dtype: float32
+        units: same as the variable
 
 
     header_columns:
