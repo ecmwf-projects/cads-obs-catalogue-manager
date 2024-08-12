@@ -96,7 +96,7 @@ sources:
         description: Height of a standard or significant pressure level in meters
         dtype: float32
         long_name: geopotential_height
-        units: gpm
+        units: J kg-1
         desroziers_30_uncertainy: desroziers_30_uncertainy
       location_latitude:
         description: Latitude of the station (deg. North)
