@@ -45,6 +45,8 @@ def retrieve_observations(
     size_limit :
       Maximum size allowed for the download
     """
+    from cads_adaptors.adaptors import Context
+
     logger.info("Starting retrieve pipeline.")
     # Query the storage to get the URLS of the files that contain the data requested
     with get_database_session(catalogue_url) as session:
@@ -57,6 +59,7 @@ def retrieve_observations(
             retrieve_args.dataset
         ).global_attributes
     cdm_lite_vars = list(itertools.chain.from_iterable(cdm_lite_variables.values()))
+    context = Context()
     output_path = retrieve_data(
         retrieve_args.dataset,
         retrieve_args.params.model_dump(),
@@ -64,5 +67,6 @@ def retrieve_observations(
         object_urls,
         cdm_lite_vars,
         global_attributes,
+        context,
     )
     return output_path
