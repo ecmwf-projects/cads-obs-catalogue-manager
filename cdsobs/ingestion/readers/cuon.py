@@ -386,6 +386,9 @@ def _fix_table_data(
         if len(table_data) == 0:
             logger.warning(f"No data found in {file_path} for {time_space_batch}.")
             raise NoDataInFileException
+        # Remove obstype 0, as is unassigned data we don't need
+        table_data = table_data.loc[table_data["observed_variable"] != 0]
+        # Check if observation ids are unique and replace them if not
         if not table_data.observation_id.is_unique:
             logger.warning(f"observation_id is not unique in {file_path}, fixing")
             table_data["observation_id"] = numpy.arange(

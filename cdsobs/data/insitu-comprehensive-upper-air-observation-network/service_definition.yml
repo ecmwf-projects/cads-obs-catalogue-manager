@@ -36,19 +36,8 @@ sources:
       rename:
         desroziers_30: desroziers_30_uncertainy
       melt_columns: false
-      unit_changes:
-        aerosol_absorption_optical_depth:
-          names:
-            '1': '1'
-          offset: 0
-          scale: 1
     data_table: observations_table
     descriptions:
-      aerosol_absorption_optical_depth:
-        description: Vertical column integral of spectral aerosol absorption coefficient
-        dtype: float32
-        long_name: aerosol_absorption_optical_depth
-        units: '1'
       air_pressure:
         description: Barometric air pressure
         dtype: float32
@@ -189,7 +178,6 @@ sources:
     - air_pressure
     products:
     - columns:
-      - aerosol_absorption_optical_depth
       - air_temperature
       - geopotential_height
       - relative_humidity
