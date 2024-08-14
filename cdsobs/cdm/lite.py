@@ -59,6 +59,7 @@ optional_variable_names = [
     "exposure_of_sensor",
     "fg_depar@body",
     "an_depar@body",
+    "fg_depar@offline",
 ]
 auxiliary_variable_names = [
     "total_uncertainty",
