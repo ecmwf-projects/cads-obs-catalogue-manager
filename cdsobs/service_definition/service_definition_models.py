@@ -91,7 +91,7 @@ class CombineColumns(BaseModel):
 class CdmMapping(BaseModel, extra="forbid"):
     rename: dict[StrNotBlank, StrNotBlank] | None = None
     add: dict[StrNotBlank, StrNotBlank | float | int | bool] | None = None
-    unit_changes: dict[StrNotBlank, UnitChange]
+    unit_changes: dict[StrNotBlank, UnitChange] | None = None
     melt_columns: bool
     combine_columns: CombineColumns | None = None
 

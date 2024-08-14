@@ -422,7 +422,7 @@ def _extract_variable_units_change(
     observed_variable = homogenised_data.loc[:, "observed_variable"]
     description_units = source_definition.descriptions[variable].units
     observed_variable_mask = observed_variable == variable
-    if variable not in unit_changes:
+    if unit_changes is None or variable not in unit_changes:
         # Do not change units, set both units columns to be equal.
         new_units = description_units
         original_units = description_units
