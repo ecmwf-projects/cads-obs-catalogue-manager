@@ -131,6 +131,8 @@ def _process_table(
             "eda_spread@errstat",
             "processing_level",
             "location_method",
+            "source_id",
+            "crs",
         ]
         file_vars = [
             fv
@@ -141,7 +143,11 @@ def _process_table(
             logger.debug(f"Reading variable {variable}")
             selector = slices[variable]
             # dropping string dims - not necessary for dataframes
-            fields = [f for f in hfile[table_name] if "string" not in f]
+            fields = [
+                f
+                for f in hfile[table_name]
+                if "string" not in f and f not in vals_to_exclude
+            ]
             data: dict[str, numpy.ndarray] = {
                 field: _get_field_data(field, hfile, selector, table_name)
                 for field in fields
@@ -409,7 +415,13 @@ def _fix_table_data(
 ):
     # the name in station_configuration
     if table_name == "header_table":
-        vars_to_drop = ["station_name", "platform_sub_type", "platform_type"]
+        vars_to_drop = [
+            "station_name",
+            "platform_sub_type",
+            "platform_type",
+            "station_type",
+            "crs",
+        ]
         table_data = table_data.drop(vars_to_drop, axis=1, errors="ignore")
     # Check that observation id is unique and fix if not
     if table_name == "observations_table":
@@ -432,7 +444,7 @@ def _fix_table_data(
         table_data = table_data.drop_duplicates(
             subset=["primary_id", "record_number"], ignore_index=True
         )
-        table_data = table_data.drop(["latitude", "longitude"])
+        table_data = table_data.drop(["latitude", "longitude"], axis=1)
     # Check primary keys can be used to build a unique index
     primary_keys = table_definition.primary_keys
     if table_name in [
