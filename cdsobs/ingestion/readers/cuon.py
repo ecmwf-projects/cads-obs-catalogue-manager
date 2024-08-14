@@ -101,7 +101,37 @@ def _process_table(
     slices: dict[str, slice],
 ) -> dict[str, dict[str, numpy.ndarray]]:
     if table_name in sorted_by_variable:
-        vals_to_exclude = ["index", "recordtimestamp", "string1"]
+        vals_to_exclude = [
+            "index",
+            "recordtimestamp",
+            "string1",
+            "type",
+            "expver",
+            "class",
+            "stream",
+            "report_status@hdr",
+            "report_event1@hdr",
+            "report_rdbflag@hdr",
+            "lat@hdr",
+            "lon@hdr",
+            "lsm@modsurf",
+            "orography@modsurf",
+            "windspeed10m@modsurf",
+            "vertco_reference_2@body",
+            "ppcode@conv_body",
+            "datum_anflag@body",
+            "datum_status@body",
+            "datum_event1@body",
+            "datum_rdbflag@body",
+            "qc_pge@body",
+            "lsm@surfbody_feedback",
+            "obs_error@errstat",
+            "final_obs_error@errstat",
+            "fg_error@errstat",
+            "eda_spread@errstat",
+            "processing_level",
+            "location_method",
+        ]
         file_vars = [
             fv
             for fv in numpy.array(hfile["recordindices"])
@@ -331,8 +361,8 @@ def get_denormalized_table_file(
         )
         dataset_cdm[table_name] = table_data
     # Filter stations outside ofthe Batch
-    lats = dataset_cdm["header_table"]["latitude|header_table"]
-    lons = dataset_cdm["header_table"]["longitude|header_table"]
+    lats = dataset_cdm["header_table"]["latitude"]
+    lons = dataset_cdm["header_table"]["longitude"]
     lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
     lon_mask = between(lons, lon_start, lon_end)
     lat_mask = between(lats, lat_start, lat_end)
@@ -377,9 +407,10 @@ def _fix_table_data(
     file_path: Path,
     time_space_batch: TimeSpaceBatch,
 ):
-    for coord in ["latitude", "longitude", "source_id"]:
-        if coord in table_data:
-            table_data = table_data.rename({coord: coord + "|" + table_name}, axis=1)
+    # the name in station_configuration
+    if table_name == "header_table":
+        vars_to_drop = ["station_name", "platform_sub_type", "platform_type"]
+        table_data = table_data.drop(vars_to_drop, axis=1, errors="ignore")
     # Check that observation id is unique and fix if not
     if table_name == "observations_table":
         # If there is nothing here it is a waste of time to continue
@@ -401,6 +432,7 @@ def _fix_table_data(
         table_data = table_data.drop_duplicates(
             subset=["primary_id", "record_number"], ignore_index=True
         )
+        table_data = table_data.drop(["latitude", "longitude"])
     # Check primary keys can be used to build a unique index
     primary_keys = table_definition.primary_keys
     if table_name in [
