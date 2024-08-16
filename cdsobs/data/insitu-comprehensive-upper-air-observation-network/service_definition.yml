@@ -87,12 +87,12 @@ sources:
         long_name: geopotential_height
         units: J kg-1
         desroziers_30_uncertainy: desroziers_30_uncertainy
-      location_latitude:
+      latitude|header_table:
         description: Latitude of the station (deg. North)
         dtype: float32
         long_name: latitude
         units: degrees_north
-      location_longitude:
+      longitude|header_table:
         description: Longitude of the station (deg. East)
         dtype: float32
         long_name: longitude
