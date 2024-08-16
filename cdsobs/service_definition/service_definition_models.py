@@ -64,7 +64,7 @@ class UnitChange(BaseModel):
 
 
 class Description(BaseModel, extra="allow"):
-    description: StrNotBlank
+    description: str
     dtype: str | None = None
     long_name: StrNotBlank
     units: StrNotBlank | None = None
