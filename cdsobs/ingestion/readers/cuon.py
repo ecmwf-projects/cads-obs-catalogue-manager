@@ -369,8 +369,10 @@ def get_denormalized_table_file(
     # Filter stations outside ofthe Batch
     lats = dataset_cdm["header_table"]["latitude"]
     lons = dataset_cdm["header_table"]["longitude"]
-    if lats.dtype == "|S1" or lons.dtype == "|S1":
-        raise NoDataInFileException("Skipping file with malformed latitudes")
+    if (lats.dtype.kind == "S") or (lons.dtype.kind == "S"):
+        raise NoDataInFileException(
+            f"Skipping file {file_and_slices.path} with malformed latitudes"
+        )
     lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
     lon_mask = between(lons, lon_start, lon_end)
     lat_mask = between(lats, lat_start, lat_end)
