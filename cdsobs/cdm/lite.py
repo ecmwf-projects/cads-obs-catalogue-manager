@@ -59,6 +59,7 @@ optional_variable_names = [
     "exposure_of_sensor",
     "fg_depar@body",
     "an_depar@body",
+    "fg_depar@offline",
 ]
 auxiliary_variable_names = [
     "total_uncertainty",
@@ -76,6 +77,10 @@ auxiliary_variable_names = [
     "quality_flag",
     "combined_uncertainty",
     "processing_level",
+    "desroziers_30_uncertainy",
+    "RISE_bias_estimate",
+    "humidity_bias_estimate",
+    "wind_bias_estimate",
 ]
 cdm_lite_variables = dict(
     mandatory=variable_names,

@@ -101,7 +101,39 @@ def _process_table(
     slices: dict[str, slice],
 ) -> dict[str, dict[str, numpy.ndarray]]:
     if table_name in sorted_by_variable:
-        vals_to_exclude = ["index", "recordtimestamp", "string1"]
+        vals_to_exclude = [
+            "index",
+            "recordtimestamp",
+            "string1",
+            "type",
+            "expver",
+            "class",
+            "stream",
+            "report_status@hdr",
+            "report_event1@hdr",
+            "report_rdbflag@hdr",
+            "lat@hdr",
+            "lon@hdr",
+            "lsm@modsurf",
+            "orography@modsurf",
+            "windspeed10m@modsurf",
+            "vertco_reference_2@body",
+            "ppcode@conv_body",
+            "datum_anflag@body",
+            "datum_status@body",
+            "datum_event1@body",
+            "datum_rdbflag@body",
+            "qc_pge@body",
+            "lsm@surfbody_feedback",
+            "obs_error@errstat",
+            "final_obs_error@errstat",
+            "fg_error@errstat",
+            "eda_spread@errstat",
+            "processing_level",
+            "location_method",
+            "source_id",
+            "crs",
+        ]
         file_vars = [
             fv
             for fv in numpy.array(hfile["recordindices"])
@@ -111,7 +143,11 @@ def _process_table(
             logger.debug(f"Reading variable {variable}")
             selector = slices[variable]
             # dropping string dims - not necessary for dataframes
-            fields = [f for f in hfile[table_name] if "string" not in f]
+            fields = [
+                f
+                for f in hfile[table_name]
+                if "string" not in f and f not in vals_to_exclude
+            ]
             data: dict[str, numpy.ndarray] = {
                 field: _get_field_data(field, hfile, selector, table_name)
                 for field in fields
@@ -331,8 +367,12 @@ def get_denormalized_table_file(
         )
         dataset_cdm[table_name] = table_data
     # Filter stations outside ofthe Batch
-    lats = dataset_cdm["header_table"]["latitude|header_table"]
-    lons = dataset_cdm["header_table"]["longitude|header_table"]
+    lats = dataset_cdm["header_table"]["latitude"]
+    lons = dataset_cdm["header_table"]["longitude"]
+    if (lats.dtype.kind == "S") or (lons.dtype.kind == "S"):
+        raise NoDataInFileException(
+            f"Skipping file {file_and_slices.path} with malformed latitudes"
+        )
     lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
     lon_mask = between(lons, lon_start, lon_end)
     lat_mask = between(lats, lat_start, lat_end)
@@ -377,15 +417,25 @@ def _fix_table_data(
     file_path: Path,
     time_space_batch: TimeSpaceBatch,
 ):
-    for coord in ["latitude", "longitude", "source_id"]:
-        if coord in table_data:
-            table_data = table_data.rename({coord: coord + "|" + table_name}, axis=1)
+    # the name in station_configuration
+    if table_name == "header_table":
+        vars_to_drop = [
+            "station_name",
+            "platform_sub_type",
+            "platform_type",
+            "station_type",
+            "crs",
+        ]
+        table_data = table_data.drop(vars_to_drop, axis=1, errors="ignore")
     # Check that observation id is unique and fix if not
     if table_name == "observations_table":
         # If there is nothing here it is a waste of time to continue
         if len(table_data) == 0:
             logger.warning(f"No data found in {file_path} for {time_space_batch}.")
             raise NoDataInFileException
+        # Remove obstype 0, as is unassigned data we don't need
+        table_data = table_data.loc[table_data["observed_variable"] != 0]
+        # Check if observation ids are unique and replace them if not
         if not table_data.observation_id.is_unique:
             logger.warning(f"observation_id is not unique in {file_path}, fixing")
             table_data["observation_id"] = numpy.arange(
@@ -398,9 +448,14 @@ def _fix_table_data(
         table_data = table_data.drop_duplicates(
             subset=["primary_id", "record_number"], ignore_index=True
         )
+        table_data = table_data.drop(["latitude", "longitude"], axis=1)
     # Check primary keys can be used to build a unique index
     primary_keys = table_definition.primary_keys
-    if table_name in ["era5fb_table", "advanced_homogenisation"]:
+    if table_name in [
+        "era5fb_table",
+        "advanced_homogenisation",
+        "advanced_uncertainty",
+    ]:
         table_data = table_data.reset_index()
         table_data_len = len(table_data)
         obs_table_len = len(dataset_cdm["observations_table"])

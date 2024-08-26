@@ -34,7 +34,11 @@ def denormalize_tables(
             dataset_cdm[parent_table_name] = joined_table
     # Here we merge the tables that have a one to one relationship with the
     # observations table
-    for table_name in ["era5fb_table", "advanced_homogenisation"]:
+    for table_name in [
+        "era5fb_table",
+        "advanced_homogenisation",
+        "advanced_uncertainty",
+    ]:
         if table_name in tables_to_use:
             if len(dataset_cdm["observations_table"]) != len(dataset_cdm[table_name]):
                 logger.warning(

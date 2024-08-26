@@ -79,6 +79,7 @@ datasets:
   - station_configuration
   - era5fb_table
   - advanced_homogenisation
+  - advanced_uncertainty
   reader: "cdsobs.ingestion.readers.cuon.read_cuon_netcdfs"
   reader_extra_args:
     input_dir: "test"

@@ -1,6 +1,6 @@
 from importlib import import_module
 from pathlib import Path
-from typing import List, Tuple
+from typing import List
 
 import numpy
 import pandas
@@ -151,20 +151,12 @@ def cast_to_descriptions(
     return data_renamed
 
 
-def _get_latlon_names(data: pandas.DataFrame) -> Tuple[str, str]:
-    if "longitude" in data:
-        latname = "latitude"
-        lonname = "longitude"
-    else:
-        latname = "latitude|station_configuration"
-        lonname = "longitude|station_configuration"
-    return latname, lonname
-
-
 def sort(partition: DatasetPartition) -> DatasetPartition:
     """Sort data of a partition."""
     logger.info("Sorting partition data")
-    latname, lonname = _get_latlon_names(partition.data)
+    space_columns = partition.dataset_metadata.space_columns
+    latname = space_columns.y
+    lonname = space_columns.x
     partition.data.sort_values(
         by=["report_timestamp", latname, lonname], kind="mergesort", inplace=True
     )
