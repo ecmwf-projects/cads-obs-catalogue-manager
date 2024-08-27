@@ -2,7 +2,10 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
-import cdsapi
+try:
+    import cdsapi
+except ImportError:
+    pass
 import pandas
 import xarray
 from cads_adaptors.adaptors.cadsobs.csv import to_csv
