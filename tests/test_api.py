@@ -16,63 +16,59 @@ from tests.utils import get_test_years
 
 logger = get_logger(__name__)
 
+TEST_API_PARAMETERS = [
+    ("insitu-observations-woudc-ozone-total-column-and-profiles", "OzoneSonde"),
+    ("insitu-observations-woudc-ozone-total-column-and-profiles", "TotalOzone"),
+    (
+        "insitu-observations-igra-baseline-network",
+        "IGRA",
+    ),
+    (
+        "insitu-observations-igra-baseline-network",
+        "IGRA_H",
+    ),
+    (
+        "insitu-comprehensive-upper-air-observation-network",
+        "CUON",
+    ),
+    (
+        "insitu-observations-gruan-reference-network",
+        "GRUAN",
+    ),
+    (
+        "insitu-observations-near-surface-temperature-us-climate-reference-network",
+        "uscrn_subhourly",
+    ),
+    (
+        "insitu-observations-near-surface-temperature-us-climate-reference-network",
+        "uscrn_hourly",
+    ),
+    (
+        "insitu-observations-near-surface-temperature-us-climate-reference-network",
+        "uscrn_daily",
+    ),
+    (
+        "insitu-observations-near-surface-temperature-us-climate-reference-network",
+        "uscrn_monthly",
+    ),
+    (
+        "insitu-observations-gnss",
+        "IGS",
+    ),
+    (
+        "insitu-observations-gnss",
+        "EPN",
+    ),
+    (
+        "insitu-observations-gnss",
+        "IGS_R3",
+    ),
+]
 
-@pytest.mark.parametrize(
-    "dataset_name,source,test_update",
-    [
-        (
-            "insitu-observations-woudc-ozone-total-column-and-profiles",
-            "OzoneSonde",
-            False,
-        ),
-        (
-            "insitu-observations-woudc-ozone-total-column-and-profiles",
-            "TotalOzone",
-            False,
-        ),
-        ("insitu-observations-igra-baseline-network", "IGRA", False),
-        ("insitu-observations-igra-baseline-network", "IGRA_H", False),
-        ("insitu-comprehensive-upper-air-observation-network", "CUON", False),
-        ("insitu-observations-gruan-reference-network", "GRUAN", False),
-        (
-            "insitu-observations-near-surface-temperature-us-climate-reference-network",
-            "uscrn_subhourly",
-            False,
-        ),
-        (
-            "insitu-observations-near-surface-temperature-us-climate-reference-network",
-            "uscrn_hourly",
-            False,
-        ),
-        (
-            "insitu-observations-near-surface-temperature-us-climate-reference-network",
-            "uscrn_daily",
-            False,
-        ),
-        (
-            "insitu-observations-near-surface-temperature-us-climate-reference-network",
-            "uscrn_monthly",
-            False,
-        ),
-        (
-            "insitu-observations-gnss",
-            "IGS",
-            False,
-        ),
-        (
-            "insitu-observations-gnss",
-            "EPN",
-            False,
-        ),
-        (
-            "insitu-observations-gnss",
-            "IGS_R3",
-            False,
-        ),
-    ],
-)
+
+@pytest.mark.parametrize("dataset_name,source", TEST_API_PARAMETERS)
 def test_run_ingestion_pipeline(
-    dataset_name, source, test_update, test_session, test_config, caplog, tmp_path
+    dataset_name, source, test_session, test_config, caplog, tmp_path
 ):
     start_year, end_year = get_test_years(source)
     service_definition = get_service_definition(dataset_name)
@@ -120,36 +116,13 @@ def test_run_ingestion_pipeline(
         if v in variables_in_file:
             expected_variables.add(v)
     logger.info(
-        f"{variables_in_file - expected_variables} are in file but not in the descriptions"
+        f"{dataset_name=} {source=}: {variables_in_file - expected_variables} "
+        f"are in file but not in the descriptions"
     )
     logger.info(
-        f"{expected_variables - variables_in_file} are not in file but are in the description"
+        f"{dataset_name=} {source=}: {expected_variables - variables_in_file} "
+        f"are not in file but are in the descriptions"
     )
-    # assert variables_in_file == expected_variables
-
-    if test_update:
-        # testing update flag
-        run_ingestion_pipeline(
-            dataset_name,
-            service_definition,
-            source,
-            test_session,
-            test_config,
-            start_year=start_year,
-            end_year=end_year,
-            update=False,
-        )
-
-        found_log = [
-            "A partition with the chosen parameters already exists" in r.msg
-            for r in caplog.records
-        ]
-        assert any(found_log)
-        # no insertions have been made
-        assert (
-            test_session.scalar(sa.select(sa.func.count()).select_from(Catalogue))
-            == counter
-        )
 
 
 def test_make_cdm(test_config, tmp_path, caplog):
