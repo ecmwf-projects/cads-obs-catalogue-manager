@@ -2,7 +2,10 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
+import cdsapi
+import pandas
 import xarray
+from cads_adaptors.adaptors.cadsobs.csv import to_csv
 
 from cdsobs.cli._object_storage import check_if_missing_in_object_storage
 from cdsobs.config import CDSObsConfig
@@ -58,7 +61,8 @@ def _sanity_check_dataset(
         dataset_source=dataset_source,
         latitude_coverage=latitude_coverage,
         longitude_coverage=longitude_coverage,
-        time_coverage=(start_date, end_date),
+        year=[year],
+        month=[1],
         format="netCDF",
         variables=variables_from_service_definition,
     )
@@ -91,6 +95,68 @@ def _sanity_check_dataset(
             longitude_coverage,
             variables_from_service_definition,
         )
+        # Transform to CSV and read the file
+        csv_path = to_csv(Path(tmpdir), output_path, retrieve_args)
+        df = pandas.read_csv(csv_path, comment="#")
+        # Get the equivalent file from the legacy CDS
+        csv_legacy_path = f"{tmpdir}/{dataset_name}_{dataset_source}.csv-obs.zip"
+        source_name_mapping = {
+            "insitu-observations-woudc-ozone-total-column-and-profiles": "observation_type",
+            "insitu-observations-gnss": "vertical_profile",
+            "insitu-observations-near-surface-temperature-us-climate-reference-network": "time_aggregation",
+            "insitu-observations-igra-baseline-network": "archive",
+        }
+
+        sources_mapping = {
+            "OzoneSonde": "vertical_profile",
+            "IGS": "IGS daily",
+            "EPN": "EPN-repro2",
+            "IGS_R3": "IGS-repro3",
+            "uscrn_daily": "Daily",
+            "uscrn_hourly": "Hourly",
+            "uscrn_monthly": "Monthly",
+            "uscrn_subhourly": "Sub - hourly",
+            "IGRA": "Global radiosonde archive",
+            "IGRA_H": "Harmonised global radiosonde archive",
+        }
+        c = cdsapi.Client()
+        params = {
+            "variable": retrieve_args.params.variables,
+            "year": [str(yy) for yy in retrieve_args.params.year],
+            "month": "01",
+            "day": [
+                "01",
+                "02",
+                "03",
+                "08",
+                "09",
+                "10",
+                "13",
+                "15",
+                "17",
+                "20",
+                "21",
+                "22",
+                "23",
+                "24",
+                "27",
+                "28",
+                "29",
+                "30",
+            ],
+            "format": "csv-obs.zip",
+            "area": [
+                latitude_coverage[1],
+                longitude_coverage[0],
+                latitude_coverage[0],
+                longitude_coverage[1],
+            ],
+        }
+        if dataset_name in source_name_mapping:
+            params[source_name_mapping[dataset_name]] = sources_mapping[dataset_source]
+            c.retrieve(dataset_name, params, csv_legacy_path)
+        df_legacy = pandas.read_csv(csv_legacy_path, comment="#")
+        pandas.testing.assert_frame_equal(df, df_legacy)
 
 
 def check_retrieved_dataset(
