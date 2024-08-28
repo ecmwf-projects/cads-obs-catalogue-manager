@@ -322,7 +322,14 @@ def read_cuon_netcdfs(
     # Check for emptiness
     if all([dt is None for dt in denormalized_tables]):
         raise EmptyBatchException
-    return pandas.concat(denormalized_tables)
+    result = pandas.concat(denormalized_tables)
+    allnan_cols = []
+    for col in result:
+        if result[col].isnull().all():
+            allnan_cols.append(col)
+    logger.info(f"Removing columns {allnan_cols} as they don't have any data")
+    result = result.drop(allnan_cols, axis=1)
+    return result
 
 
 def get_scheduler():
