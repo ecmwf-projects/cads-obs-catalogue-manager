@@ -16,6 +16,7 @@ from cdsobs.ingestion.core import (
 )
 from cdsobs.metadata import get_dataset_metadata
 from cdsobs.service_definition.api import get_service_definition
+from cdsobs.service_definition.service_definition_models import UnitChange
 
 
 def test_check_cdm_compliance(test_config, caplog):
@@ -210,6 +211,11 @@ def test_apply_variable_unit_change(test_config):
         dataset_name, service_definition, source, test_config
     )
     source_definition = service_definition.sources[source]
+    source_definition.descriptions["geopotential_height"].units = "J kg-1"
+    source_definition.cdm_mapping.unit_changes = dict()
+    source_definition.cdm_mapping.unit_changes["geopotential_height"] = UnitChange(
+        names={"m": "J kg-1"}, offset=0, scale=0.01020408163265306
+    )
     cdm_code_tables = read_cdm_code_tables(test_config.cdm_tables_location)
     actual = apply_unit_changes(
         homogenised_data, source_definition, cdm_code_tables["observed_variable"]
