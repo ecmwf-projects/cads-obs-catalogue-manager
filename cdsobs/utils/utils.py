@@ -1,7 +1,7 @@
 import hashlib
 import json
 from pathlib import Path
-from typing import Sequence, cast
+from typing import Any, Sequence, cast
 
 import h5netcdf
 import numpy
@@ -89,3 +89,20 @@ def datetime_to_seconds(dates: pandas.Series) -> numpy.ndarray:
 def get_database_session(url: str) -> Session:
     engine = create_engine(url)  # echo=True for more descriptive logs
     return sessionmaker(autocommit=False, autoflush=False, bind=engine)()
+
+
+def invert_dict(idict: dict) -> dict:
+    """Return the inverse of a dictionary.
+
+    It must be bijective, this is, keys and values need to be unique
+    """
+    try:
+        assert is_unique(idict)
+        assert is_unique(idict.values())
+    except AssertionError:
+        raise AssertionError("Dict must be bijective (keys and values must be unique.)")
+    return {v: k for k, v in idict.items()}
+
+
+def is_unique(x: Any) -> bool:
+    return len(x) == len(set(x))

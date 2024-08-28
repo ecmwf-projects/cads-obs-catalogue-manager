@@ -322,14 +322,7 @@ def read_cuon_netcdfs(
     # Check for emptiness
     if all([dt is None for dt in denormalized_tables]):
         raise EmptyBatchException
-    result = pandas.concat(denormalized_tables)
-    allnan_cols = []
-    for col in result:
-        if result[col].isnull().all():
-            allnan_cols.append(col)
-    logger.info(f"Removing columns {allnan_cols} as they don't have any data")
-    result = result.drop(allnan_cols, axis=1)
-    return result
+    return pandas.concat(denormalized_tables)
 
 
 def get_scheduler():
@@ -377,9 +370,7 @@ def get_denormalized_table_file(
     lats = dataset_cdm["header_table"]["latitude"]
     lons = dataset_cdm["header_table"]["longitude"]
     if (lats.dtype.kind == "S") or (lons.dtype.kind == "S"):
-        raise NoDataInFileException(
-            f"Skipping file {file_and_slices.path} with malformed latitudes"
-        )
+        raise NoDataInFileException("Skipping file with malformed latitudes")
     lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
     lon_mask = between(lons, lon_start, lon_end)
     lat_mask = between(lats, lat_start, lat_end)

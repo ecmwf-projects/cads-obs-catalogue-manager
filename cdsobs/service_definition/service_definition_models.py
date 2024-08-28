@@ -12,6 +12,7 @@ from pydantic_core.core_schema import ValidationInfo
 
 from cdsobs.service_definition.utils import custom_assert
 from cdsobs.utils.types import NotEmptyUniqueStrList, StrNotBlank
+from cdsobs.utils.utils import invert_dict
 
 """ models """
 
@@ -147,13 +148,17 @@ class SourceDefinition(BaseModel, extra="forbid"):
         return mandatory_columns
 
     def get_raw_header_columns(self):
+        inv_rename_dict = invert_dict(self.cdm_mapping.rename)
         return [
-            k for k, v in self.cdm_mapping.rename.items() if v in self.header_columns
+            inv_rename_dict[v] if v in inv_rename_dict else v
+            for v in self.header_columns
         ]
 
     def get_raw_mandatory_columns(self):
+        inv_rename_dict = invert_dict(self.cdm_mapping.rename)
         return [
-            k for k, v in self.cdm_mapping.rename.items() if v in self.mandatory_columns
+            inv_rename_dict[v] if v in inv_rename_dict else v
+            for v in self.mandatory_columns
         ]
 
 

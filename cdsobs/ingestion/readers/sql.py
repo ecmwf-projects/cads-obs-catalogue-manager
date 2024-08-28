@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Protocol, Tuple
+from typing import Protocol, Tuple
 
 import connectorx as cx
 import pandas
@@ -13,6 +13,7 @@ from cdsobs.service_definition.service_definition_models import (
     SourceDefinition,
 )
 from cdsobs.utils.logutils import get_logger
+from cdsobs.utils.utils import invert_dict
 
 logger = get_logger(__name__)
 
@@ -301,23 +302,6 @@ sqltype2numpytypes = {
     "uuid": "object",
     "numeric": "float64",
 }
-
-
-def is_unique(x: Any) -> bool:
-    return len(x) == len(set(x))
-
-
-def invert_dict(idict: dict) -> dict:
-    """Return the inverse of a dictionary.
-
-    It must be bijective, this is, keys and values need to be unique
-    """
-    try:
-        assert is_unique(idict)
-        assert is_unique(idict.values())
-    except AssertionError:
-        raise AssertionError("Dict must be bijective (keys and values must be unique.)")
-    return {v: k for k, v in idict.items()}
 
 
 def get_time_field(source_definition: SourceDefinition) -> Tuple[str, bool]:

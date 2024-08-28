@@ -5,7 +5,7 @@ global_attributes:
 out_columns_order:
 - platform_type
 - station_name
-- other_ids
+- secondary_id
 - sensor_id
 - report_timestamp
 - daily_timestamp
@@ -65,7 +65,7 @@ sources:
         ozone_reference_model: reference_model
         ozone_reference_total_o3: ozone_reference_total_ozone
         ozone_reference_utc_mean: ozone_reference_time_mean
-        platform_gaw_id: other_ids
+        platform_gaw_id: secondary_id
         platform_id: primary_station_id
         platform_type: platform_type
         pressure: z_coordinate
@@ -82,19 +82,17 @@ sources:
         wind_speed: wind_speed
       add:
         z_coordinate_type: pressure (Pa)
-      unit_changes:
-        geopotential_height:
-          names:
-            Pa: m
-          offset: 0
-          scale: 1
     data_table: woudc_ozonesonde_value
     descriptions:
-      air_pressure:
-        description: Atmospheric pressure of each level in Pascals.
+      z_coordinate:
+        description: z coordinate of observation
         dtype: float32
         long_name: pressure
         units: Pa
+      z_coordinate_type:
+        description: Type of z coordinate
+        dtype: object
+        long_name: z_coordinate_type
       air_temperature:
         description: Level temperature Kelvin.
         dtype: float32
@@ -117,7 +115,7 @@ sources:
         units: decimal degrees
       level_code:
         description: Code for the level type.
-        dtype: float32
+        dtype: int
         long_name: level_code
       latitude|station_configuration:
         description: Latitude of the instrument.
@@ -139,7 +137,7 @@ sources:
         dtype: float32
         long_name: height
         units: m
-      other_ids:
+      secondary_id:
         description: Three-letter GAW ID as issued by GAWSIS, if available (recommended).
         dtype: object
         long_name: platform_gaw_id
@@ -231,10 +229,14 @@ sources:
         dtype: float32
         long_name: wind_speed
         units: m s^-1
+      report_id:
+        description: Unique ID for report
+        dtype: object
+        long_name: report_id
     header_columns:
     - platform_type
     - primary_station_id
-    - other_ids
+    - secondary_id
     - sensor_id
     - longitude|station_configuration
     - latitude|station_configuration
@@ -251,7 +253,7 @@ sources:
     mandatory_columns:
     - platform_type
     - primary_station_id
-    - other_ids
+    - secondary_id
     - sensor_id
     - sensor_model
     - reference_model
@@ -303,7 +305,7 @@ sources:
         monthly_npts: monthly_npts
         n_obs: number_of_observations
         obs_code: obs_code
-        platform_gaw_id: other_ids
+        platform_gaw_id: secondary_id
         platform_id: primary_station_id
         std_dev_o3: total_ozone_column_standard_deviation
         timestamp_datetime_first_day: report_timestamp
@@ -311,17 +313,6 @@ sources:
         utc_end: time_end
         utc_mean: time_mean
         wl_code: wl_code
-      unit_changes:
-        column_sulphur_dioxide:
-          names:
-            Dobson-units: Dobson-units
-          offset: 0
-          scale: 1
-        total_ozone_column:
-          names:
-            Dobson-units: Dobson-units
-          offset: 0
-          scale: 1
     data_table: woudc_totalozone_value
     descriptions:
       column_sulphur_dioxide:
@@ -364,7 +355,7 @@ sources:
         description: Code to designate the type of total ozone measurement.
         dtype: object
         long_name: obs_code
-      other_ids:
+      secondary_id:
         description: Three-letter GAW ID as issued by GAWSIS, if available (recommended).
         dtype: object
         long_name: platform_gaw_id
@@ -415,10 +406,14 @@ sources:
         dtype: float32
         long_name: wl_code
         name_for_output: wl_code
+      report_id:
+        description: Unique ID for report
+        dtype: object
+        long_name: report_id
     header_columns:
     - platform_type
     - primary_station_id
-    - other_ids
+    - secondary_id
     - sensor_id
     - longitude|station_configuration
     - latitude|station_configuration
@@ -432,7 +427,7 @@ sources:
     mandatory_columns:
     - platform_type
     - primary_station_id
-    - other_ids
+    - secondary_id
     - sensor_id
     - monthly_npts
     - longitude
@@ -453,10 +448,8 @@ sources:
     - columns:
       - total_ozone_column
       - column_sulphur_dioxide
+      - total_ozone_column_standard_deviation
       group_name: variables
-    - columns:
-      - std_dev_O3
-      group_name: standard_deviation
     space_columns:
       y: latitude|station_configuration
       x: longitude|station_configuration

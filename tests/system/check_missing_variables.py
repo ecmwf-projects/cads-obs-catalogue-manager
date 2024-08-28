@@ -49,7 +49,9 @@ def test_run_ingestion_pipeline(
         ).set_index(index_cols)
     # Get the file
     asset = test_session.scalar(
-        sa.select(Catalogue.asset).where(Catalogue.dataset == dataset_name)
+        sa.select(Catalogue.asset).where(
+            Catalogue.dataset == dataset_name, Catalogue.dataset_source == source
+        )
     )
     s3client = S3Client.from_config(test_config.s3config)
     asset_filename = asset.split("/")[1]
