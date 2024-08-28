@@ -123,9 +123,9 @@ def _sanity_check_dataset(
             "IGRA_H": "Harmonised global radiosonde archive",
         }
         c = cdsapi.Client()
-        params = {
+        legacy_params = {
             "variable": retrieve_args.params.variables,
-            "year": [str(yy) for yy in retrieve_args.params.year],
+            "year": [str(yy) for yy in retrieve_args.params.year],  # type: ignore
             "month": "01",
             "day": [
                 "01",
@@ -156,8 +156,10 @@ def _sanity_check_dataset(
             ],
         }
         if dataset_name in source_name_mapping:
-            params[source_name_mapping[dataset_name]] = sources_mapping[dataset_source]
-            c.retrieve(dataset_name, params, csv_legacy_path)
+            legacy_params[source_name_mapping[dataset_name]] = sources_mapping[
+                dataset_source
+            ]
+            c.retrieve(dataset_name, legacy_params, csv_legacy_path)
         df_legacy = pandas.read_csv(csv_legacy_path, comment="#")
         pandas.testing.assert_frame_equal(df, df_legacy)
 
