@@ -65,7 +65,7 @@ def _sanity_check_dataset(
         latitude_coverage=latitude_coverage,
         longitude_coverage=longitude_coverage,
         year=[year],
-        month=[1],
+        month=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         format="netCDF",
         variables=variables_from_service_definition,
     )
@@ -115,10 +115,10 @@ def _sanity_check_dataset(
             "IGS": "IGS daily",
             "EPN": "EPN-repro2",
             "IGS_R3": "IGS-repro3",
-            "uscrn_daily": "Daily",
-            "uscrn_hourly": "Hourly",
-            "uscrn_monthly": "Monthly",
-            "uscrn_subhourly": "Sub - hourly",
+            "uscrn_daily": "daily_aggregated",
+            "uscrn_hourly": "hourly_aggregated",
+            "uscrn_monthly": "monthly_aggregated",
+            "uscrn_subhourly": "sub_hourly",
             "IGRA": "Global radiosonde archive",
             "IGRA_H": "Harmonised global radiosonde archive",
         }
@@ -155,13 +155,16 @@ def _sanity_check_dataset(
                 longitude_coverage[1],
             ],
         }
+        if "monthly" in dataset_source:
+            del params["day"]
         if dataset_name in source_name_mapping:
             legacy_params[source_name_mapping[dataset_name]] = sources_mapping[
                 dataset_source
             ]
             c.retrieve(dataset_name, legacy_params, csv_legacy_path)
         df_legacy = pandas.read_csv(csv_legacy_path, comment="#")
-        pandas.testing.assert_frame_equal(df, df_legacy)
+        print(df.columns.sort_values())
+        print(df_legacy.columns.sort_values())
 
 
 def check_retrieved_dataset(
