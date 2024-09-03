@@ -159,3 +159,39 @@ def test_adaptor_gnss(tmp_path):
         tmpf.write(result.read())
     assert tempfile.stat().st_size > 0
     assert xarray.open_dataset(tempfile).observation_id.size > 0
+
+
+@pytest.mark.skip("By hand only.")
+def test_adaptor_cuon(tmp_path):
+    """Full test with a local instance of the HTTP API."""
+    from cads_adaptors import ObservationsAdaptor
+
+    test_request = {
+        "format": "netCDF",
+        "variable": [
+            "air_temperature",
+            "geopotential_height",
+            "desroziers_30_uncertainy",
+            "RISE_bias_estimate",
+        ],
+        "year": ["1907"],
+        "month": ["2"],
+        "day": ["01"],
+        "dataset_source": "CUON",
+    }
+    test_form = {}
+    # + "/v1/AUTH_{public_user}" will be needed to work with S3 ceph public urls, but it
+    # is not needed for this test as it works with MiniIO.
+    test_adaptor_config = {
+        "entry_point": "cads_adaptors:ObservationsAdaptor",
+        "collection_id": "insitu-comprehensive-upper-air-observation-network",
+        "obs_api_url": "http://localhost:8000",
+        "mapping": {"rename": {"variable": "variables"}},
+    }
+    adaptor = ObservationsAdaptor(test_form, **test_adaptor_config)
+    result = adaptor.retrieve(test_request)
+    tempfile = Path(tmp_path, "test_adaptor.nc")
+    with tempfile.open("wb") as tmpf:
+        tmpf.write(result.read())
+    assert tempfile.stat().st_size > 0
+    assert xarray.open_dataset(tempfile).observation_id.size > 0
