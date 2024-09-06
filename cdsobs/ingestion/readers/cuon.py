@@ -363,16 +363,22 @@ def get_denormalized_table_file(
         table_data = read_table_data(
             file_and_slices, table_name_in_file, time_space_batch.time_batch
         )
-        # Make sure that latitude and longiture always carry on their table name.
-        table_data = _fix_table_data(
-            dataset_cdm,
-            table_data,
-            table_definition,
-            table_name,
-            file_and_slices.path,
-            time_space_batch,
-        )
-        dataset_cdm[table_name] = table_data
+        # Don't try to fix empty tables
+        if len(table_data) > 0:
+            # Make sure that latitude and longiture always carry on their table name.
+            table_data = _fix_table_data(
+                dataset_cdm,
+                table_data,
+                table_definition,
+                table_name,
+                file_and_slices.path,
+                time_space_batch,
+            )
+            dataset_cdm[table_name] = table_data
+        else:
+            # Copy tables to use and remove the empty table
+            # this is for not losing the stations with no homogenisation_table
+            tables_to_use = [t for t in tables_to_use if t != table_name]
     # Filter stations outside ofthe Batch
     lats = dataset_cdm["header_table"]["latitude"]
     lons = dataset_cdm["header_table"]["longitude"]

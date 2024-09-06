@@ -21,9 +21,9 @@ def concat_chars(in_ds: xarray.Dataset) -> xarray.Dataset:
     return out_ds
 
 
-def main(ifile: Path):
-    nreports = 1000
-    index_start = 10000
+def main(ifile: Path, nfile):
+    nreports = 10000
+    index_start = 0
     obs_slice = slice(index_start, index_start + nreports)
     sorted_by_variable = [
         "advanced_homogenisation",
@@ -36,17 +36,21 @@ def main(ifile: Path):
     print(f"Writing subset to {ofile}")
     with netCDF4.Dataset(ifile) as inc:
         groups = list(inc.groups)
+    # Lets remove this from the first file so the test includes the case when
+    # advanced homogenisation is missing
+    if nfile == 0:
+        groups.remove("advanced_homogenisation")
 
     with xarray.open_dataset(ifile, group="observations_table") as obs_ds:
         # Get the report ids of the header
         obs_ds = obs_ds.isel(index=obs_slice)
         obs_ds = concat_chars(obs_ds)
-        report_ids = obs_ds["report_id"]
+        report_ids = obs_ds["report_id"].values
         obs_ds.to_netcdf(ofile, mode="a", group="observations_table")
 
     with xarray.open_dataset(ifile, group="header_table") as header_ds:
         # Get the first 100 times
-        report_id_mask = header_ds["report_id"].isin(report_ids)
+        report_id_mask = header_ds["report_id"].load().isin(report_ids)
         header_ds = header_ds.sel(index=report_id_mask)
         header_ds = concat_chars(header_ds)
         print("Dates are:", header_ds["report_timestamp"]),
@@ -92,5 +96,5 @@ if __name__ == "__main__":
         Path("../data/cuon_data/old/0-20001-0-53845_CEUAS_merged_v3.nc"),
         Path("../data/cuon_data/old/0-20001-0-53772_CEUAS_merged_v3.nc"),
     ]
-    for ifile in ifiles:
-        main(ifile)
+    for i, ifile in enumerate(ifiles):
+        main(ifile, i)
