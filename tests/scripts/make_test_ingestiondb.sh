@@ -92,8 +92,6 @@ pg_dumpall -r  --no-role-passwords -U ${INGESTION_DB_USER} -h localhost \
 # Dumps the functions and extensions definitions
 pg_dump  -U ${INGESTION_DB_USER} -h localhost -p ${INGESTION_DB_LOCAL_PORT} \
   --verbose --exclude-table='public.*' --exclude-table='uscrn.*' --exclude-schema='uscrn' -d ${INGESTION_DB_NAME} > /tmp/functions.sql
-pg_dump  -U ${INGESTION_DB_USER} -h localhost -p ${INGESTION_DB_LOCAL_PORT} \
-  --verbose --exclude-table='public.*' --exclude-table='uscrn.*' -d uscrn >> /tmp/functions.sql
 # Dump the schema and data of the tables
 rm -f /tmp/*_schema.sql
 for row in $(cat "${TABLES_FILE}" | grep -v "#")
