@@ -45,7 +45,7 @@ def main(ifile: Path, nfile):
         varcodes = sorted(set(obs_ds["observed_variable"].values))
         obs_ds_subset_list = []
         for vc in varcodes:
-            obs_ds_var = obs_ds.isel(index=file_and_slices.variable_slices[str(vc)])
+            obs_ds_var = obs_ds.isel(index=file_and_slices.variable_slices[str(vc)])  # type: ignore
             obs_ds_subset_list.append(obs_ds_var)
         obs_ds_subset = xarray.concat(obs_ds_subset_list, dim="index")
         # Get the report ids of the header
@@ -70,7 +70,7 @@ def main(ifile: Path, nfile):
                 table_ds_subset_list = []
                 for vc in varcodes:
                     table_ds_var = table_ds.isel(
-                        index=file_and_slices.variable_slices[str(vc)]
+                        index=file_and_slices.variable_slices[str(vc)]  # type: ignore
                     )
                     table_ds_subset_list.append(table_ds_var)
                 table_ds_subset = xarray.concat(table_ds_subset_list, dim="index")
