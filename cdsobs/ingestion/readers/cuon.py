@@ -441,7 +441,7 @@ def _fix_table_data(
         ]
         table_data = table_data.drop(vars_to_drop, axis=1, errors="ignore")
 
-    if table_name == "station_configurarion":
+    if table_name == "station_configuration":
         vars_to_drop = ["station_automation"]
         table_data = table_data.drop(vars_to_drop, axis=1, errors="ignore")
 
