@@ -363,8 +363,8 @@ def get_denormalized_table_file(
         table_data = read_table_data(
             file_and_slices, table_name_in_file, time_space_batch.time_batch
         )
-        # Don't try to fix empty tables unless it is the header table
-        if len(table_data) > 0 or table_name == "header_table":
+        # Don't try to fix empty tables unless it is one of the main tables
+        if len(table_data) > 0 or table_name in ["header_table", "observation_table"]:
             # Make sure that latitude and longitude always carry on their table name.
             table_data = _fix_table_data(
                 dataset_cdm,
