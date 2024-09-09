@@ -440,6 +440,11 @@ def _fix_table_data(
             "crs",
         ]
         table_data = table_data.drop(vars_to_drop, axis=1, errors="ignore")
+
+    if table_name == "station_configurarion":
+        vars_to_drop = ["station_automation"]
+        table_data = table_data.drop(vars_to_drop, axis=1, errors="ignore")
+
     # Check that observation id is unique and fix if not
     if table_name == "observations_table":
         # If there is nothing here it is a waste of time to continue
