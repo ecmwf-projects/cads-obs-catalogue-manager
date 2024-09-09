@@ -1,9 +1,14 @@
 # Select a few moths only for the tests
 from pathlib import Path
 
+import cftime
 import netCDF4
 import numpy
 import xarray
+
+from cdsobs.constants import TIME_UNITS
+from cdsobs.ingestion.core import TimeBatch
+from cdsobs.ingestion.readers.cuon import read_nc_file_slices
 
 
 def concat_chars(in_ds: xarray.Dataset) -> xarray.Dataset:
@@ -22,9 +27,8 @@ def concat_chars(in_ds: xarray.Dataset) -> xarray.Dataset:
 
 
 def main(ifile: Path, nfile):
-    nreports = 10000
-    index_start = 0
-    obs_slice = slice(index_start, index_start + nreports)
+    time_batch = TimeBatch(1960, 1)
+    file_and_slices = read_nc_file_slices(ifile, time_batch)
     sorted_by_variable = [
         "advanced_homogenisation",
         "advanced_uncertainty",
@@ -36,24 +40,25 @@ def main(ifile: Path, nfile):
     print(f"Writing subset to {ofile}")
     with netCDF4.Dataset(ifile) as inc:
         groups = list(inc.groups)
-    # Lets remove this from the first file so the test includes the case when
-    # advanced homogenisation is missing
-    if nfile == 0:
-        groups.remove("advanced_homogenisation")
 
     with xarray.open_dataset(ifile, group="observations_table") as obs_ds:
+        varcodes = sorted(set(obs_ds["observed_variable"].values))
+        obs_ds_subset_list = []
+        for vc in varcodes:
+            obs_ds_var = obs_ds.isel(index=file_and_slices.variable_slices[str(vc)])
+            obs_ds_subset_list.append(obs_ds_var)
+        obs_ds_subset = xarray.concat(obs_ds_subset_list, dim="index")
         # Get the report ids of the header
-        obs_ds = obs_ds.isel(index=obs_slice)
-        obs_ds = concat_chars(obs_ds)
-        report_ids = obs_ds["report_id"].values
-        obs_ds.to_netcdf(ofile, mode="a", group="observations_table")
+        report_ids = numpy.sort(numpy.unique(obs_ds_subset["report_id"].values))
+        obs_ds_subset = concat_chars(obs_ds_subset)
+        obs_ds_subset.to_netcdf(ofile, mode="a", group="observations_table")
 
     with xarray.open_dataset(ifile, group="header_table") as header_ds:
         # Get the first 100 times
         report_id_mask = header_ds["report_id"].load().isin(report_ids)
         header_ds = header_ds.sel(index=report_id_mask)
         header_ds = concat_chars(header_ds)
-        print("Dates are:", header_ds["report_timestamp"]),
+        print("Dates are:", header_ds["report_timestamp"])
         header_ds.to_netcdf(ofile, mode="a", group="header_table")
 
     tables_remaining = [
@@ -62,24 +67,52 @@ def main(ifile: Path, nfile):
     for table_name in tables_remaining:
         if table_name in sorted_by_variable:
             with xarray.open_dataset(ifile, group=table_name) as table_ds:
-                table_ds_subset = table_ds.isel(index=obs_slice)
+                table_ds_subset_list = []
+                for vc in varcodes:
+                    table_ds_var = table_ds.isel(
+                        index=file_and_slices.variable_slices[str(vc)]
+                    )
+                    table_ds_subset_list.append(table_ds_var)
+                table_ds_subset = xarray.concat(table_ds_subset_list, dim="index")
         else:
             with xarray.open_dataset(ifile, group=table_name) as table_ds:
                 if len(table_ds.index) == len(report_id_mask):
                     table_ds_subset = table_ds.sel(index=report_id_mask)
                 elif table_name == "recordindices":
-                    # Recordtimestamp is missing the last value in the stored array+
-                    # We have to load all except the last and define it as nan
-                    table_ds["recordtimestamp"] = xarray.DataArray(
-                        numpy.append(
-                            table_ds["recordtimestamp"].isel(index=slice(0, -1)).values,
-                            numpy.nan,
-                        ),
-                        coords=dict(index=table_ds.index),
-                        dims="index",
+                    indices = {}
+
+                    for varcode in varcodes:
+                        indices[varcode] = numpy.nonzero(
+                            obs_ds_subset["observed_variable"].values == int(varcode)
+                        )[0]
+
+                    nindices = max([len(ii) for ii in indices.values()])
+                    table_ds_subset = table_ds.isel(index=slice(0, nindices)).copy()
+
+                    for varcode in varcodes:
+                        varcode_indices = indices[varcode]
+                        if len(varcode_indices) == 0:
+                            del table_ds_subset[str(varcode)]
+                        else:
+                            to_pad = nindices - len(varcode_indices)
+                            table_ds_subset[str(varcode)][:] = numpy.pad(
+                                varcode_indices, (to_pad, 0), mode="edge"
+                            )
+
+                    longest_varcode = [
+                        vc for vc in varcodes if len(indices[vc]) == nindices
+                    ][0]
+                    report_ids = obs_ds_subset.isel(
+                        index=indices[longest_varcode]
+                    ).report_id
+                    recordtimestamps = (
+                        header_ds.set_index(index="report_id")
+                        .sel(index=report_ids)
+                        .report_timestamp
                     )
-                    report_id_mask_recordindices = numpy.append(report_id_mask, True)
-                    table_ds_subset = table_ds.sel(index=report_id_mask_recordindices)
+                    table_ds_subset["recordtimestamp"][:] = cftime.date2num(
+                        recordtimestamps.to_index().to_pydatetime(), units=TIME_UNITS
+                    )
                 else:
                     table_ds_subset = table_ds
                 if table_name == "station_configuration_codes":

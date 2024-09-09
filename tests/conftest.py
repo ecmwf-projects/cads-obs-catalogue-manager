@@ -34,7 +34,7 @@ def test_config():
     )
     tests_path = importlib.resources.files("tests")
     input_dir = Path(
-        tests_path, "data/cuon_data/old/0-20500-0-94829_CEUAS_merged_v3.nc"
+        tests_path, "data/cuon_data/0-20500-0-94829_CEUAS_merged_v3.nc"
     ).parent.absolute()
     cuon_config.reader_extra_args["input_dir"] = str(input_dir)
     # Do the same for WOUDC test netcdfs

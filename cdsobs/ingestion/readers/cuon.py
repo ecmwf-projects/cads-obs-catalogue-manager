@@ -363,9 +363,9 @@ def get_denormalized_table_file(
         table_data = read_table_data(
             file_and_slices, table_name_in_file, time_space_batch.time_batch
         )
-        # Don't try to fix empty tables
-        if len(table_data) > 0:
-            # Make sure that latitude and longiture always carry on their table name.
+        # Don't try to fix empty tables unless it is the header table
+        if len(table_data) > 0 or table_name == "header_table":
+            # Make sure that latitude and longitude always carry on their table name.
             table_data = _fix_table_data(
                 dataset_cdm,
                 table_data,
@@ -533,8 +533,6 @@ def read_nc_file_slices(
             record_times = record_times[:]
             first_timestamp = record_times.min()
             last_timestamp = record_times.max()
-            # if numpy.isnan(last_timestamp):
-            #     last_timestamp = record_times[-2]
 
             if first_timestamp > selected_end or last_timestamp < selected_start:
                 # Return None if there are no times inside the batch
