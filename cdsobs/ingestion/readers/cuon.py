@@ -456,7 +456,7 @@ def _fix_table_data(
         # Check if observation ids are unique and replace them if not
         if not table_data.observation_id.is_unique:
             logger.warning(f"observation_id is not unique in {file_path}, fixing")
-            table_data["observation_id"] = numpy.arange(
+            table_data.loc[:, "observation_id"] = numpy.arange(
                 len(table_data), dtype="int"
             ).astype("bytes")
         # Remove missing values to save memory
