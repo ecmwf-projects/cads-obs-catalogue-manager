@@ -412,7 +412,9 @@ def apply_unit_changes(
         _extract_variable_units_change(
             homogenised_data, source_definition, unit_changes, variable, varname2units
         )
-
+    # Check if no units have changed and then remove original units.
+    if homogenised_data["original_units"].equals(homogenised_data["units"]):
+        homogenised_data = homogenised_data.drop("original_units", axis=1)
     return homogenised_data
 
 

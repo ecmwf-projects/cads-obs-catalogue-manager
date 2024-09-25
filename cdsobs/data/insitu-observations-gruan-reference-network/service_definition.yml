@@ -87,7 +87,7 @@ sources:
           names:
             s: s
           offset: 0
-          scale: 11
+          scale: 1
     data_table: gruan_data_value
     descriptions:
       air_pressure:
