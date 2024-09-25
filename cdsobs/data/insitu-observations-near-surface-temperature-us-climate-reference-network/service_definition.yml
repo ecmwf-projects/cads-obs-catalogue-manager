@@ -467,7 +467,7 @@ sources:
         sur_temp: soil_temperature
         sur_temp_flag: soil_temperature_quality_flag
         sur_temp_max: maximum_soil_temperature
-        sur_temp_max_flag: maximum_soil_temperature_flag
+        sur_temp_max_flag: maximum_soil_temperature_quality_flag
         sur_temp_min: minimum_soil_temperature
         sur_temp_min_flag: minimum_soil_temperature_quality_flag
         sur_temp_type: soil_temperature_processing_level
@@ -1072,8 +1072,8 @@ sources:
         sitename: alternative_name
         soil_moisture_5: soil_moisture_5cm_from_earth_surface
         soil_temperature_5: soil_temperature_5cm_from_earth_surface
-        solar_radiation: solar_irradiance
-        sr_flag: solar_irradiance_quality_flag
+        solar_radiation: downward_shortwave_irradiance_at_earth_surface
+        sr_flag: downward_shortwave_irradiance_at_earth_surface_quality_flag
         st_flag: soil_temperature_processing_level_quality_flag
         st_type: soil_temperature_processing_level
         surface_temperature: soil_temperature
@@ -1087,6 +1087,7 @@ sources:
         wetness: wetness
         wind_1_5: wind_speed_2_meters_from_earth_surface
         wind_flag: wind_speed_2_meters_from_earth_surface_quality_flag
+
       unit_changes:
         accumulated_precipitation:
           names:
@@ -1221,16 +1222,6 @@ sources:
         description: A value of 0 in this parameter indicates that the data processing of soil temperature did not return any error.
         dtype: float32
         long_name: st_flag
-      solar_irradiance:
-        description: The quantity with standard name solar_irradiance, often called Total Solar Irradiance (TSI), is the radiation from the sun integrated over the whole electromagnetic spectrum and over the entire solar disk. The quantity applies outside the atmosphere, by default at a distance of one astronomical unit from the sun, but a coordinate or scalar coordinate variable of distance_from_sun can be used to specify a value other than the default. "Irradiance" means the power per unit area (called radiative flux in other standard names), the area being normal to the direction of flow of the radiant energy.
-        dtype: float32
-        long_name: solar_radiation
-        quality_flag: sr_flag
-        units: W m-2
-      solar_irradiance_quality_flag:
-        description: Quality indicator variable 'solar_irradiance'. 0 denotes good data and 3 denotes erroneous data.
-        dtype: float32
-        long_name: sr_flag
       primary_station_id:
         description: This is the station identification code.
         dtype: object
