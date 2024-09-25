@@ -363,16 +363,22 @@ def get_denormalized_table_file(
         table_data = read_table_data(
             file_and_slices, table_name_in_file, time_space_batch.time_batch
         )
-        # Make sure that latitude and longiture always carry on their table name.
-        table_data = _fix_table_data(
-            dataset_cdm,
-            table_data,
-            table_definition,
-            table_name,
-            file_and_slices.path,
-            time_space_batch,
-        )
-        dataset_cdm[table_name] = table_data
+        # Don't try to fix empty tables unless it is one of the main tables
+        if len(table_data) > 0 or table_name in ["header_table", "observations_table"]:
+            # Make sure that latitude and longitude always carry on their table name.
+            table_data = _fix_table_data(
+                dataset_cdm,
+                table_data,
+                table_definition,
+                table_name,
+                file_and_slices.path,
+                time_space_batch,
+            )
+            dataset_cdm[table_name] = table_data
+        else:
+            # Copy tables to use and remove the empty table
+            # this is for not losing the stations with no homogenisation_table
+            tables_to_use = [t for t in tables_to_use if t != table_name]
     # Filter stations outside ofthe Batch
     lats = dataset_cdm["header_table"]["latitude"]
     lons = dataset_cdm["header_table"]["longitude"]
@@ -434,6 +440,11 @@ def _fix_table_data(
             "crs",
         ]
         table_data = table_data.drop(vars_to_drop, axis=1, errors="ignore")
+
+    if table_name == "station_configuration":
+        vars_to_drop = ["station_automation"]
+        table_data = table_data.drop(vars_to_drop, axis=1, errors="ignore")
+
     # Check that observation id is unique and fix if not
     if table_name == "observations_table":
         # If there is nothing here it is a waste of time to continue
@@ -445,7 +456,7 @@ def _fix_table_data(
         # Check if observation ids are unique and replace them if not
         if not table_data.observation_id.is_unique:
             logger.warning(f"observation_id is not unique in {file_path}, fixing")
-            table_data["observation_id"] = numpy.arange(
+            table_data.loc[:, "observation_id"] = numpy.arange(
                 len(table_data), dtype="int"
             ).astype("bytes")
         # Remove missing values to save memory
@@ -527,8 +538,6 @@ def read_nc_file_slices(
             record_times = record_times[:]
             first_timestamp = record_times.min()
             last_timestamp = record_times.max()
-            # if numpy.isnan(last_timestamp):
-            #     last_timestamp = record_times[-2]
 
             if first_timestamp > selected_end or last_timestamp < selected_start:
                 # Return None if there are no times inside the batch

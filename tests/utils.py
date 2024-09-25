@@ -21,8 +21,8 @@ def get_test_years(source: str) -> Tuple[int, int]:
             start_year = 1978
             end_year = 1979
         case "CUON":
-            start_year = 1957
-            end_year = 1958
+            start_year = 1960
+            end_year = 1961
         case "GRUAN":
             start_year = 2010
             end_year = 2011

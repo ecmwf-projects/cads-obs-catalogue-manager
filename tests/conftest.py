@@ -143,6 +143,22 @@ def test_repository(test_session, test_s3_client, test_config):
             start_year,
             end_year,
         )
+
+    # dataset_name = "insitu-comprehensive-upper-air-observation-network"
+    # service_definition = get_service_definition(dataset_name)
+    # for dataset_source in [
+    #     "CUON",
+    # ]:
+    #     start_year, end_year = get_test_years(dataset_source)
+    #     run_ingestion_pipeline(
+    #         dataset_name,
+    #         service_definition,
+    #         dataset_source,
+    #         test_session,
+    #         test_config,
+    #         start_year,
+    #         end_year,
+    #     )
     catalogue_repository = CatalogueRepository(test_session)
     return TestRepository(catalogue_repository, test_s3_client)
 

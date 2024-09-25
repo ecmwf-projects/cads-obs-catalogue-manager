@@ -171,12 +171,12 @@ def test_adaptor_cuon(tmp_path):
         "variable": [
             "air_temperature",
             "geopotential_height",
-            "desroziers_30_uncertainy",
+            "desroziers_30_uncertainty",
             "RISE_bias_estimate",
         ],
-        "year": ["1907"],
-        "month": ["2"],
-        "day": ["01"],
+        "year": ["1960"],
+        "month": ["01"],
+        "day": [f"{dd:02d}" for dd in range(32)],
         "dataset_source": "CUON",
     }
     test_form = {}

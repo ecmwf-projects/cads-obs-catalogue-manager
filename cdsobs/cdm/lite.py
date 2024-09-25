@@ -77,7 +77,7 @@ auxiliary_variable_names = [
     "quality_flag",
     "combined_uncertainty",
     "processing_level",
-    "desroziers_30_uncertainy",
+    "desroziers_30_uncertainty",
     "RISE_bias_estimate",
     "humidity_bias_estimate",
     "wind_bias_estimate",

@@ -86,6 +86,11 @@ def test_run_ingestion_pipeline(
         .where(Catalogue.dataset == dataset_name)
     )
     assert counter > 0
+    if dataset_name == "insitu-comprehensive-upper-air-observation-network":
+        stations = test_session.scalar(
+            sa.select(Catalogue.stations).where(Catalogue.dataset == dataset_name)
+        )
+        assert stations == ["0-20001-0-53772", "0-20001-0-53845"]
 
 
 def test_make_cdm(test_config, tmp_path, caplog):
