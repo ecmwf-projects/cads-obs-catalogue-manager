@@ -79,7 +79,6 @@ class DatasetMetadata:
     name: str
     dataset_source: str
     variables: list[str]
-    aux_variables: list[str]
     cdm_tables: CDMTables
     cdm_code_tables: CDMCodeTables
     space_columns: SpaceColumns
