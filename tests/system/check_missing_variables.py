@@ -12,7 +12,7 @@ from cdsobs.ingestion.core import get_aux_vars_from_service_definition
 from cdsobs.observation_catalogue.models import Catalogue
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.storage import S3Client
-from tests.test_api import TEST_API_PARAMETERS
+from tests.conftest import TEST_API_PARAMETERS
 from tests.utils import get_test_years
 
 
