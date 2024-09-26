@@ -106,5 +106,28 @@ def test_retrieve_cuon():
     print(output_file)
 
 
+def test_retrieve_gruan(test_repository, test_config):
+    dataset_name = "insitu-observations-gruan-reference-network"
+    params = {
+        "dataset_source": "GRUAN",
+        "time_coverage": ["2010-10-01 00:00:00", "2010-11-30 00:00:00"],
+        "variables": [
+            "air_temperature",
+            "relative_humidity",
+            "northward_wind_speed",
+        ],
+    }
+    retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
+    s3_client = S3Client.from_config(test_config.s3config)
+    output_file = retrieve_observations(
+        test_config.catalogue_db.get_url(),
+        s3_client.base,
+        retrieve_args,
+        Path("/tmp"),
+        size_limit=1000000000000,
+    )
+    print(output_file)
+
+
 if __name__ == "__main__":
     test_retrieve_cuon()

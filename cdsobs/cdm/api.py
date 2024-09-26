@@ -81,6 +81,17 @@ def to_cdm_dataset(partition: DatasetPartition) -> CdmDataset:
         )
     )
     cdm_variables += cdm_variables_with_table_names
+    if "uncertainty_table" in cdm_tables:
+        vars_supporting_numbers = [
+            "uncertainty_type",
+            "uncertainty_units",
+            "uncertainty_value",
+        ]
+        numbered_fields = [
+            v + str(n) for v in vars_supporting_numbers for n in range(1, 9)
+        ]
+        cdm_variables += numbered_fields
+
     cdm_variables = unique([v for v in cdm_variables if v in partition.data])
     data = partition.data.loc[:, cdm_variables].set_index("observation_id")
     original_variables = set(partition.data.columns)
