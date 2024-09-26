@@ -24,6 +24,55 @@ from cdsobs.service_definition.api import get_service_definition
 from cdsobs.storage import S3Client, StorageClient
 from tests.utils import get_test_years
 
+TEST_API_PARAMETERS = [
+    # ("insitu-observations-woudc-ozone-total-column-and-profiles", "OzoneSonde"),
+    # ("insitu-observations-woudc-ozone-total-column-and-profiles", "TotalOzone"),
+    # (
+    #     "insitu-observations-igra-baseline-network",
+    #     "IGRA",
+    # ),
+    # (
+    #     "insitu-observations-igra-baseline-network",
+    #     "IGRA_H",
+    # ),
+    # (
+    #     "insitu-comprehensive-upper-air-observation-network",
+    #     "CUON",
+    # ),
+    (
+        "insitu-observations-gruan-reference-network",
+        "GRUAN",
+    ),
+    # (
+    #     "insitu-observations-near-surface-temperature-us-climate-reference-network",
+    #     "uscrn_subhourly",
+    # ),
+    # (
+    #     "insitu-observations-near-surface-temperature-us-climate-reference-network",
+    #     "uscrn_hourly",
+    # ),
+    # (
+    #     "insitu-observations-near-surface-temperature-us-climate-reference-network",
+    #     "uscrn_daily",
+    # ),
+    # (
+    #     "insitu-observations-near-surface-temperature-us-climate-reference-network",
+    #     "uscrn_monthly",
+    # ),
+    # (
+    #     "insitu-observations-gnss",
+    #     "IGS",
+    # ),
+    # (
+    #     "insitu-observations-gnss",
+    #     "EPN",
+    # ),
+    # (
+    #     "insitu-observations-gnss",
+    #     "IGS_R3",
+    # ),
+]
+
 
 @pytest.fixture(scope="module")
 def test_config():
@@ -97,42 +146,8 @@ class TestRepository:
 @pytest.fixture(scope="module")
 def test_repository(test_session, test_s3_client, test_config):
     """The whole thing, session to the catalogue DB and storage client."""
-    dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
-    service_definition = get_service_definition(dataset_name)
-    for dataset_source in ["OzoneSonde", "TotalOzone"]:
-        start_year, end_year = get_test_years(dataset_source)
-        run_ingestion_pipeline(
-            dataset_name,
-            service_definition,
-            dataset_source,
-            test_session,
-            test_config,
-            start_year,
-            end_year,
-        )
-    dataset_name = "insitu-observations-gnss"
-    service_definition = get_service_definition(dataset_name)
-    for dataset_source in ["IGS_R3", "IGS"]:
-        start_year, end_year = get_test_years(dataset_source)
-        run_ingestion_pipeline(
-            dataset_name,
-            service_definition,
-            dataset_source,
-            test_session,
-            test_config,
-            start_year,
-            end_year,
-        )
-    dataset_name = (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network"
-    )
-    service_definition = get_service_definition(dataset_name)
-    for dataset_source in [
-        "uscrn_daily",
-        "uscrn_subhourly",
-        "uscrn_hourly",
-        "uscrn_monthly",
-    ]:
+    for dataset_name, dataset_source in TEST_API_PARAMETERS:
+        service_definition = get_service_definition(dataset_name)
         start_year, end_year = get_test_years(dataset_source)
         run_ingestion_pipeline(
             dataset_name,
@@ -144,21 +159,6 @@ def test_repository(test_session, test_s3_client, test_config):
             end_year,
         )
 
-    # dataset_name = "insitu-comprehensive-upper-air-observation-network"
-    # service_definition = get_service_definition(dataset_name)
-    # for dataset_source in [
-    #     "CUON",
-    # ]:
-    #     start_year, end_year = get_test_years(dataset_source)
-    #     run_ingestion_pipeline(
-    #         dataset_name,
-    #         service_definition,
-    #         dataset_source,
-    #         test_session,
-    #         test_config,
-    #         start_year,
-    #         end_year,
-    #     )
     catalogue_repository = CatalogueRepository(test_session)
     return TestRepository(catalogue_repository, test_s3_client)
 
