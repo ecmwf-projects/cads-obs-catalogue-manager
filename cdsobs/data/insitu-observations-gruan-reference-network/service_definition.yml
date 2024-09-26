@@ -50,8 +50,6 @@ sources:
       rename:
         alt: altitude
         asc_: vertical_speed_of_radiosonde
-        cor_rh: relative_humidity_post_processing_radiation_correction
-        cor_temp: air_temperature_post_processing_radiation_correction
         date_of_observation: report_timestamp
         fp: frost_point_temperature
         g_general_site_code: primary_station_id
@@ -60,7 +58,7 @@ sources:
         gruan_data_header_id: report_id
         lat: latitude|station_configuration
         lon: longitude|station_configuration
-        press: air_pressure
+        press: pressure
         res_rh: air_relative_humidity_effective_vertical_resolution
         rh: relative_humidity
         swrad: shortwave_radiation
@@ -70,7 +68,7 @@ sources:
         u_alt: altitude_total_uncertainty
         u_cor_rh: relative_humidity_systematic_uncertainty
         u_cor_temp: air_temperature_systematic_uncertainty
-        u_press: air_pressure_total_uncertainty
+        u_press: pressure_total_uncertainty
         u_rh: relative_humidity_total_uncertainty
         u_std_rh: relative_humidity_random_uncertainty
         u_std_temp: air_temperature_random_uncertainty
@@ -82,25 +80,58 @@ sources:
         wdir: wind_from_direction
         wspeed: wind_speed
         wvmr: water_vapour_mixing_ratio
-      unit_changes:
-        air_relative_humidity_effective_vertical_resolution:
-          names:
-            s: s
-          offset: 0
-          scale: 11
     data_table: gruan_data_value
     descriptions:
-      air_pressure:
+      pressure:
         description: Barometric air pressure using silicon sensor up to 15.4 km, derived from GPS-altitude above
         dtype: float32
         long_name: air_pressure
         total_uncertainty: u_press
         units: Pa
-      air_pressure_total_uncertainty:
+      pressure_total_uncertainty:
         description: Standard uncertainty (k=1) of air_pressure dominated by correlated uncertainty
         dtype: float32
         long_name: air_pressure_total_uncertainty
         units: Pa
+      uncertainty_value1:
+        description: Uncertainty value 1
+        dtype: float32
+        long_name: Uncertainty value 1
+        units: See uncertainty_units1
+      uncertainty_type1:
+        description: Uncertainty type 1
+        dtype: float32
+        long_name: Uncertainty type 1
+      uncertainty_units1:
+        description: Uncertainty units 1
+        dtype: object
+        long_name: Uncertainty units 1
+      uncertainty_value2:
+        description: Uncertainty value 2
+        dtype: float32
+        long_name: Uncertainty value 2
+        units: See uncertainty_units2
+      uncertainty_type2:
+        description: Uncertainty type 2
+        dtype: float32
+        long_name: Uncertainty type 2
+      uncertainty_units2:
+        description: Uncertainty units 2
+        dtype: object
+        long_name: Uncertainty units 2
+      uncertainty_value5:
+        description: Uncertainty value 5
+        dtype: float32
+        long_name: Uncertainty value 5
+        units: See uncertainty_units5
+      uncertainty_type5:
+        description: Uncertainty type 5
+        dtype: float32
+        long_name: Uncertainty type 5
+      uncertainty_units5:
+        description: Uncertainty units 5
+        dtype: object
+        long_name: Uncertainty units 5
       air_relative_humidity_effective_vertical_resolution:
         description: Resolution (defined by 1 / cut-off frequency) of the relative humidity time in terms
         dtype: float32
@@ -110,15 +141,9 @@ sources:
         description: Temperature in the atmosphere at the observed height. Temperature measured in Kelvin can be converted to degrees Celsius by subtracting 273.15. Its uncertainty is estimated with a GRUAN correction scheme.
         dtype: float32
         long_name: air_temperature
-        post_processing_radiation_correction: cor_temp
         random_uncertainty: u_std_temp
         systematic_uncertainty: u_cor_temp
         total_uncertainty: u_temp
-        units: K
-      air_temperature_post_processing_radiation_correction:
-        description: Bias corrections applied to air_temperature by the GRUAN correction scheme estimated from calibration and radiation correction uncertainty
-        dtype: float32
-        long_name: air_temperature_post_processing_radiation_correction
         units: K
       air_temperature_random_uncertainty:
         description: Statistical standard deviation (k=1) of air_temperature
@@ -165,12 +190,12 @@ sources:
         description: altitude above means sea level [....reference...]
         dtype: float32
         long_name: height_of_station_above_sea_level
-      location_latitude:
+      latitude|station_configuration:
         description: Latitude deg. North
         dtype: float32
         long_name: latitude
         units: degree_north
-      location_longitude:
+      longitude|station_configuration:
         description: Longitude deg. Est
         dtype: float32
         long_name: longitude
@@ -184,15 +209,9 @@ sources:
         description: Relative humidity collated from U1 and U2 based on the water vapor HylandWexler pressure fomula, corrected by GRUAN correction scheme
         dtype: float32
         long_name: relative_humidity
-        post_processing_radiation_correction: cor_rh
         random_uncertainty: u_std_rh
         systematic_uncertainty: u_cor_rh
         total_uncertainty: u_rh
-        units: '%'
-      relative_humidity_post_processing_radiation_correction:
-        description: Relative_humidity by the GRUAN correction scheme
-        dtype: float32
-        long_name: relative_humidity_post_processing_radiation_correction
         units: '%'
       relative_humidity_random_uncertainty:
         description: Statistical standard deviation (k=1) of relative_humidity
@@ -307,6 +326,7 @@ sources:
       - res_rh
       - swrad
       - alt
+      - press
       group_name: variables
     - columns:
       - u_temp
@@ -315,6 +335,7 @@ sources:
       - u_rh
       - u_alt
       - u_swrad
+      - u_press
       group_name: total_uncertainty
     - columns:
       - u_std_temp
@@ -324,10 +345,6 @@ sources:
       - u_cor_temp
       - u_cor_rh
       group_name: systematic_uncertainty
-    - columns:
-      - cor_temp
-      - cor_rh
-      group_name: post_processing_radiation_correction
     space_columns:
       y: latitude|station_configuration
       x: longitude|station_configuration
