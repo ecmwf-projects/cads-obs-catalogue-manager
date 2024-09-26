@@ -38,6 +38,12 @@ datasets:
 - name: insitu-observations-gruan-reference-network
   lon_tile_size: 20
   lat_tile_size: 20
+  available_cdm_tables:
+  - observations_table
+  - header_table
+  - station_configuration
+  - sensor_configuration
+  - uncertainty_table
 - name: insitu-observations-gnss
   lon_tile_size: 20
   lat_tile_size: 20
