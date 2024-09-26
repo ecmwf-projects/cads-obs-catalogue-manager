@@ -112,10 +112,23 @@ def test_retrieve_gruan(test_repository, test_config):
         "dataset_source": "GRUAN",
         "time_coverage": ["2010-10-01 00:00:00", "2010-11-30 00:00:00"],
         "variables": [
+            "air_relative_humidity_effective_vertical_resolution",
             "air_temperature",
-            "relative_humidity",
+            "altitude",
+            "eastward_wind_speed",
+            "frost_point_temperature",
+            "geopotential_height",
             "northward_wind_speed",
+            "pressure",
+            "relative_humidity",
+            "shortwave_radiation",
+            "time_since_launch",
+            "vertical_speed_of_radiosonde",
+            "water_vapour_mixing_ratio",
+            "wind_from_direction",
+            "wind_speed",
         ],
+        "format": "netCDF",
     }
     retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
     s3_client = S3Client.from_config(test_config.s3config)

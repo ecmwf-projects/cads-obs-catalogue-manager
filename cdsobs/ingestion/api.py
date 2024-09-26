@@ -1,10 +1,10 @@
+from hashlib import sha1
 from importlib import import_module
 from pathlib import Path
 from typing import List
 
 import numpy
 import pandas
-import pandas as pd
 from sqlalchemy.orm import Session
 
 from cdsobs.cdm.api import (
@@ -264,6 +264,10 @@ def _get_reader(
     return getattr(module, function_name)
 
 
+def hash_string(value):
+    return sha1(str(value).encode("utf-8")).hexdigest()
+
+
 def _melt_variables(
     homogenised_data: pandas.DataFrame,
     variables: List[str],
@@ -283,11 +287,17 @@ def _melt_variables(
         value_vars=variables,
         var_name="observed_variable",
         value_name="observation_value",
-    ).rename(dict(observation_id="original_observation_id"), copy=False)
+    ).rename(dict(observation_id="original_observation_id"), axis=1, copy=False)
     # New observation id unique for each observation value
     logger.info("Adding new observation id (only unique for this chunk)")
+    if "original_observation_id" in homogenised_data_melted:
+        unique_keys = ["original_observation_id", "observed_variable"]
+    else:
+        unique_keys = ["primary_station_id", "report_timestamp", "observed_variable"]
     homogenised_data_melted = homogenised_data_melted.assign(
-        observation_id=pd.RangeIndex(0, len(homogenised_data_melted))
+        observation_id=homogenised_data_melted.apply(
+            lambda x: "".join(x[unique_keys].astype(str)), axis=1
+        ).apply(hash_string)
     )
     # Handle auxiliary variables
     dataset_has_aux_vars = len(aux_fields) > 0
