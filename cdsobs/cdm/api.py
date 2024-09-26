@@ -485,7 +485,12 @@ def get_auxiliary_variables_mapping(source_definition, variables):
                     auxvar_final_name = rename_dict[auxvar_original_name]
                 else:
                     auxvar_final_name = auxvar_original_name
+                auxvar_units = source_definition.descriptions[auxvar_final_name].units
                 auxiliary_variables_mapping[variable].append(
-                    dict(auxvar=auxvar_final_name, metadata_name=auxvar)
+                    dict(
+                        auxvar=auxvar_final_name,
+                        metadata_name=auxvar,
+                        units=auxvar_units,
+                    )
                 )
     return auxiliary_variables_mapping
