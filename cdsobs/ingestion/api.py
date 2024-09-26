@@ -292,48 +292,9 @@ def _melt_variables(
     # Handle auxiliary variables
     dataset_has_aux_vars = len(aux_fields) > 0
     if dataset_has_aux_vars:
-        logger.info("Aligning auxiliary variables with melted ones")
-        for var in aux_fields.vars_with_uncertainty_field:
-            var_mask = homogenised_data_melted["observed_variable"] == var
-            for unc_field in aux_fields.get_var_uncertainty_field_names(var):
-                # We cannot assume that the auxiliary field is {var}_{uncertainty_type}
-                # We do it right and extract it from the description
-                uncertainty_type = aux_fields.auxfield2metadata_name(var, unc_field)
-                if uncertainty_type not in homogenised_data_melted.columns:
-                    homogenised_data_melted[uncertainty_type] = numpy.nan
-                homogenised_data_melted.loc[
-                    var_mask, uncertainty_type
-                ] = homogenised_data_melted.loc[var_mask, unc_field]
-                homogenised_data_melted = homogenised_data_melted.drop(
-                    unc_field, axis=1
-                )
-
-        # Add quality flags
-        vars_with_qf = aux_fields.vars_with_quality_field
-        if len(vars_with_qf) > 0:
-            homogenised_data_melted["quality_flag"] = 3.0
-        for var in vars_with_qf:
-            var_mask = homogenised_data_melted["observed_variable"] == var
-            flag_name = aux_fields.get_var_quality_flag_field_name(var)
-            var_quality_flag = homogenised_data_melted.loc[var_mask, flag_name]
-            homogenised_data_melted.loc[var_mask, "quality_flag"] = var_quality_flag
-            homogenised_data_melted = homogenised_data_melted.drop(flag_name, axis=1)
-            # Ensure is int and fill nans with 3 (missing according to the CDM)
-            homogenised_data_melted["quality_flag"] = (
-                homogenised_data_melted["quality_flag"].fillna(3).astype("int")
-            )
-        # Add processing level
-        vars_with_pl = aux_fields.vars_with_processing_level()
-        if len(vars_with_pl) > 0:
-            homogenised_data_melted["processing_level"] = 6
-        for var in vars_with_pl:
-            var_mask = homogenised_data_melted["observed_variable"] == var
-            pl_name = aux_fields.get_var_processing_level_field_name(var)
-            var_processing_level = homogenised_data_melted.loc[var_mask, pl_name]
-            homogenised_data_melted.loc[
-                var_mask, "processing_level"
-            ] = var_processing_level
-            homogenised_data_melted = homogenised_data_melted.drop(pl_name, axis=1)
+        homogenised_data_melted = _handle_aux_variables(
+            aux_fields, cdm_tables_location, homogenised_data_melted
+        )
 
     # Encode observed_variables
     logger.info("Encoding observed variables using the CDM variable codes.")
@@ -347,4 +308,82 @@ def _melt_variables(
     cdm_vars = set(code_dict)
     not_found = set(homogenised_data_melted["observed_variable"].unique()) - cdm_vars
     logger.warning(f"Some variables were not found in the CDM: {not_found}")
+    return homogenised_data_melted
+
+
+def _handle_aux_variables(aux_fields, cdm_tables_location, homogenised_data_melted):
+    uncertainty_type_table = read_cdm_code_table(
+        cdm_tables_location, "uncertainty_type"
+    ).table
+    logger.info("Aligning auxiliary variables with melted ones")
+    homogenised_data_melted = _add_uncertainty_fields(
+        aux_fields, homogenised_data_melted, uncertainty_type_table
+    )
+    # Add quality flags
+    vars_with_qf = aux_fields.vars_with_quality_field
+    if len(vars_with_qf) > 0:
+        homogenised_data_melted["quality_flag"] = 3.0
+    for var in vars_with_qf:
+        var_mask = homogenised_data_melted["observed_variable"] == var
+        flag_name = aux_fields.get_var_quality_flag_field_name(var)
+        var_quality_flag = homogenised_data_melted.loc[var_mask, flag_name]
+        homogenised_data_melted.loc[var_mask, "quality_flag"] = var_quality_flag
+        homogenised_data_melted = homogenised_data_melted.drop(flag_name, axis=1)
+        # Ensure is int and fill nans with 3 (missing according to the CDM)
+        homogenised_data_melted["quality_flag"] = (
+            homogenised_data_melted["quality_flag"].fillna(3).astype("int")
+        )
+    # Add processing level
+    vars_with_pl = aux_fields.vars_with_processing_level()
+    if len(vars_with_pl) > 0:
+        homogenised_data_melted["processing_level"] = 6
+    for var in vars_with_pl:
+        var_mask = homogenised_data_melted["observed_variable"] == var
+        pl_name = aux_fields.get_var_processing_level_field_name(var)
+        var_processing_level = homogenised_data_melted.loc[var_mask, pl_name]
+        homogenised_data_melted.loc[var_mask, "processing_level"] = var_processing_level
+        homogenised_data_melted = homogenised_data_melted.drop(pl_name, axis=1)
+    return homogenised_data_melted
+
+
+def _add_uncertainty_fields(
+    aux_fields, homogenised_data_melted, uncertainty_type_table
+):
+    for var in aux_fields.vars_with_uncertainty_field:
+        var_mask = homogenised_data_melted["observed_variable"] == var
+        for unc_field in aux_fields.get_var_uncertainty_field_names(var):
+            # We cannot assume that the auxiliary field is {var}_{uncertainty_type}
+            # We do it right and extract it from the description
+            uncertainty_type = aux_fields.auxfield2metadata_name(var, unc_field)
+            uncertainty_type_code = uncertainty_type_table.loc[
+                uncertainty_type_table.loc[:, "name"]
+                == uncertainty_type.replace("_uncertainty", "").replace("_", " ")
+            ].index.item()
+            uncertainty_type_units = [
+                a for a in aux_fields[var] if a["auxvar"] == unc_field
+            ][0]["units"]
+            uncertainty_value_name = f"uncertainty_value{uncertainty_type_code}"
+            uncertainty_type_name = f"uncertainty_type{uncertainty_type_code}"
+            uncertainty_units_name = f"uncertainty_units{uncertainty_type_code}"
+            # Create the columns if they don't exist
+            if uncertainty_value_name not in homogenised_data_melted.columns:
+                homogenised_data_melted[uncertainty_value_name] = numpy.nan
+            if uncertainty_type_name not in homogenised_data_melted.columns:
+                homogenised_data_melted[uncertainty_type_name] = uncertainty_type_code
+                homogenised_data_melted[
+                    uncertainty_type_name
+                ] = homogenised_data_melted[uncertainty_type_name].astype(int)
+            if uncertainty_units_name not in homogenised_data_melted.columns:
+                homogenised_data_melted[uncertainty_units_name] = "NA"
+            # Fill the columns
+            homogenised_data_melted.loc[
+                var_mask, uncertainty_value_name
+            ] = homogenised_data_melted.loc[var_mask, unc_field]
+            homogenised_data_melted.loc[
+                var_mask, uncertainty_type_name
+            ] = uncertainty_type_code
+            homogenised_data_melted.loc[
+                var_mask, uncertainty_units_name
+            ] = uncertainty_type_units
+            homogenised_data_melted = homogenised_data_melted.drop(unc_field, axis=1)
     return homogenised_data_melted
