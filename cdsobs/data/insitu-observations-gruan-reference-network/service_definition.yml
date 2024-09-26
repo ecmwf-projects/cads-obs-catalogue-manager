@@ -270,7 +270,7 @@ sources:
         dtype: float32
         long_name: wind_from_direction
         total_uncertainty: u_wdir
-        units: degree from north
+        units: degree
       wind_from_direction_total_uncertainty:
         description: Standard uncertainty (k=1) of wind direction  derived from statistics only
         dtype: float32
@@ -327,6 +327,7 @@ sources:
       - swrad
       - alt
       - press
+      - time
       group_name: variables
     - columns:
       - u_temp
