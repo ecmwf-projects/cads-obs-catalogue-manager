@@ -467,7 +467,7 @@ sources:
         sur_temp: soil_temperature
         sur_temp_flag: soil_temperature_quality_flag
         sur_temp_max: maximum_soil_temperature
-        sur_temp_max_flag: maximum_soil_temperature_flag
+        sur_temp_max_flag: maximum_soil_temperature_quality_flag
         sur_temp_min: minimum_soil_temperature
         sur_temp_min_flag: minimum_soil_temperature_quality_flag
         sur_temp_type: soil_temperature_processing_level
@@ -1101,7 +1101,7 @@ sources:
         long_name: wind_speed_2_meters_from_earth_surface
         quality_flag: wind_speed_2_meters_from_earth_surface_quality_flag
         units: m s-1
-      2m_wind_speed_quality_flag:
+      wind_speed_2_meters_from_earth_surface_quality_flag:
         description: This parameter indicates if the "2m wind speed" (described in this list) may be used because it is based on good data (value of 0) or if it should be treated with suspicion because erroneous data were detected (non-zero value).
         dtype: float32
         long_name: wind_speed_2_meters_from_earth_surface_quality_flag
