@@ -56,8 +56,10 @@ sources:
         g_measuring_system_altitude: height_of_station_above_sea_level
         geopot: geopotential_height
         gruan_data_header_id: report_id
-        lat: latitude|station_configuration
-        lon: longitude|station_configuration
+        lat: latitude|observations_table
+        lon: longitude|observations_table
+        g_measuring_system_latitude: latitude|station_configuration
+        g_measuring_system_longitude: longitude|station_configuration
         press: pressure
         res_rh: air_relative_humidity_effective_vertical_resolution
         rh: relative_humidity
@@ -196,6 +198,16 @@ sources:
         long_name: latitude
         units: degree_north
       longitude|station_configuration:
+        description: Longitude deg. Est
+        dtype: float32
+        long_name: longitude
+        units: degree_east
+      latitude|observations_table:
+        description: Latitude deg. North
+        dtype: float32
+        long_name: latitude
+        units: degree_north
+      longitude|observations_table:
         description: Longitude deg. Est
         dtype: float32
         long_name: longitude
