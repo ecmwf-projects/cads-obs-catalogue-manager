@@ -34,7 +34,7 @@ sources:
     cdm_mapping:
       melt_columns: false
       rename:
-        desroziers_30: desroziers_30_uncertainy
+        desroziers_30: desroziers_30_uncertainty
     data_table: observations_table
     descriptions:
       RISE_bias_estimate:
@@ -49,7 +49,7 @@ sources:
         units: seconds since 1900-01-01 00:00:00
       air_dewpoint:
         description: Dewpoint measurement (from profile measurement)
-        desroziers_30_uncertainty: desroziers_30_uncertainy
+        desroziers_30_uncertainty: desroziers_30_uncertainty
         dtype: float32
         humidity_bias_estimate: humidity_bias_estimate
         long_name: Air Dewpoint
@@ -62,7 +62,7 @@ sources:
       air_temperature:
         RISE_bias_estimate: RISE_bias_estimate
         description: Air temperature (from profile measurement)
-        desroziers_30_uncertainty: desroziers_30_uncertainy
+        desroziers_30_uncertainty: desroziers_30_uncertainty
         dtype: float32
         long_name: Air Temperature
         units: K
@@ -91,14 +91,14 @@ sources:
         units: same as the variable
       dew_point_depression:
         description: The difference between air temperature and dew point temperature.  The dew point temperature is the temperature to which a given air parcel must be cooled at constant pressure and constant water vapour content in order for saturation to occur
-        desroziers_30_uncertainy: desroziers_30_uncertainy
+        desroziers_30_uncertainty: desroziers_30_uncertainty
         dtype: float32
         long_name: Dew Point Depression
         units: K
         humidity_bias_estimate: wind_bias_estimate
       eastward_wind_speed:
         description: Wind towards the east
-        desroziers_30_uncertainy: desroziers_30_uncertainy
+        desroziers_30_uncertainty: desroziers_30_uncertainty
         dtype: float32
         long_name: Eastward Wind Speed
         units: m s-1
@@ -119,7 +119,7 @@ sources:
         units: same as the variable
       geopotential_height:
         description: Height of a standard or significant pressure level in meters
-        desroziers_30_uncertainy: desroziers_30_uncertainty
+        desroziers_30_uncertainty: desroziers_30_uncertainty
         dtype: float32
         long_name: Geopotential Height
         units: J kg-1
@@ -155,7 +155,7 @@ sources:
         units: degrees_east
       northward_wind_speed:
         description: Wind towards the north
-        desroziers_30_uncertainy: desroziers_30_uncertainty
+        desroziers_30_uncertainty: desroziers_30_uncertainty
         dtype: float32
         long_name: Northward Wind Speed
         units: m s-1
