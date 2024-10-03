@@ -24,6 +24,7 @@ class JoinIds(BaseModel):
 class SpaceColumns(BaseModel):
     x: StrNotBlank
     y: StrNotBlank
+    z: StrNotBlank | None = None
 
 
 class Product(BaseModel):
