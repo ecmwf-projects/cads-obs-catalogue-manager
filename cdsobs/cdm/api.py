@@ -69,6 +69,21 @@ def to_cdm_dataset(partition: DatasetPartition) -> CdmDataset:
     Dict mapping CDM tables to pandas.DataFrame objects.
     """
     cdm_tables = partition.dataset_metadata.cdm_tables
+    cdm_variables = get_cdm_variables(cdm_tables)
+
+    cdm_variables = unique([v for v in cdm_variables if v in partition.data])
+    data = partition.data.loc[:, cdm_variables].set_index("observation_id")
+    original_variables = set(partition.data.columns)
+    removed_variables = original_variables - set(cdm_variables)
+    if len(removed_variables) > 0:
+        logger.warning(
+            "The following variables where read but are not in the CDM and "
+            f"are going to be dropped: {removed_variables}"
+        )
+    return CdmDataset(data, partition.partition_params, partition.dataset_metadata)
+
+
+def get_cdm_variables(cdm_tables):
     cdm_variables = list(
         chain.from_iterable([tobj.fields for tname, tobj in cdm_tables.items()])
     )
@@ -88,20 +103,10 @@ def to_cdm_dataset(partition: DatasetPartition) -> CdmDataset:
             "uncertainty_value",
         ]
         numbered_fields = [
-            v + str(n) for v in vars_supporting_numbers for n in range(1, 9)
+            v + str(n) for v in vars_supporting_numbers for n in range(1, 17)
         ]
         cdm_variables += numbered_fields
-
-    cdm_variables = unique([v for v in cdm_variables if v in partition.data])
-    data = partition.data.loc[:, cdm_variables].set_index("observation_id")
-    original_variables = set(partition.data.columns)
-    removed_variables = original_variables - set(cdm_variables)
-    if len(removed_variables) > 0:
-        logger.warning(
-            "The following variables where read but are not in the CDM and "
-            f"are going to be dropped: {removed_variables}"
-        )
-    return CdmDataset(data, partition.partition_params, partition.dataset_metadata)
+    return cdm_variables
 
 
 def to_cdm_dataset_normalized(

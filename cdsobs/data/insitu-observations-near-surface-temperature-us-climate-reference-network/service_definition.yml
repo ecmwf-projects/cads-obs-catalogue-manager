@@ -153,6 +153,8 @@ sources:
         positive_random_uncertainty: random_p
         positive_systematic_uncertainty: sys_p
         positive_total_uncertainty: terr_p
+        positive_quasisystematic_uncertainty: quasisys_p
+        negative_quasisystematic_uncertainty: quasisys_m
         units: K
       air_temperature_negative_quasisystematic_uncertainty:
         description: "For \"Air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative quasisystematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
@@ -365,6 +367,16 @@ sources:
         description: This is the station identification code.
         dtype: object
         long_name: wbanno
+      wind_speed_2_meters_from_earth_surface:
+        description: This parameter is the horizontal velocity of the air near the surface. It is measured using a 3-cup anemometer placed at the same height at the air temperature shield intake. The exact measurement height is 1.5 metres above the ground surface.
+        dtype: float32
+        long_name: wind_speed_2_meters_from_earth_surface
+        quality_flag: wind_speed_2_meters_from_earth_surface_quality_flag
+        units: m s-1
+      wind_speed_2_meters_from_earth_surface_quality_flag:
+        description: This parameter indicates if the "2m wind speed" (described in this list) may be used because it is based on good data (value of 0) or if it should be treated with suspicion because erroneous data were detected (non-zero value).
+        dtype: float32
+        long_name: wind_speed_2_meters_from_earth_surface_quality_flag
     mandatory_columns:
     - alternative_name
     - primary_station_id
@@ -398,6 +410,7 @@ sources:
       - soil_temp_20_daily
       - soil_temp_50_daily
       - soil_temp_100_daily
+      - wind_1_5
       group_name: variables
     - columns:
       - random_p
@@ -432,6 +445,9 @@ sources:
     - columns:
       - sur_temp_daily_type
       group_name: processing_level
+    - columns:
+      - wind_flag
+      group_name: quality_flag
   uscrn_hourly:
     cdm_mapping:
       melt_columns: true
@@ -595,8 +611,8 @@ sources:
         description: "This parameter is the highest of all sub-hourly (5-minute) values of air temperature recorded at the station during the aggregation period selected by the user. It is based on measurements made at the station, typically at about 1.5 metres above the ground surface. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Two error estimates are provided in addition, to help users take into account uncertainties."
         dtype: float32
         long_name: t_max
-        max_negative_total_uncertainty: tmaxerr_m
-        max_positive_total_uncertainty: tmaxerr_p
+        negative_total_uncertainty: tmaxerr_m
+        positive_total_uncertainty: tmaxerr_p
         units: K
       daily_maximum_air_temperature_negative_total_uncertainty:
         description: "For \"Maximum air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Negative total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
@@ -622,8 +638,8 @@ sources:
         description: "This parameter is the lowest of all sub-hourly (5-minute) values of air temperature recorded at the station during the aggregation period selected by the user. It is based on measurements made at the station, typically at about 1.5 metres above the ground surface. This parameter has units of Kelvin (K). Temperature measured in Kelvin can be converted to degrees Celsius (°C) by subtracting 273.15. Two error estimates are provided in addition, to help users take into account uncertainties."
         dtype: float32
         long_name: t_min
-        min_negative_total_uncertainty: tminerr_m
-        min_positive_total_uncertainty: tminerr_p
+        negative_total_uncertainty: tminerr_m
+        positive_total_uncertainty: tminerr_p
         units: K
       daily_minimum_air_temperature_negative_total_uncertainty:
         description: "For \"Minimum air temperature\" (described in this list), this parameter is one of the uncertainty sources contributing to estimating the measurement error (see detailed description of \"Negative total uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
@@ -1119,6 +1135,7 @@ sources:
         positive_systematic_uncertainty: sys_p
         positive_total_uncertainty: terr_p
         random_uncertainty: random_pm
+        quasisystematic_uncertainty: quasisys_pm
         units: K
       air_temperature_negative_systematic_uncertainty:
         description: "For \"Air temperature\" (described in this list), this parameter is a partial estimate of errors (see detailed description of \"Negative systematic uncertainty\" in the table \"Related variables\"). This parameter has the same unit as the measurand it refers to, i.e. Kelvin (K). However, because this parameter represents a difference in temperature space, it can also be interpreted directly as being in degrees Celsius (°C)."
@@ -1154,16 +1171,6 @@ sources:
         description: This describes the location of the station where measurements were taken. There are four elements separated by an underscore. The first element (two letters) indicates the State, the second element indicates the nearest city, and the last two elements describe a vector from the city to the station. The distance is given in statute miles (1 statute mile = 1609.344 metres) and the bearing is given in the 16-element compass rose. For example, station "VA_Charlottesville_2_SSE" refers to a station located 2 miles South-South-East of Charlottesville, Virginia.
         dtype: object
         long_name: sitename
-      downward_shortwave_irradiance_at_earth_surface:
-        description: The quantity with standard name downward_shortwave_irradiance_at_earth_surface, often called Total Solar Irradiance (TSI), is the radiation from the sun integrated over the whole electromagnetic spectrum and over the entire solar disk. The quantity applies outside the atmosphere, by default at a distance of one astronomical unit from the sun, but a coordinate or scalar coordinate variable of distance_from_sun can be used to specify a value other than the default. "Irradiance" means the power per unit area (called radiative flux in other standard names), the area being normal to the direction of flow of the radiant energy.
-        dtype: float32
-        long_name: solar_radiation
-        quality_flag: sr_flag
-        units: W m-2
-      downward_shortwave_irradiance_at_earth_surface_quality_flag:
-        description: Quality indicator variable 'downward_shortwave_irradiance_at_earth_surface'. 0 denotes good data and 3 denotes erroneous data.
-        dtype: float32
-        long_name: sr_flag
       latitude|station_configuration:
         description: Latitude of the measurement station, -90 to 90.
         dtype: float32

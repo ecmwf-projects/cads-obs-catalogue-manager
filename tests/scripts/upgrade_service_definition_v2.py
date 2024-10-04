@@ -55,14 +55,55 @@ def main(old_path):
                             if val not in uncertainty:
                                 uncertainty[val] = []
                             uncertainty[val].append(
-                                {
-                                    unc_col_name: dict(
-                                        main_variable=main_variable, units=unc_col_units
-                                    )
-                                }
+                                dict(
+                                    name=unc_col_name,
+                                    main_variable=main_variable,
+                                    units=unc_col_units,
+                                )
                             )
                 new_melt_columns["uncertainty"] = uncertainty
 
+            if any(["flag" in p for p in products]):
+                quality_flag = dict()
+                for main_variable in variables:
+                    main_var_description = new_data["sources"][source]["descriptions"][
+                        main_variable
+                    ]
+                    for val in main_var_description:
+                        if "quality_flag" in val:
+                            raw_flag_name = main_var_description[val]
+                            try:
+                                flag_col_name = rename[raw_flag_name]
+                            except KeyError:
+                                flag_col_name = raw_flag_name
+                            if val not in quality_flag:
+                                quality_flag[val] = []
+                            quality_flag[val].append(
+                                dict(name=flag_col_name, main_variable=main_variable)
+                            )
+
+                new_melt_columns["quality_flag"] = quality_flag
+
+            if any(["processing_level" in p for p in products]):
+                processing_level = dict()
+                for main_variable in variables:
+                    main_var_description = new_data["sources"][source]["descriptions"][
+                        main_variable
+                    ]
+                    for val in main_var_description:
+                        if "processing_level" in val:
+                            raw_pl_name = main_var_description[val]
+                            try:
+                                pl_col_name = rename[raw_pl_name]
+                            except KeyError:
+                                pl_col_name = raw_pl_name
+                            if val not in processing_level:
+                                processing_level[val] = []
+                            processing_level[val].append(
+                                dict(name=pl_col_name, main_variable=main_variable)
+                            )
+
+                new_melt_columns["processing_level"] = processing_level
         # Fix descriptions, remove name_for_output and rename the keys to the
         # CDM variable names
         new_descriptions = new_sourcevals["descriptions"]
@@ -93,7 +134,8 @@ def main(old_path):
 
 if __name__ == "__main__":
     input_sd_files = (
-        "insitu-observations-gruan-reference-network/service_definition.yml"
+        "insitu-observations-"
+        "near-surface-temperature-us-climate-reference-network/service_definition.yml"
     )
     for file in files("cdsobs").joinpath("data").glob(input_sd_files):  # type: ignore
         print(file)

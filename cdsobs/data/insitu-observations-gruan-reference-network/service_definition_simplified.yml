@@ -8,41 +8,41 @@ sources:
       melt_columns:
         uncertainty:
           total_uncertainty:
-          - pressure_total_uncertainty:
-              main_variable: pressure
-              units: Pa
-          - air_temperature_total_uncertainty:
-              main_variable: air_temperature
-              units: K
-          - altitude_total_uncertainty:
-              main_variable: altitude
-              units: m
-          - relative_humidity_total_uncertainty:
-              main_variable: relative_humidity
-              units: '%'
-          - shortwave_radiation_total_uncertainty:
-              main_variable: shortwave_radiation
-              units: W m-2
-          - wind_from_direction_total_uncertainty:
-              main_variable: wind_from_direction
-              units: degree
-          - wind_speed_total_uncertainty:
-              main_variable: wind_speed
-              units: m s-1
+          - name: pressure_total_uncertainty
+            main_variable: pressure
+            units: Pa
+          - name: air_temperature_total_uncertainty
+            main_variable: air_temperature
+            units: K
+          - name: altitude_total_uncertainty
+            main_variable: altitude
+            units: m
+          - name: relative_humidity_total_uncertainty
+            main_variable: relative_humidity
+            units: '%'
+          - name: shortwave_radiation_total_uncertainty
+            main_variable: shortwave_radiation
+            units: W m-2
+          - name: wind_from_direction_total_uncertainty
+            main_variable: wind_from_direction
+            units: degree
+          - name: wind_speed_total_uncertainty
+            main_variable: wind_speed
+            units: m s-1
           random_uncertainty:
-          - air_temperature_random_uncertainty:
-              main_variable: air_temperature
-              units: K
-          - relative_humidity_random_uncertainty:
-              main_variable: relative_humidity
-              units: '%'
+          - name: air_temperature_random_uncertainty
+            main_variable: air_temperature
+            units: K
+          - name: relative_humidity_random_uncertainty
+            main_variable: relative_humidity
+            units: '%'
           systematic_uncertainty:
-          - air_temperature_systematic_uncertainty:
-              main_variable: air_temperature
-              units: K
-          - relative_humidity_systematic_uncertainty:
-              main_variable: relative_humidity
-              units: '%'
+          - name: air_temperature_systematic_uncertainty
+            main_variable: air_temperature
+            units: K
+          - name: relative_humidity_systematic_uncertainty
+            main_variable: relative_humidity
+            units: '%'
 
       rename:
         alt: altitude
