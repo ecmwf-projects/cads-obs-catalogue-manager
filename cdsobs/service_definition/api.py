@@ -5,12 +5,10 @@ import pydantic.error_wrappers
 import yaml
 
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
-from cdsobs.service_definition.validation import UpdateValidation, logger
+from cdsobs.service_definition.validation import logger
 
 
-def validate_service_definition(
-    yml_file: str, is_update: bool = False
-) -> tuple[ServiceDefinition | None, str]:
+def validate_service_definition(yml_file: str) -> tuple[ServiceDefinition | None, str]:
     """
     Validate fields of a service_definition.json candidate.
 
@@ -36,9 +34,6 @@ def validate_service_definition(
     except pydantic.ValidationError as e:
         logger.error(e)
         errors = True
-
-    if is_update:
-        errors = UpdateValidation(verifying_dict, errors).main()
 
     if errors:
         msg = "There has been an error, check the logs for more information"
