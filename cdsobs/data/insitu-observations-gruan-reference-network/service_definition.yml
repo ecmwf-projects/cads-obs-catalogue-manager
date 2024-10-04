@@ -2,51 +2,48 @@ global_attributes:
   contactemail: https://support.ecmwf.int
   licence_list: 20180314_Copernicus_License_V1.1
   responsible_organisation: ECMWF
-out_columns_order:
-- primary_station_id
-- report_timestamp
-- time_since_launch
-- report_id
-- location_longitude
-- location_latitude
-- height_of_station_above_sea_level
-- altitude
-- altitude_total_uncertainty
-- air_pressure
-- air_pressure_total_uncertainty
-- air_temperature
-- air_temperature_total_uncertainty
-- air_temperature_random_uncertainty
-- air_temperature_systematic_uncertainty
-- air_temperature_post_processing_radiation_correction
-- relative_humidity
-- relative_humidity_total_uncertainty
-- relative_humidity_random_uncertainty
-- relative_humidity_systematic_uncertainty
-- relative_humidity_post_processing_radiation_correction
-- wind_speed
-- wind_speed_total_uncertainty
-- wind_from_direction
-- wind_from_direction_total_uncertainty
-- eastward_wind_speed
-- northward_wind_speed
-- shortwave_radiation
-- shortwave_radiation_total_uncertainty
-- vertical_speed_of_radiosonde
-- geopotential_height
-- water_vapour_mixing_ratio
-- frost_point_temperature
-- air_relative_humidity_effective_vertical_resolution
-products_hierarchy:
-- variables
-- total_uncertainty
-- random_uncertainty
-- systematic_uncertainty
-- post_processing_radiation_correction
 sources:
   GRUAN:
     cdm_mapping:
-      melt_columns: true
+      melt_columns:
+        uncertainty:
+          total_uncertainty:
+          - name: pressure_total_uncertainty
+            main_variable: pressure
+            units: Pa
+          - name: air_temperature_total_uncertainty
+            main_variable: air_temperature
+            units: K
+          - name: altitude_total_uncertainty
+            main_variable: altitude
+            units: m
+          - name: relative_humidity_total_uncertainty
+            main_variable: relative_humidity
+            units: '%'
+          - name: shortwave_radiation_total_uncertainty
+            main_variable: shortwave_radiation
+            units: W m-2
+          - name: wind_from_direction_total_uncertainty
+            main_variable: wind_from_direction
+            units: degree
+          - name: wind_speed_total_uncertainty
+            main_variable: wind_speed
+            units: m s-1
+          random_uncertainty:
+          - name: air_temperature_random_uncertainty
+            main_variable: air_temperature
+            units: K
+          - name: relative_humidity_random_uncertainty
+            main_variable: relative_humidity
+            units: '%'
+          systematic_uncertainty:
+          - name: air_temperature_systematic_uncertainty
+            main_variable: air_temperature
+            units: K
+          - name: relative_humidity_systematic_uncertainty
+            main_variable: relative_humidity
+            units: '%'
+
       rename:
         alt: altitude
         asc_: vertical_speed_of_radiosonde
@@ -82,233 +79,163 @@ sources:
         wdir: wind_from_direction
         wspeed: wind_speed
         wvmr: water_vapour_mixing_ratio
+    header_table: gruan_data_header
+    join_ids:
+      data: gruan_data_header_id
+      header: g_product_id
     data_table: gruan_data_value
+    main_variables:
+    - air_temperature
+    - relative_humidity
+    - wind_from_direction
+    - wind_speed
+    - eastward_wind_speed
+    - northward_wind_speed
+    - water_vapour_mixing_ratio
+    - vertical_speed_of_radiosonde
+    - geopotential_height
+    - frost_point_temperature
+    - air_relative_humidity_effective_vertical_resolution
+    - shortwave_radiation
+    - altitude
+    - pressure
+    - time_since_launch
     descriptions:
       pressure:
         description: Barometric air pressure using silicon sensor up to 15.4 km, derived from GPS-altitude above
         dtype: float32
-        long_name: air_pressure
-        total_uncertainty: u_press
-        units: Pa
-      pressure_total_uncertainty:
-        description: Standard uncertainty (k=1) of air_pressure dominated by correlated uncertainty
-        dtype: float32
-        long_name: air_pressure_total_uncertainty
         units: Pa
       uncertainty_value1:
         description: Uncertainty value 1
         dtype: float32
-        long_name: Uncertainty value 1
         units: See uncertainty_units1
       uncertainty_type1:
         description: Uncertainty type 1
         dtype: float32
-        long_name: Uncertainty type 1
       uncertainty_units1:
         description: Uncertainty units 1
         dtype: object
-        long_name: Uncertainty units 1
       uncertainty_value2:
         description: Uncertainty value 2
         dtype: float32
-        long_name: Uncertainty value 2
         units: See uncertainty_units2
       uncertainty_type2:
         description: Uncertainty type 2
         dtype: float32
-        long_name: Uncertainty type 2
       uncertainty_units2:
         description: Uncertainty units 2
         dtype: object
-        long_name: Uncertainty units 2
       uncertainty_value5:
         description: Uncertainty value 5
         dtype: float32
-        long_name: Uncertainty value 5
         units: See uncertainty_units5
       uncertainty_type5:
         description: Uncertainty type 5
         dtype: float32
-        long_name: Uncertainty type 5
       uncertainty_units5:
         description: Uncertainty units 5
         dtype: object
-        long_name: Uncertainty units 5
       air_relative_humidity_effective_vertical_resolution:
         description: Resolution (defined by 1 / cut-off frequency) of the relative humidity time in terms
         dtype: float32
-        long_name: air_relative_humidity_effective_vertical_resolution
         units: s
       air_temperature:
         description: Temperature in the atmosphere at the observed height. Temperature measured in Kelvin can be converted to degrees Celsius by subtracting 273.15. Its uncertainty is estimated with a GRUAN correction scheme.
         dtype: float32
-        long_name: air_temperature
-        random_uncertainty: u_std_temp
-        systematic_uncertainty: u_cor_temp
-        total_uncertainty: u_temp
-        units: K
-      air_temperature_random_uncertainty:
-        description: Statistical standard deviation (k=1) of air_temperature
-        dtype: float32
-        long_name: air_temperature_random_uncertainty
-        units: K
-      air_temperature_systematic_uncertainty:
-        description: air_temperature correlated uncertainty estimated from systematic uncertainty sources estimated from calibration and radiation correction uncertainty.
-        dtype: float32
-        long_name: air_temperature_systematic_uncertainty
-        units: K
-      air_temperature_total_uncertainty:
-        description: Standard uncertainty (k=1) of air_temperature
-        dtype: float32
-        long_name: air_temperature total uncertainty
         units: K
       altitude:
         description: Geometric altitude above sea level calculated from air pressure and GPS altitude
         dtype: float32
-        long_name: altitude
-        total_uncertainty: u_alt
-        units: m
-      altitude_total_uncertainty:
-        description: Standard uncertainty (k=1) of altitude dominated by correlated uncertainty
-        dtype: float32
-        long_name: altitude_total_uncertainty
         units: m
       eastward_wind_speed:
         description: Wind towards the east
         dtype: float32
-        long_name: eastward_wind_speed
         units: m s-1
       frost_point_temperature:
         description: Frost point temperature calculated from relative_humidity  using vapor pressure formula HylandWexler based on the water vapor HylandWexler pressure fomula, corrected by GRUAN correction scheme
         dtype: float32
-        long_name: frost_point_temperature
         units: K
       geopotential_height:
         description: Geopotential altitude from corrected pressure product
         dtype: float32
-        long_name: geopotential_height
         units: m
       height_of_station_above_sea_level:
         description: altitude above means sea level [....reference...]
         dtype: float32
-        long_name: height_of_station_above_sea_level
       latitude|station_configuration:
         description: Latitude deg. North
         dtype: float32
-        long_name: latitude
         units: degree_north
       longitude|station_configuration:
         description: Longitude deg. Est
         dtype: float32
-        long_name: longitude
         units: degree_east
       latitude|observations_table:
         description: Latitude deg. North
         dtype: float32
-        long_name: latitude
         units: degree_north
       longitude|observations_table:
         description: Longitude deg. Est
         dtype: float32
-        long_name: longitude
         units: degree_east
       northward_wind_speed:
         description: Wind towards the north
         dtype: float32
-        long_name: northward_wind_speed
         units: m s-1
       relative_humidity:
         description: Relative humidity collated from U1 and U2 based on the water vapor HylandWexler pressure fomula, corrected by GRUAN correction scheme
         dtype: float32
-        long_name: relative_humidity
-        random_uncertainty: u_std_rh
-        systematic_uncertainty: u_cor_rh
-        total_uncertainty: u_rh
-        units: '%'
-      relative_humidity_random_uncertainty:
-        description: Statistical standard deviation (k=1) of relative_humidity
-        dtype: float32
-        long_name: relative_humidity_random_uncertainty
-        units: '%'
-      relative_humidity_systematic_uncertainty:
-        description: relative_humidity correlated uncertainty estimated from systematic uncertainty sources estimated from calibration, calibration correction, radiation correction, time-lag
-        dtype: float32
-        long_name: relative_humidity_systematic_uncertainty
-        units: '%'
-      relative_humidity_total_uncertainty:
-        description: Standard uncertainty (k=1) of relative_humidity calculated by the the geometric sum correlated and random uncertainties
-        dtype: float32
-        long_name: relative_humidity total uncertainty
         units: '%'
       report_id:
         description: Identifier in the GRUAN meta-database
-        long_name: gruan_data_header_id
+        dtype: object
       report_timestamp:
         description: observation date time UTC
         dtype: datetime64[ns]
-        long_name: date_of_observation
       shortwave_radiation:
         description: Short wave radiation field (actinic flux) derived from model for given sun elevation (mean between a cloudy and cloudfree case)
         dtype: float32
-        long_name: shortwave_radiation
-        total_uncertainty: u_swrad
-        units: W m-2
-      shortwave_radiation_total_uncertainty:
-        description: Standard uncertainty (k=1) of short_wave_radiatio
-        dtype: float32
-        long_name: shortwave_radiation_total_uncertainty
         units: W m-2
       primary_station_id:
         description: station identifier according to [...to_do...]
         dtype: object
-        long_name: g_general_site_code
       time_since_launch:
         description: Time after launch
         dtype: float32
-        long_name: time_since_launch
         units: s
       vertical_speed_of_radiosonde:
         description: the ascent speed radiosonde calculated from altitude
         dtype: float32
-        long_name: vertical_speed_of_radiosonde
         units: m s-1
       water_vapour_mixing_ratio:
         description: Volume mixing ratio (mol/mol) of water vapor calculated from relative_humidity  using vapor pressure formula HylandWexler based on the water vapor HylandWexler pressure fomula, corrected by GRUAN correction scheme
         dtype: float32
-        long_name: water_vapour_mixing_ratio
         units: mol mol-1
       wind_from_direction:
         description: "Wind direction with 0°:north, 90°:east, 180°:south, 270°:west"
         dtype: float32
-        long_name: wind_from_direction
-        total_uncertainty: u_wdir
-        units: degree
-      wind_from_direction_total_uncertainty:
-        description: Standard uncertainty (k=1) of wind direction  derived from statistics only
-        dtype: float32
-        long_name: wind_from_direction_total_uncertainty
         units: degree
       wind_speed:
         description: Wind speed
         dtype: float32
-        long_name: wind_speed
-        total_uncertainty: u_wspeed
         units: m s-1
-      wind_speed_total_uncertainty:
-        description: Standard uncertainty (k=1) of wind_speed  derived from statistics only
+      z_coordinate:
+        description: z coordinate of observation
         dtype: float32
-        long_name: wind_speed total uncertainty
-        units: m s-1
+        units: m
+      z_coordinate_type:
+        description: Type of z coordinate
+        dtype: float32
+    space_columns:
+      z: altitude
+      y: latitude|station_configuration
+      x: longitude|station_configuration
     header_columns:
     - primary_station_id
     - report_timestamp
     - height_of_station_above_sea_level
     - latitude|station_configuration
     - longitude|station_configuration
-    header_table: gruan_data_header
-    join_ids:
-      data: gruan_data_header_id
-      header: g_product_id
     mandatory_columns:
     - primary_station_id
     - report_timestamp
@@ -319,45 +246,3 @@ sources:
     - latitude|station_configuration
     - air_pressure
     - air_pressure_total_uncertainty
-    order_by:
-    - report_timestamp
-    - report_id
-    - time_since_launch
-    products:
-    - columns:
-      - temp
-      - rh
-      - wdir
-      - wspeed
-      - u
-      - v
-      - wvmr
-      - asc_
-      - geopot
-      - fp
-      - res_rh
-      - swrad
-      - alt
-      - press
-      - time
-      group_name: variables
-    - columns:
-      - u_temp
-      - u_wdir
-      - u_wspeed
-      - u_rh
-      - u_alt
-      - u_swrad
-      - u_press
-      group_name: total_uncertainty
-    - columns:
-      - u_std_temp
-      - u_std_rh
-      group_name: random_uncertainty
-    - columns:
-      - u_cor_temp
-      - u_cor_rh
-      group_name: systematic_uncertainty
-    space_columns:
-      y: latitude|station_configuration
-      x: longitude|station_configuration

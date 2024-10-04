@@ -3,7 +3,6 @@ from cdsobs.cdm.tables import read_cdm_tables
 from cdsobs.config import CDSObsConfig, DatasetConfig
 from cdsobs.ingestion.core import (
     DatasetMetadata,
-    get_variables_from_service_definition,
 )
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
 
@@ -15,7 +14,7 @@ def get_dataset_metadata(
     source: str,
 ) -> DatasetMetadata:
     # Handle the main variables
-    variables = get_variables_from_service_definition(service_definition, source)
+    variables = service_definition.sources[source].main_variables
     # Read CDM tables
     cdm_tables = read_cdm_tables(
         config.cdm_tables_location, dataset_config.available_cdm_tables

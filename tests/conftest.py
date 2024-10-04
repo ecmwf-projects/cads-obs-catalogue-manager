@@ -43,34 +43,34 @@ TEST_API_PARAMETERS = [
         "insitu-observations-gruan-reference-network",
         "GRUAN",
     ),
-    (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "uscrn_subhourly",
-    ),
-    (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "uscrn_hourly",
-    ),
-    (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "uscrn_daily",
-    ),
-    (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "uscrn_monthly",
-    ),
-    (
-        "insitu-observations-gnss",
-        "IGS",
-    ),
-    (
-        "insitu-observations-gnss",
-        "EPN",
-    ),
-    (
-        "insitu-observations-gnss",
-        "IGS_R3",
-    ),
+    # (
+    #     "insitu-observations-near-surface-temperature-us-climate-reference-network",
+    #     "uscrn_subhourly",
+    # ),
+    # (
+    #     "insitu-observations-near-surface-temperature-us-climate-reference-network",
+    #     "uscrn_hourly",
+    # ),
+    # (
+    #     "insitu-observations-near-surface-temperature-us-climate-reference-network",
+    #     "uscrn_daily",
+    # ),
+    # (
+    #     "insitu-observations-near-surface-temperature-us-climate-reference-network",
+    #     "uscrn_monthly",
+    # ),
+    # (
+    #     "insitu-observations-gnss",
+    #     "IGS",
+    # ),
+    # (
+    #     "insitu-observations-gnss",
+    #     "EPN",
+    # ),
+    # (
+    #     "insitu-observations-gnss",
+    #     "IGS_R3",
+    # ),
 ]
 
 

@@ -35,7 +35,7 @@ def main(old_path):
         new_data["sources"][source]["main_variables"] = variables
         # Handle cdm mapping
 
-        if "CUON" not in str(old_path):
+        if source != "CUON":
             products = [p["group_name"] for p in new_sourcevals["products"]]
             new_melt_columns = {}
             new_cdm_mapping["melt_columns"] = new_melt_columns
@@ -48,7 +48,10 @@ def main(old_path):
                     for val in main_var_description:
                         if "uncertainty" in val:
                             raw_unc_name = main_var_description[val]
-                            unc_col_name = rename[raw_unc_name]
+                            try:
+                                unc_col_name = rename[raw_unc_name]
+                            except KeyError:
+                                unc_col_name = raw_unc_name
                             unc_col_units = new_data["sources"][source]["descriptions"][
                                 unc_col_name
                             ]["units"]
@@ -133,10 +136,7 @@ def main(old_path):
 
 
 if __name__ == "__main__":
-    input_sd_files = (
-        "insitu-observations-"
-        "near-surface-temperature-us-climate-reference-network/service_definition.yml"
-    )
+    input_sd_files = "insitu-" "*/service_definition.yml"
     for file in files("cdsobs").joinpath("data").glob(input_sd_files):  # type: ignore
         print(file)
         main(file)
