@@ -25,24 +25,24 @@ from cdsobs.storage import S3Client, StorageClient
 from tests.utils import get_test_years
 
 TEST_API_PARAMETERS = [
-    # ("insitu-observations-woudc-ozone-total-column-and-profiles", "OzoneSonde"),
-    # ("insitu-observations-woudc-ozone-total-column-and-profiles", "TotalOzone"),
-    # (
-    #     "insitu-observations-igra-baseline-network",
-    #     "IGRA",
-    # ),
-    # (
-    #     "insitu-observations-igra-baseline-network",
-    #     "IGRA_H",
-    # ),
+    ("insitu-observations-woudc-ozone-total-column-and-profiles", "OzoneSonde"),
+    ("insitu-observations-woudc-ozone-total-column-and-profiles", "TotalOzone"),
+    (
+        "insitu-observations-igra-baseline-network",
+        "IGRA",
+    ),
+    (
+        "insitu-observations-igra-baseline-network",
+        "IGRA_H",
+    ),
     (
         "insitu-comprehensive-upper-air-observation-network",
         "CUON",
     ),
-    # (
-    #     "insitu-observations-gruan-reference-network",
-    #     "GRUAN",
-    # ),
+    (
+        "insitu-observations-gruan-reference-network",
+        "GRUAN",
+    ),
     (
         "insitu-observations-near-surface-temperature-us-climate-reference-network",
         "uscrn_subhourly",
@@ -59,18 +59,18 @@ TEST_API_PARAMETERS = [
         "insitu-observations-near-surface-temperature-us-climate-reference-network",
         "uscrn_monthly",
     ),
-    # (
-    #     "insitu-observations-gnss",
-    #     "IGS",
-    # ),
-    # (
-    #     "insitu-observations-gnss",
-    #     "EPN",
-    # ),
-    # (
-    #     "insitu-observations-gnss",
-    #     "IGS_R3",
-    # ),
+    (
+        "insitu-observations-gnss",
+        "IGS",
+    ),
+    (
+        "insitu-observations-gnss",
+        "EPN",
+    ),
+    (
+        "insitu-observations-gnss",
+        "IGS_R3",
+    ),
 ]
 
 
