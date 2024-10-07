@@ -1,0 +1,288 @@
+global_attributes:
+  contactemail: https://support.ecmwf.int
+  licence_list: 20180314_Copernicus_License_V1.1
+  responsible_organisation: ECMWF
+sources:
+  IGRA:
+    cdm_mapping:
+      melt_columns: {}
+      rename:
+        date_of_observation: report_timestamp
+        dpdp: dew_point_depression
+        gph: geopotential_height
+        guan_data_header_id: report_id
+        idstation: primary_station_id
+        lat: latitude|station_configuration
+        lon: longitude|station_configuration
+        press: air_pressure
+        rh: relative_humidity
+        temp: air_temperature
+        wdir: wind_from_direction
+        wspd: wind_speed
+      unit_changes:
+        air_pressure:
+          names:
+            Pa: Pa
+          offset: 0
+          scale: 1
+    data_table: guan_data_value
+    descriptions:
+      air_pressure:
+        description: Barometric air pressure
+        dtype: float32
+        units: Pa
+      air_temperature:
+        description: Air temperature
+        dtype: float32
+        units: K
+      dew_point_depression:
+        description: The difference between air temperature and dew point temperature.  The dew point temperature is the temperature to which a given air parcel must be cooled at constant pressure and constant water vapour content in order for saturation to occur
+        dtype: float32
+        units: K
+      geopotential_height:
+        description: Height of a standard or significant pressure level in meters
+        dtype: float32
+        units: m
+      latitude|station_configuration:
+        description: Latitude of the station (deg. North)
+        dtype: float32
+        units: degree_north
+      longitude|station_configuration:
+        description: Longitude of the station (deg. East)
+        dtype: float32
+        units: degree_east
+      primary_station_id:
+        description: Station identification code
+        dtype: object
+      relative_humidity:
+        description: Relative humidity
+        dtype: float32
+        units: '%'
+      report_id:
+        description: Identifier in the IGRA meta-database
+        dtype: object
+      report_timestamp:
+        description: Observation date time UTC
+        dtype: datetime64[ns]
+      wind_from_direction:
+        description: Wind direction (degrees from north, 90 = east)
+        dtype: float32
+        units: degree from north
+      wind_speed:
+        description: Horizontal speed of the wind, or movement of air, at the height of the observation
+        dtype: float32
+        units: m s-1
+    header_columns:
+    - primary_station_id
+    - report_timestamp
+    - longitude|station_configuration
+    - latitude|station_configuration
+    header_table: guan_data_header
+    join_ids:
+      data: guan_data_header_id
+      header: guandataheader_id
+    main_variables:
+    - geopotential_height
+    - wind_from_direction
+    - wind_speed
+    - dew_point_depression
+    - air_temperature
+    - relative_humidity
+    mandatory_columns:
+    - primary_station_id
+    - report_timestamp
+    - longitude|station_configuration
+    - latitude|station_configuration
+    - air_pressure
+    - report_id
+    order_by:
+    - report_timestamp
+    - report_id
+    - air_pressure
+  IGRA_H:
+    cdm_mapping:
+      melt_columns:
+        uncertainty:
+          total_uncertainty:
+          - main_variable: wind_from_direction
+            name: wind_from_direction_total_uncertainty
+            units: degree from north
+          - main_variable: eastward_wind_speed
+            name: eastward_wind_speed_total_uncertainty
+            units: m s-1
+          - main_variable: northward_wind_speed
+            name: northward_wind_speed_total_uncertainty
+            units: m s-1
+          - main_variable: air_temperature
+            name: air_temperature_total_uncertainty
+            units: K
+          - main_variable: wind_speed
+            name: wind_speed_total_uncertainty
+            units: m s-1
+          - main_variable: relative_humidity
+            name: relative_humidity_total_uncertainty
+            units: '%'
+      rename:
+        actual_time: actual_time
+        air_dewpoint_depression: dew_point_depression
+        air_pressure: air_pressure
+        air_temperature: air_temperature
+        air_temperature_total_uncertainty: air_temperature_total_uncertainty
+        ascent_speed: vertical_speed_of_radiosonde
+        eastward_wind_component: eastward_wind_speed
+        eastward_wind_component_total_uncertainty: eastward_wind_speed_total_uncertainty
+        frost_point_temperature: frost_point_temperature
+        geopotential_height: geopotential_height
+        height_of_station_above_sea_level: height_of_station_above_sea_level
+        latitude: latitude|station_configuration
+        longitude: longitude|station_configuration
+        northward_wind_component: northward_wind_speed
+        northward_wind_component_total_uncertainty: northward_wind_speed_total_uncertainty
+        radiosonde_code: radiosonde_code
+        relative_humidity: relative_humidity
+        relative_humidity_total_uncertainty: relative_humidity_total_uncertainty
+        report_id: report_id
+        report_timestamp: report_timestamp
+        sensor_model: sensor_model
+        solar_zenith_angle: solar_zenith_angle
+        station_name: primary_station_id
+        water_vapor_volume_mixing_ratio: water_vapour_mixing_ratio
+        wind_from_direction: wind_from_direction
+        wind_from_direction_total_uncertainty: wind_from_direction_total_uncertainty
+        wind_speed: wind_speed
+        wind_speed_total_uncertainty: wind_speed_total_uncertainty
+      unit_changes:
+        air_dewpoint_depression:
+          names:
+            K: K
+          offset: 0
+          scale: 1
+        air_temperature:
+          names:
+            K: K
+          offset: 0
+          scale: 1
+    data_table: igra_h
+    descriptions:
+      actual_time:
+        description: Release time of the sounding in date time UTC
+        dtype: datetime64[ns]
+      air_pressure:
+        description: Barometric air pressure
+        dtype: float32
+        units: Pa
+      air_temperature:
+        description: The harmonized value temperature obtained using RHARM (Radiosouding HARMonization) approach
+        dtype: float32
+        units: K
+      dew_point_depression:
+        description: The difference between air temperature and dew point temperature.  The dew point temperature is the temperature to which a given air parcel must be cooled at constant pressure and constant water vapour content in order for saturation to occur
+        dtype: float32
+        units: K
+      eastward_wind_speed:
+        description: The harmonized value eastward wind speed component obtained using RHARM (Radiosouding HARMonization) approach
+        dtype: float32
+        units: m s-1
+      frost_point_temperature:
+        description: "Temperature, below 0° C, at which moisture in the air will condense as a layer of frost on any exposed surface. For details on the calculation formula please check the ATBD"
+        dtype: float32
+        units: K
+      geopotential_height:
+        description: Height of a standard or significant pressure level in meters
+        dtype: float32
+        units: m
+      height_of_station_above_sea_level:
+        description: Altitude above means sea level
+        dtype: float32
+        units: m
+      latitude|station_configuration:
+        description: Latitude of the station (deg. North)
+        dtype: float32
+        units: degree_north
+      longitude|station_configuration:
+        description: Longitude of the station (deg. East)
+        dtype: float32
+        units: degree_east
+      northward_wind_speed:
+        description: The harmonized value northward wind speed component obtained using RHARM (Radiosouding HARMonization) approach
+        dtype: float32
+        units: m s-1
+      primary_station_id:
+        description: Station identification code
+        dtype: object
+      radiosonde_code:
+        description: Common Code table as from WMO definitions (code table 3685)
+        dtype: float32
+      relative_humidity:
+        description: The harmonized value relative humidity obtained using RHARM (Radiosouding HARMonization) approach
+        dtype: float32
+        units: '%'
+      report_id:
+        description: Identifier in the RHARM meta-database
+        dtype: object
+      report_timestamp:
+        description: Observation date time UTC
+        dtype: datetime64[ns]
+      sensor_model:
+        description: Details on the sensor used
+        dtype: object
+      solar_zenith_angle:
+        description: The solar zenith angle is the angle between the zenith and the centre of the Sun's disc
+        dtype: float32
+        units: degrees from zenith
+      vertical_speed_of_radiosonde:
+        description: 'Ascent speed of the radiosonde calculated from altitude: (maximum height reported - minimum height reported) / (time at maximum height reported - time at minimum height reported)'
+        dtype: float32
+        units: m s-1
+      water_vapour_mixing_ratio:
+        description: Volume water mixing ratio vapor calculated using Hyland, R. W. and A. Wexler. For details on the calculation formula please check the ATBD
+        dtype: float32
+        units: mol mol-1
+      wind_from_direction:
+        description: Wind direction (degrees from north, 90 = east)
+        dtype: float32
+        units: degree from north
+      wind_speed:
+        description: Horizontal speed of the wind, or movement of air, at the height of the observation
+        dtype: float32
+        units: m s-1
+    header_columns:
+    - primary_station_id
+    - radiosonde_code
+    - sensor_model
+    - report_timestamp
+    - report_id
+    - longitude|station_configuration
+    - latitude|station_configuration
+    - height_of_station_above_sea_level
+    main_variables:
+    - wind_from_direction
+    - eastward_wind_speed
+    - northward_wind_speed
+    - water_vapour_mixing_ratio
+    - air_temperature
+    - wind_speed
+    - vertical_speed_of_radiosonde
+    - relative_humidity
+    - geopotential_height
+    - frost_point_temperature
+    - solar_zenith_angle
+    - dew_point_depression
+    mandatory_columns:
+    - primary_station_id
+    - radiosonde_code
+    - sensor_model
+    - report_timestamp
+    - longitude|station_configuration
+    - latitude|station_configuration
+    - height_of_station_above_sea_level
+    - air_pressure
+    - report_id
+    - actual_time
+    order_by:
+    - report_timestamp
+    - report_id
+    - air_pressure
+space_columns:
+  x: longitude|station_configuration
+  y: latitude|station_configuration
