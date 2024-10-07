@@ -59,18 +59,18 @@ TEST_API_PARAMETERS = [
     #     "insitu-observations-near-surface-temperature-us-climate-reference-network",
     #     "uscrn_monthly",
     # ),
-    # (
-    #     "insitu-observations-gnss",
-    #     "IGS",
-    # ),
-    # (
-    #     "insitu-observations-gnss",
-    #     "EPN",
-    # ),
-    # (
-    #     "insitu-observations-gnss",
-    #     "IGS_R3",
-    # ),
+    (
+        "insitu-observations-gnss",
+        "IGS",
+    ),
+    (
+        "insitu-observations-gnss",
+        "EPN",
+    ),
+    (
+        "insitu-observations-gnss",
+        "IGS_R3",
+    ),
 ]
 
 

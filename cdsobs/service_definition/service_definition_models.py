@@ -145,7 +145,12 @@ class SourceDefinition(BaseModel, extra="forbid"):
 
         if rename is not None:
             for raw_name, new_name in rename.items():
-                assert new_name in list(self.descriptions) or new_name in aux_var_cols
+                if not (
+                    new_name in list(self.descriptions) or new_name in aux_var_cols
+                ):
+                    raise AssertionError(
+                        f"{new_name} is in rename but not in descriptions or melt_variables"
+                    )
         return self
 
     # @model_validator(mode="after")
