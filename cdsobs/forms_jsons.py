@@ -12,9 +12,6 @@ from fsspec.implementations.http import HTTPFileSystem
 
 from cdsobs.cli._catalogue_explorer import stats_summary
 from cdsobs.constraints import iterative_ordering
-from cdsobs.ingestion.core import (
-    get_aux_vars_from_service_definition,
-)
 from cdsobs.observation_catalogue.models import Catalogue
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.retrieve.retrieve_services import merged_constraints_table
@@ -116,7 +113,9 @@ def get_widgets_json(session, output_path: Path, dataset: str) -> Path:
     catalogue_entries = get_catalogue_entries_stream(session, dataset)
     service_definition = get_service_definition(dataset)
     variables = [
-        service_definition.sources[s].main_variables for s in service_definition.sources
+        v
+        for s in service_definition.sources
+        for v in service_definition.sources[s].main_variables
     ]
     summary = stats_summary(catalogue_entries)
     widgets_json_content = dict()
@@ -140,16 +139,6 @@ def get_widgets_json(session, output_path: Path, dataset: str) -> Path:
     with widgets_output_path.open("w") as wof:
         json.dump(widgets_json_content, wof, indent=4, sort_keys=True)
     return widgets_output_path
-
-
-def get_all_aux_variables(service_definition):
-    variables = []
-    for source_name, source in service_definition.sources.items():
-        aux_variables = get_aux_vars_from_service_definition(
-            service_definition, source_name
-        )
-        variables.extend(aux_variables)
-    return list(set(variables))
 
 
 def get_station_summary(

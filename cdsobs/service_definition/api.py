@@ -8,7 +8,7 @@ from cdsobs.service_definition.service_definition_models import ServiceDefinitio
 from cdsobs.service_definition.validation import logger
 
 
-def validate_service_definition(yml_file: str) -> tuple[ServiceDefinition, str]:
+def validate_service_definition(yml_file: str) -> tuple[ServiceDefinition | None, str]:
     """
     Validate fields of a service_definition.json candidate.
 
@@ -22,13 +22,14 @@ def validate_service_definition(yml_file: str) -> tuple[ServiceDefinition, str]:
     Valid ServiceDefinition
     """
     with open(yml_file) as f:
-        verifying_dict = yaml.safe_load(f)
-    verifying = None
+        service_definition_dict = yaml.safe_load(f)
+
     try:
         # pydantic checks everything when converting to class
-        verifying = ServiceDefinition(**verifying_dict)
+        service_definition = ServiceDefinition(**service_definition_dict)
         error_message = ""
     except pydantic.ValidationError as e:
+        service_definition = None
         logger.error(e)
         error_message = str(e)
 
@@ -38,7 +39,7 @@ def validate_service_definition(yml_file: str) -> tuple[ServiceDefinition, str]:
         msg = "Valid service definition yaml"
 
     logger.info(msg)
-    return verifying, msg
+    return service_definition, msg
 
 
 def get_service_definition(dataset_name: str) -> ServiceDefinition:

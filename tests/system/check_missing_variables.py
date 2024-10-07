@@ -8,7 +8,6 @@ import sqlalchemy as sa
 from cdsobs.api import run_ingestion_pipeline
 from cdsobs.cdm.api import open_netcdf
 from cdsobs.cdm.lite import auxiliary_variable_names
-from cdsobs.ingestion.core import get_aux_vars_from_service_definition
 from cdsobs.observation_catalogue.models import Catalogue
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.storage import S3Client
@@ -63,10 +62,7 @@ def test_run_ingestion_pipeline(
         dataset.columns.tolist() + dataset.observed_variable.unique().tolist()
     )
     # Get expected variables according to service definition file
-    aux_variables = get_aux_vars_from_service_definition(service_definition, source)
-    expected_variables = set(service_definition.sources[source].descriptions) - set(
-        aux_variables
-    )
+    expected_variables = set(service_definition.sources[source].descriptions)
     # Here we add some more variables to expected variables
     for v in [
         "observed_variable",

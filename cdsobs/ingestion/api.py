@@ -123,6 +123,7 @@ def check_mandatory_columns(
     missing_mandatory_columns = mandatory_columns.difference(all_columns)
     if len(missing_mandatory_columns) > 0:
         logger.warning(f"Mandatory columns {missing_mandatory_columns} are missing")
+        # raise MissingMandatoryColumns
 
 
 def cast_to_descriptions(

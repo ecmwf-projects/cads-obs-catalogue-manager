@@ -13,7 +13,6 @@ from cdsobs.cdm.check import (
     check_table_cdm_compliance,
 )
 from cdsobs.cdm.code_tables import CDMCodeTable, CDMCodeTables
-from cdsobs.cdm.lite import auxiliary_variable_names
 from cdsobs.cdm.tables import CDMTables
 from cdsobs.ingestion.core import (
     DatasetMetadata,
@@ -398,27 +397,3 @@ def _check_cdm_units(new_units, variable, varname2units):
             f"New units ({new_units}) are different to the units"
             f"defined in the CDM table ({cdm_units})"
         )
-
-
-def get_auxiliary_variables_mapping(source_definition, variables):
-    auxiliary_variables_mapping: dict[str, list[dict[str, str]]] = dict()
-    for variable in variables:
-        var_description = source_definition.descriptions[variable]
-        auxiliary_variables_mapping[variable] = []
-        for auxvar in auxiliary_variable_names:
-            if hasattr(var_description, auxvar):
-                auxvar_original_name = getattr(var_description, auxvar)
-                rename_dict = source_definition.cdm_mapping.rename
-                if rename_dict is not None and auxvar_original_name in rename_dict:
-                    auxvar_final_name = rename_dict[auxvar_original_name]
-                else:
-                    auxvar_final_name = auxvar_original_name
-                auxvar_units = source_definition.descriptions[auxvar_final_name].units
-                auxiliary_variables_mapping[variable].append(
-                    dict(
-                        auxvar=auxvar_final_name,
-                        metadata_name=auxvar,
-                        units=auxvar_units,
-                    )
-                )
-    return auxiliary_variables_mapping
