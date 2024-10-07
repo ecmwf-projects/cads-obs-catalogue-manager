@@ -67,7 +67,7 @@ def to_cdm_dataset(partition: DatasetPartition) -> CdmDataset:
     Dict mapping CDM tables to pandas.DataFrame objects.
     """
     cdm_tables = partition.dataset_metadata.cdm_tables
-    cdm_variables = get_cdm_variables(cdm_tables)
+    cdm_variables = get_cdm_fields(cdm_tables)
 
     cdm_variables = unique([v for v in cdm_variables if v in partition.data])
     data = partition.data.loc[:, cdm_variables].set_index("observation_id")
@@ -81,7 +81,11 @@ def to_cdm_dataset(partition: DatasetPartition) -> CdmDataset:
     return CdmDataset(data, partition.partition_params, partition.dataset_metadata)
 
 
-def get_cdm_variables(cdm_tables):
+def get_cdm_fields(cdm_tables: CDMTables) -> list[str]:
+    """Return a list with all CDM fields.
+
+    Do not confuse with variables, whish are defined in the observed_variable.csv
+    """
     cdm_variables = list(
         chain.from_iterable([tobj.fields for tname, tobj in cdm_tables.items()])
     )

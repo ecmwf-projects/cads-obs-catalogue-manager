@@ -100,13 +100,7 @@ class SourceDefinition(BaseModel, extra="forbid"):
 
     @model_validator(mode="after")
     def validate_main_variables(self):
-        # cdm_tables_location = Path("~/.cdsobs")
-        # cdm_variable_table = read_cdm_code_table(
-        #     cdm_tables_location, "observed_variable"
-        # ).table
-        # all_cdm_variables = cdm_variable_table.name.str.replace(" ", "_").tolist()
         for main_var in self.main_variables:
-            # assert main_var in all_cdm_variables
             if main_var not in self.descriptions:
                 raise AssertionError(f"{main_var} not found in descriptions.")
         return self
@@ -154,24 +148,6 @@ class SourceDefinition(BaseModel, extra="forbid"):
                         f"{new_name} is in rename but not in descriptions or melt_variables"
                     )
         return self
-
-    # @model_validator(mode="after")
-    # def validate_descriptions(self):
-    #     main_variables = self.main_variables
-    #     descriptions_no_main_vars = [
-    #         d for d in self.descriptions if d not in main_variables
-    #     ]
-    #     # TODO: This should not be hardcoded
-    #     cdm_tables_location = Path("~/.cdsobs")
-    #     cdm_tables = read_cdm_tables(cdm_tables_location)
-    #     cdm_variables = get_cdm_variables(cdm_tables)
-    #     fields_missing = sorted(set(descriptions_no_main_vars) - set(cdm_variables))
-    #     if len(fields_missing) > 0:
-    #         raise AssertionError(
-    #             "The following fields in descriptions do not have"
-    #             f"CDM compliant names {fields_missing}"
-    #         )
-    #     return self
 
 
 class ServiceDefinition(BaseModel, extra="forbid"):
