@@ -3,7 +3,6 @@ import pytest
 from cdsobs.cdm.api import (
     apply_unit_changes,
     check_cdm_compliance,
-    get_aux_fields_mapping_from_service_definition,
     read_cdm_code_tables,
 )
 from cdsobs.cdm.tables import read_cdm_tables
@@ -11,8 +10,6 @@ from cdsobs.ingestion.api import read_batch_data
 from cdsobs.ingestion.core import (
     TimeBatch,
     TimeSpaceBatch,
-    get_aux_vars_from_service_definition,
-    get_variables_from_service_definition,
 )
 from cdsobs.metadata import get_dataset_metadata
 from cdsobs.service_definition.api import get_service_definition
@@ -43,78 +40,6 @@ def _get_homogenised_data(dataset_name, service_definition, source, test_config)
     return homogenised_data
 
 
-def test_get_aux_fields_mapping_from_service_definition():
-    dataset_name = (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network"
-    )
-    source = "uscrn_hourly"
-    service_definition = get_service_definition(dataset_name)
-    source_definition = service_definition.sources[source]
-    variables = get_variables_from_service_definition(service_definition, source)
-    get_aux_fields_mapping_from_service_definition(source_definition, variables)
-    # assert actual == expected
-    # assert actual.all_list == [
-    #     "air_temperature_positive_total_uncertainty",
-    #     "air_temperature_negative_total_uncertainty",
-    #     "air_temperature_random_uncertainty",
-    #     "air_temperature_positive_systematic_uncertainty",
-    #     "air_temperature_negative_systematic_uncertainty",
-    #     "air_temperature_positive_quasisystematic_uncertainty",
-    #     "air_temperature_negative_quasisystematic_uncertainty",
-    #     "maximum_soil_temperature_flag",
-    #     "maximum_solar_irradiance_quality_flag",
-    #     "minimum_soil_temperature_quality_flag",
-    #     "minimum_solar_irradiance_quality_flag",
-    #     "relative_humidity_quality_flag",
-    #     "soil_temperature_quality_flag",
-    #     "soil_temperature_processing_level",
-    #     "solar_irradiance_quality_flag",
-    # ]
-    #
-    # assert not actual.var_has_uncertainty_field("accumulated_precipitation")
-    # assert actual.var_has_uncertainty_field("air_temperature")
-    # assert actual.vars_with_uncertainty_field == ["air_temperature"]
-    # assert actual.quality_flag_fields == [
-    #     "maximum_soil_temperature_flag",
-    #     "maximum_solar_irradiance_quality_flag",
-    #     "minimum_soil_temperature_quality_flag",
-    #     "minimum_solar_irradiance_quality_flag",
-    #     "relative_humidity_quality_flag",
-    #     "soil_temperature_quality_flag",
-    #     "solar_irradiance_quality_flag",
-    # ]
-    # assert not actual.var_has_quality_field("air_temperature")
-    # assert actual.var_has_quality_field("maximum_soil_temperature")
-    # assert actual.vars_with_quality_field == [
-    #     "maximum_soil_temperature",
-    #     "maximum_solar_irradiance",
-    #     "minimum_soil_temperature",
-    #     "minimum_solar_irradiance",
-    #     "relative_humidity",
-    #     "soil_temperature",
-    #     "solar_irradiance",
-    # ]
-    # assert (
-    #     actual.get_var_quality_flag_field_name("maximum_soil_temperature")
-    #     == "maximum_soil_temperature_flag"
-    # )
-    # assert actual.get_var_uncertainty_field_names("air_temperature") == [
-    #     "air_temperature_positive_total_uncertainty",
-    #     "air_temperature_negative_total_uncertainty",
-    #     "air_temperature_random_uncertainty",
-    #     "air_temperature_positive_systematic_uncertainty",
-    #     "air_temperature_negative_systematic_uncertainty",
-    #     "air_temperature_positive_quasisystematic_uncertainty",
-    #     "air_temperature_negative_quasisystematic_uncertainty",
-    # ]
-    # assert (
-    #     actual.auxfield2metadata_name(
-    #         "air_temperature", "air_temperature_positive_total_uncertainty"
-    #     )
-    #     == "positive_total_uncertainty"
-    # )
-
-
 def test_apply_variable_unit_change(test_config):
     dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
     source = "OzoneSonde"
@@ -134,13 +59,3 @@ def test_apply_variable_unit_change(test_config):
         apply_unit_changes(
             homogenised_data, source_definition, cdm_code_tables["observed_variable"]
         )
-
-
-def test_get_aux_vars_from_service_definition():
-    dataset_name = (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network"
-    )
-    source = "uscrn_hourly"
-    service_definition = get_service_definition(dataset_name)
-    actual = get_aux_vars_from_service_definition(service_definition, source)
-    print(actual)

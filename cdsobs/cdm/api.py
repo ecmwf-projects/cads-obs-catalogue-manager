@@ -1,4 +1,3 @@
-from collections import UserDict
 from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
@@ -291,93 +290,6 @@ def read_cdm_code_tables(
     }
     cdm_tables = CDMCodeTables(cdm_tables_dict)
     return cdm_tables
-
-
-class AuxFields(UserDict[str, list[dict[str, str]]]):
-    """
-    Maps variables in the service definition with auxiliary fields.
-
-    Aux fields are those such as uncertainty fields and quality flags.
-    """
-
-    def __init__(self, var2auxfields: dict[str, list[dict[str, str]]]):
-        UserDict.__init__(self)
-        self.update(var2auxfields)
-
-    @property
-    def all_list(self) -> list[str]:
-        """Return all the auxiliary fields."""
-        return [
-            auxf["auxvar"]
-            for variable, variable_auxfields in self.items()
-            for auxf in variable_auxfields
-        ]
-
-    @property
-    def uncertainty_fields(self) -> list[str]:
-        """Return the uncertainty fields."""
-        return [auxf for auxf in self.all_list if "uncertainty" in auxf]
-
-    def var_has_uncertainty_field(self, var: str) -> bool:
-        return any(auxf["auxvar"] in self.uncertainty_fields for auxf in self[var])
-
-    @property
-    def vars_with_uncertainty_field(self) -> list[str]:
-        """Return a list of the variables that have quality fields."""
-        vars_with_unc = [v for v in self if self.var_has_uncertainty_field(v)]
-        return vars_with_unc
-
-    @property
-    def quality_flag_fields(self) -> list[str]:
-        """Return the quality flag fields."""
-        return [auxf for auxf in self.all_list if "flag" in auxf]
-
-    def var_has_quality_field(self, var: str) -> bool:
-        """Check wether a variable has a quality field."""
-        return any(auxf["auxvar"] in self.quality_flag_fields for auxf in self[var])
-
-    @property
-    def vars_with_quality_field(self) -> list[str]:
-        """Return a list of the variables that have quality fields."""
-        vars_with_qf = [v for v in self if self.var_has_quality_field(v)]
-        return vars_with_qf
-
-    def get_var_quality_flag_field_name(self, var: str) -> str:
-        return [auxf["auxvar"] for auxf in self[var] if "flag" in auxf["auxvar"]][0]
-
-    def get_var_uncertainty_field_names(self, var: str) -> list[str]:
-        return [auxf["auxvar"] for auxf in self[var] if "uncertainty" in auxf["auxvar"]]
-
-    def auxfield2metadata_name(self, var: str, aux_var: str) -> str:
-        return [
-            auxf["metadata_name"] for auxf in self[var] if auxf["auxvar"] == aux_var
-        ][0]
-
-    def vars_with_processing_level(self) -> list[str]:
-        return [v for v in self if self.var_has_processing_level(v)]
-
-    def var_has_processing_level(self, var: str) -> bool:
-        return any(auxf["auxvar"] in self.processing_level_fields for auxf in self[var])
-
-    @property
-    def processing_level_fields(self) -> list[str]:
-        return [auxf for auxf in self.all_list if "processing_level" in auxf]
-
-    def get_var_processing_level_field_name(self, var: str) -> str:
-        return [
-            auxf["auxvar"]
-            for auxf in self[var]
-            if "processing_level" in auxf["auxvar"]
-            and "quality_flag" not in auxf["auxvar"]
-        ][0]
-
-
-def get_aux_fields_mapping_from_service_definition(
-    source_definition: SourceDefinition, variables: List[str]
-) -> AuxFields:
-    """Return the auxiliary (uncertainty) fields for each variable."""
-    aux_fields_mapping = get_auxiliary_variables_mapping(source_definition, variables)
-    return AuxFields(aux_fields_mapping)
 
 
 def check_cdm_compliance(
