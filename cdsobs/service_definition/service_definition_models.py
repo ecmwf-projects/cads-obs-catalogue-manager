@@ -83,6 +83,7 @@ class SourceDefinition(BaseModel, extra="forbid"):
     space_columns: SpaceColumns | None = None
     descriptions: dict[str, Description]
     mandatory_columns: list[str]
+    order_by: list[str] | None = None
 
     def is_multitable(self):
         return self.header_table is not None

@@ -27,14 +27,14 @@ from tests.utils import get_test_years
 TEST_API_PARAMETERS = [
     ("insitu-observations-woudc-ozone-total-column-and-profiles", "OzoneSonde"),
     ("insitu-observations-woudc-ozone-total-column-and-profiles", "TotalOzone"),
-    # (
-    #     "insitu-observations-igra-baseline-network",
-    #     "IGRA",
-    # ),
-    # (
-    #     "insitu-observations-igra-baseline-network",
-    #     "IGRA_H",
-    # ),
+    (
+        "insitu-observations-igra-baseline-network",
+        "IGRA",
+    ),
+    (
+        "insitu-observations-igra-baseline-network",
+        "IGRA_H",
+    ),
     # (
     #     "insitu-comprehensive-upper-air-observation-network",
     #     "CUON",
