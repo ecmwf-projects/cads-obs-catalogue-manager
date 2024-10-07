@@ -35,10 +35,10 @@ TEST_API_PARAMETERS = [
     #     "insitu-observations-igra-baseline-network",
     #     "IGRA_H",
     # ),
-    # (
-    #     "insitu-comprehensive-upper-air-observation-network",
-    #     "CUON",
-    # ),
+    (
+        "insitu-comprehensive-upper-air-observation-network",
+        "CUON",
+    ),
     # (
     #     "insitu-observations-gruan-reference-network",
     #     "GRUAN",
