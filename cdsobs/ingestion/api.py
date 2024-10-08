@@ -98,7 +98,7 @@ def validate_and_homogenise(
         and source_definition.space_columns is not None
         and source_definition.space_columns.z is not None
     ):
-        z_column = source_definition.sdefinpace_columns.z
+        z_column = source_definition.space_columns.z
         logger.info(f"Using {z_column} to define z_coordinate")
         # We copy it so the original can still be melted as a main_variable.
         data_renamed["z_coordinate"] = data_renamed.loc[:, z_column].copy()
