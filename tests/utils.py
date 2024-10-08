@@ -1,9 +1,4 @@
-from hashlib import sha256
-from typing import Any, Tuple
-
-
-def get_object_str_hash(pyobj: Any) -> str:
-    return sha256(str(pyobj).encode()).hexdigest()
+from typing import Tuple
 
 
 def get_test_years(source: str) -> Tuple[int, int]:

@@ -1,12 +1,10 @@
 from typing import Sequence
 
-import h5netcdf
 import numpy
 import pandas
 import pandas as pd
 import sqlalchemy as sa
 
-from cdsobs.cdm.lite import cdm_lite_variables
 from cdsobs.observation_catalogue.models import Catalogue
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.schemas.constraints import ConstraintsSchema
@@ -111,36 +109,6 @@ def filter_retrieve_constraints(
     return ConstraintsSchema.from_table(retrieve_table)
 
 
-def ezclump(mask) -> list[slice]:
-    """
-    Find the clumps (groups of data with the same values) for a 1D bool array.
-
-    Internal function form numpy.ma.extras
-
-    Returns a series of slices.
-    """
-    if mask.ndim > 1:
-        mask = mask.ravel()
-    idx = (mask[1:] ^ mask[:-1]).nonzero()
-    idx = idx[0] + 1
-
-    if mask[0]:
-        if len(idx) == 0:
-            return [slice(0, mask.size)]
-
-        r = [slice(0, idx[0])]
-        r.extend((slice(left, right) for left, right in zip(idx[1:-1:2], idx[2::2])))
-    else:
-        if len(idx) == 0:
-            return []
-
-        r = [slice(left, right) for left, right in zip(idx[:-1:2], idx[1::2])]
-
-    if mask[-1]:
-        r.append(slice(idx[-1], mask.size))
-    return r
-
-
 def get_urls_and_check_size(
     entries: Sequence[Catalogue],
     retrieve_args: RetrieveArgs,
@@ -156,19 +124,6 @@ def get_urls_and_check_size(
     object_urls = [f"{storage_url}/{e.asset}" for e in entries]
     _check_data_size(entries, retrieve_args, size_limit)
     return object_urls
-
-
-def get_vars_in_cdm_lite(incobj: h5netcdf.File) -> list[str]:
-    """Return the variables in incobj that are defined in the CDM-lite."""
-    vars_in_cdm_lite = [v for v in incobj.variables if v in cdm_lite_variables]
-    # This searches for variables with "|cdm_table  in their name."
-    vars_with_bar_in_cdm_lite = [
-        v
-        for v in incobj.variables
-        if "|" in v and v.split("|")[0] in cdm_lite_variables
-    ]
-    vars_in_cdm_lite += vars_with_bar_in_cdm_lite
-    return vars_in_cdm_lite
 
 
 def _check_data_size(

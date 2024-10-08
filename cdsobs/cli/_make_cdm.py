@@ -47,7 +47,9 @@ def make_cdm(
     config = read_and_validate_config(cdsobs_config_yml)
 
     # read and validate service definition
-    service_definition = validate_service_definition(str(service_definition_json))[0]
+    service_definition = validate_service_definition(
+        str(service_definition_json), config.cdm_tables_location
+    )[0]
     assert service_definition is not None
 
     # Check if we selected only one source

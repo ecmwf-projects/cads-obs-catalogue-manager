@@ -1,4 +1,3 @@
-from collections import UserDict
 from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
@@ -14,7 +13,6 @@ from cdsobs.cdm.check import (
     check_table_cdm_compliance,
 )
 from cdsobs.cdm.code_tables import CDMCodeTable, CDMCodeTables
-from cdsobs.cdm.lite import auxiliary_variable_names
 from cdsobs.cdm.tables import CDMTables
 from cdsobs.ingestion.core import (
     DatasetMetadata,
@@ -69,6 +67,25 @@ def to_cdm_dataset(partition: DatasetPartition) -> CdmDataset:
     Dict mapping CDM tables to pandas.DataFrame objects.
     """
     cdm_tables = partition.dataset_metadata.cdm_tables
+    cdm_variables = get_cdm_fields(cdm_tables)
+
+    cdm_variables = unique([v for v in cdm_variables if v in partition.data])
+    data = partition.data.loc[:, cdm_variables].set_index("observation_id")
+    original_variables = set(partition.data.columns)
+    removed_variables = original_variables - set(cdm_variables)
+    if len(removed_variables) > 0:
+        logger.warning(
+            "The following variables where read but are not in the CDM and "
+            f"are going to be dropped: {removed_variables}"
+        )
+    return CdmDataset(data, partition.partition_params, partition.dataset_metadata)
+
+
+def get_cdm_fields(cdm_tables: CDMTables) -> list[str]:
+    """Return a list with all CDM fields.
+
+    Do not confuse with variables, whish are defined in the observed_variable.csv
+    """
     cdm_variables = list(
         chain.from_iterable([tobj.fields for tname, tobj in cdm_tables.items()])
     )
@@ -81,16 +98,17 @@ def to_cdm_dataset(partition: DatasetPartition) -> CdmDataset:
         )
     )
     cdm_variables += cdm_variables_with_table_names
-    cdm_variables = unique([v for v in cdm_variables if v in partition.data])
-    data = partition.data.loc[:, cdm_variables].set_index("observation_id")
-    original_variables = set(partition.data.columns)
-    removed_variables = original_variables - set(cdm_variables)
-    if len(removed_variables) > 0:
-        logger.warning(
-            "The following variables where read but are not in the CDM and "
-            f"are going to be dropped: {removed_variables}"
-        )
-    return CdmDataset(data, partition.partition_params, partition.dataset_metadata)
+    if "uncertainty_table" in cdm_tables:
+        vars_supporting_numbers = [
+            "uncertainty_type",
+            "uncertainty_units",
+            "uncertainty_value",
+        ]
+        numbered_fields = [
+            v + str(n) for v in vars_supporting_numbers for n in range(1, 17)
+        ]
+        cdm_variables += numbered_fields
+    return cdm_variables
 
 
 def to_cdm_dataset_normalized(
@@ -277,93 +295,6 @@ def read_cdm_code_tables(
     return cdm_tables
 
 
-class AuxFields(UserDict[str, list[dict[str, str]]]):
-    """
-    Maps variables in the service definition with auxiliary fields.
-
-    Aux fields are those such as uncertainty fields and quality flags.
-    """
-
-    def __init__(self, var2auxfields: dict[str, list[dict[str, str]]]):
-        UserDict.__init__(self)
-        self.update(var2auxfields)
-
-    @property
-    def all_list(self) -> list[str]:
-        """Return all the auxiliary fields."""
-        return [
-            auxf["auxvar"]
-            for variable, variable_auxfields in self.items()
-            for auxf in variable_auxfields
-        ]
-
-    @property
-    def uncertainty_fields(self) -> list[str]:
-        """Return the uncertainty fields."""
-        return [auxf for auxf in self.all_list if "uncertainty" in auxf]
-
-    def var_has_uncertainty_field(self, var: str) -> bool:
-        return any(auxf["auxvar"] in self.uncertainty_fields for auxf in self[var])
-
-    @property
-    def vars_with_uncertainty_field(self) -> list[str]:
-        """Return a list of the variables that have quality fields."""
-        vars_with_unc = [v for v in self if self.var_has_uncertainty_field(v)]
-        return vars_with_unc
-
-    @property
-    def quality_flag_fields(self) -> list[str]:
-        """Return the quality flag fields."""
-        return [auxf for auxf in self.all_list if "flag" in auxf]
-
-    def var_has_quality_field(self, var: str) -> bool:
-        """Check wether a variable has a quality field."""
-        return any(auxf["auxvar"] in self.quality_flag_fields for auxf in self[var])
-
-    @property
-    def vars_with_quality_field(self) -> list[str]:
-        """Return a list of the variables that have quality fields."""
-        vars_with_qf = [v for v in self if self.var_has_quality_field(v)]
-        return vars_with_qf
-
-    def get_var_quality_flag_field_name(self, var: str) -> str:
-        return [auxf["auxvar"] for auxf in self[var] if "flag" in auxf["auxvar"]][0]
-
-    def get_var_uncertainty_field_names(self, var: str) -> list[str]:
-        return [auxf["auxvar"] for auxf in self[var] if "uncertainty" in auxf["auxvar"]]
-
-    def auxfield2metadata_name(self, var: str, aux_var: str) -> str:
-        return [
-            auxf["metadata_name"] for auxf in self[var] if auxf["auxvar"] == aux_var
-        ][0]
-
-    def vars_with_processing_level(self) -> list[str]:
-        return [v for v in self if self.var_has_processing_level(v)]
-
-    def var_has_processing_level(self, var: str) -> bool:
-        return any(auxf["auxvar"] in self.processing_level_fields for auxf in self[var])
-
-    @property
-    def processing_level_fields(self) -> list[str]:
-        return [auxf for auxf in self.all_list if "processing_level" in auxf]
-
-    def get_var_processing_level_field_name(self, var: str) -> str:
-        return [
-            auxf["auxvar"]
-            for auxf in self[var]
-            if "processing_level" in auxf["auxvar"]
-            and "quality_flag" not in auxf["auxvar"]
-        ][0]
-
-
-def get_aux_fields_mapping_from_service_definition(
-    source_definition: SourceDefinition, variables: List[str]
-) -> AuxFields:
-    """Return the auxiliary (uncertainty) fields for each variable."""
-    aux_fields_mapping = get_auxiliary_variables_mapping(source_definition, variables)
-    return AuxFields(aux_fields_mapping)
-
-
 def check_cdm_compliance(
     homogenised_data: pandas.DataFrame,
     cdm_tables: CDMTables,
@@ -470,22 +401,3 @@ def _check_cdm_units(new_units, variable, varname2units):
             f"New units ({new_units}) are different to the units"
             f"defined in the CDM table ({cdm_units})"
         )
-
-
-def get_auxiliary_variables_mapping(source_definition, variables):
-    auxiliary_variables_mapping: dict[str, list[dict[str, str]]] = dict()
-    for variable in variables:
-        var_description = source_definition.descriptions[variable]
-        auxiliary_variables_mapping[variable] = []
-        for auxvar in auxiliary_variable_names:
-            if hasattr(var_description, auxvar):
-                auxvar_original_name = getattr(var_description, auxvar)
-                rename_dict = source_definition.cdm_mapping.rename
-                if rename_dict is not None and auxvar_original_name in rename_dict:
-                    auxvar_final_name = rename_dict[auxvar_original_name]
-                else:
-                    auxvar_final_name = auxvar_original_name
-                auxiliary_variables_mapping[variable].append(
-                    dict(auxvar=auxvar_final_name, metadata_name=auxvar)
-                )
-    return auxiliary_variables_mapping

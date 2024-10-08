@@ -63,7 +63,8 @@ def write_pandas_to_netcdf(
     oncobj.dimensions["observation_id"] = len(input_data)
     dimensions_base: tuple[str, ...] = ("observation_id",)
     # To avoid too large chunks, we set the max size to 6e5
-    max_chunksize = min(3e5, len(input_data))
+    MAX_CHUNKSIZE = int(3e5)
+    max_chunksize = min(MAX_CHUNKSIZE, len(input_data))
 
     for v in var_selection:
         vardata = input_data[v]
@@ -92,7 +93,9 @@ def write_pandas_to_netcdf(
             oncobj.dimensions[strdim] = slen
             dimensions = dimensions_base + (strdim,)
             max_chunksize_str = (
-                max_chunksize // slen if max_chunksize == 6e5 else max_chunksize
+                max_chunksize // slen
+                if max_chunksize == MAX_CHUNKSIZE
+                else max_chunksize
             )
             var_encoding["dtype"] = "S1"
             ovar = oncobj.create_variable(
