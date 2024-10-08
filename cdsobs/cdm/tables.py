@@ -21,6 +21,7 @@ DEFAULT_CDM_TABLES_TO_USE = [
     "station_configuration",
     "observations_table",
     "header_table",
+    "uncertainty_table",
 ]
 
 

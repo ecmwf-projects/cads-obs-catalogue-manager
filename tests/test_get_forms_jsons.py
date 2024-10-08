@@ -2,9 +2,7 @@ from cdsobs.forms_jsons import get_forms_jsons
 
 
 def test_get_forms_jsons(test_repository, tmp_path):
-    dataset = (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network"
-    )
+    dataset = "insitu-observations-gruan-reference-network"
     s3_client = test_repository.s3_client
     bucket = s3_client.get_bucket_name(dataset)
     geco_files = get_forms_jsons(

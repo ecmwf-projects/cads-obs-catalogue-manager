@@ -1,9 +1,4 @@
-from hashlib import sha256
-from typing import Any, Tuple
-
-
-def get_object_str_hash(pyobj: Any) -> str:
-    return sha256(str(pyobj).encode()).hexdigest()
+from typing import Tuple
 
 
 def get_test_years(source: str) -> Tuple[int, int]:
@@ -21,8 +16,8 @@ def get_test_years(source: str) -> Tuple[int, int]:
             start_year = 1978
             end_year = 1979
         case "CUON":
-            start_year = 1957
-            end_year = 1958
+            start_year = 1960
+            end_year = 1961
         case "GRUAN":
             start_year = 2010
             end_year = 2011

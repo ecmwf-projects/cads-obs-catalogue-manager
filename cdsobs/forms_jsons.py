@@ -10,13 +10,8 @@ import pandas
 import sqlalchemy as sa
 from fsspec.implementations.http import HTTPFileSystem
 
-from cdsobs.cdm.lite import auxiliary_variable_names
 from cdsobs.cli._catalogue_explorer import stats_summary
 from cdsobs.constraints import iterative_ordering
-from cdsobs.ingestion.core import (
-    get_aux_vars_from_service_definition,
-    get_variables_from_sc_group,
-)
 from cdsobs.observation_catalogue.models import Catalogue
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.retrieve.retrieve_services import merged_constraints_table
@@ -65,7 +60,6 @@ def get_variables_json(dataset: str, output_path: Path) -> Path:
     service_definition = get_service_definition(dataset)
     variables_json_content = {}
     for source_name, source in service_definition.sources.items():
-        # We also pick up auxiliary variables here.
         descriptions = {k: v.model_dump() for k, v in source.descriptions.items()}
         variables_json_content[source_name] = descriptions
     output_file_path = Path(output_path, "variables.json")
@@ -102,9 +96,6 @@ def get_constraints_json(session, output_path: Path, dataset) -> Path:
     flat_constraints["month"] = times.dt.month.astype("str").str.rjust(2, "0")
     flat_constraints["day"] = times.dt.day.astype("str").str.rjust(2, "0")
     flat_constraints = flat_constraints.drop("time", axis=1)
-    # Auxiliary variables are metadata, but they are still added as variables here for
-    # backwards compatibility
-    flat_constraints = _add_auxiliary_variables(dataset, flat_constraints)
     # Compress constraints
     logger.info("Computing compressed constraints")
     compressed_constraints = iterative_ordering(
@@ -117,41 +108,15 @@ def get_constraints_json(session, output_path: Path, dataset) -> Path:
     return constraints_path
 
 
-def _add_auxiliary_variables(
-    dataset: str, flat_constraints: pandas.DataFrame
-) -> pandas.DataFrame:
-    """Look for auxiliary variables and adds them to the constraints.
-
-    Looks for auxiliary variables in the Service definition file and adds them to the
-    flat constraints. These are dummy variables that will be discarded by the adaptor
-    and it will include metadata fields will be included.
-    """
-    service_definition = get_service_definition(dataset)
-    aux_flat_constraints_dicts = []
-    # When we find an aux variable related to the main variable we add it
-    for row in flat_constraints.itertuples(index=False):
-        source_definition = service_definition.sources[row.dataset_source]
-        var_description = source_definition.descriptions[row.variables]
-        for auxvar in auxiliary_variable_names:
-            if hasattr(var_description, auxvar):
-                auxvar_original_name = getattr(var_description, auxvar)
-                rename_dict = source_definition.cdm_mapping.rename
-                if rename_dict is not None and auxvar_original_name in rename_dict:
-                    auxvar_final_name = rename_dict[auxvar_original_name]
-                else:
-                    auxvar_final_name = auxvar_original_name
-                newrow = row._replace(variables=auxvar_final_name)
-                aux_flat_constraints_dicts.append(newrow)
-    aux_flat_constraints = pandas.DataFrame(aux_flat_constraints_dicts)
-    flat_constraints = pandas.concat([flat_constraints, aux_flat_constraints])
-    return flat_constraints
-
-
 def get_widgets_json(session, output_path: Path, dataset: str) -> Path:
     """JSON file with the variables and their metadata."""
     catalogue_entries = get_catalogue_entries_stream(session, dataset)
     service_definition = get_service_definition(dataset)
-    variables = get_all_variables_in_products(service_definition)
+    variables = [
+        v
+        for s in service_definition.sources
+        for v in service_definition.sources[s].main_variables
+    ]
     summary = stats_summary(catalogue_entries)
     widgets_json_content = dict()
     widgets_json_content["variables"] = variables
@@ -174,34 +139,6 @@ def get_widgets_json(session, output_path: Path, dataset: str) -> Path:
     with widgets_output_path.open("w") as wof:
         json.dump(widgets_json_content, wof, indent=4, sort_keys=True)
     return widgets_output_path
-
-
-def get_all_variables(service_definition):
-    variables = []
-    # Includes also auxiliary variables
-    for source_name, source in service_definition.sources.items():
-        variables.extend([variable for variable in source.descriptions])
-    return variables
-
-
-def get_all_variables_in_products(service_definition):
-    variables = []
-    # Includes also auxiliary variables
-    for source_name, source in service_definition.sources.items():
-        for product in source.products:
-            variables.extend(get_variables_from_sc_group(source, product.group_name))
-    return list(set(variables))
-
-
-def get_all_aux_variables(service_definition):
-    variables = []
-    # Includes also auxiliary variables
-    for source_name, source in service_definition.sources.items():
-        aux_variables = get_aux_vars_from_service_definition(
-            service_definition, source_name
-        )
-        variables.extend(aux_variables)
-    return list(set(variables))
 
 
 def get_station_summary(

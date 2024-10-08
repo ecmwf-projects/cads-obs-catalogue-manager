@@ -8,58 +8,10 @@ from cdsobs.api import run_ingestion_pipeline, run_make_cdm
 from cdsobs.observation_catalogue.models import Catalogue
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.utils.logutils import get_logger
+from tests.conftest import TEST_API_PARAMETERS
 from tests.utils import get_test_years
 
 logger = get_logger(__name__)
-
-TEST_API_PARAMETERS = [
-    ("insitu-observations-woudc-ozone-total-column-and-profiles", "OzoneSonde"),
-    ("insitu-observations-woudc-ozone-total-column-and-profiles", "TotalOzone"),
-    (
-        "insitu-observations-igra-baseline-network",
-        "IGRA",
-    ),
-    (
-        "insitu-observations-igra-baseline-network",
-        "IGRA_H",
-    ),
-    (
-        "insitu-comprehensive-upper-air-observation-network",
-        "CUON",
-    ),
-    (
-        "insitu-observations-gruan-reference-network",
-        "GRUAN",
-    ),
-    (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "uscrn_subhourly",
-    ),
-    (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "uscrn_hourly",
-    ),
-    (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "uscrn_daily",
-    ),
-    (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "uscrn_monthly",
-    ),
-    (
-        "insitu-observations-gnss",
-        "IGS",
-    ),
-    (
-        "insitu-observations-gnss",
-        "EPN",
-    ),
-    (
-        "insitu-observations-gnss",
-        "IGS_R3",
-    ),
-]
 
 
 @pytest.mark.parametrize("dataset_name,source", TEST_API_PARAMETERS)
@@ -86,6 +38,11 @@ def test_run_ingestion_pipeline(
         .where(Catalogue.dataset == dataset_name)
     )
     assert counter > 0
+    if dataset_name == "insitu-comprehensive-upper-air-observation-network":
+        stations = test_session.scalar(
+            sa.select(Catalogue.stations).where(Catalogue.dataset == dataset_name)
+        )
+        assert stations == ["0-20001-0-53772", "0-20001-0-53845"]
 
 
 def test_make_cdm(test_config, tmp_path, caplog):
