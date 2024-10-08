@@ -111,7 +111,7 @@ sources:
         units: See uncertainty_units1
       uncertainty_type1:
         description: Uncertainty type 1
-        dtype: float32
+        dtype: uint8
       uncertainty_units1:
         description: Uncertainty units 1
         dtype: object
@@ -121,7 +121,7 @@ sources:
         units: See uncertainty_units2
       uncertainty_type2:
         description: Uncertainty type 2
-        dtype: float32
+        dtype: uint8
       uncertainty_units2:
         description: Uncertainty units 2
         dtype: object
@@ -131,7 +131,7 @@ sources:
         units: See uncertainty_units5
       uncertainty_type5:
         description: Uncertainty type 5
-        dtype: float32
+        dtype: uint8
       uncertainty_units5:
         description: Uncertainty units 5
         dtype: object
@@ -225,7 +225,7 @@ sources:
         units: m
       z_coordinate_type:
         description: Type of z coordinate
-        dtype: float32
+        dtype: uint8
     space_columns:
       z: altitude
       y: latitude|station_configuration
