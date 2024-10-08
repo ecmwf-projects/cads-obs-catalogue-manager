@@ -301,18 +301,11 @@ def _melt_variables(
         value_vars=variables,
         var_name="observed_variable",
         value_name="observation_value",
-    ).rename(dict(observation_id="original_observation_id"), axis=1, copy=False)
-    # New observation id unique for each observation value
-    logger.info("Adding new observation id (only unique for this chunk)")
-    if "original_observation_id" in homogenised_data_melted:
-        unique_keys = ["original_observation_id", "observed_variable"]
-    else:
-        unique_keys = ["primary_station_id", "report_timestamp", "observed_variable"]
-    homogenised_data_melted = homogenised_data_melted.assign(
-        observation_id=homogenised_data_melted.apply(
-            lambda x: "".join(x[unique_keys].astype(str)), axis=1
-        ).apply(hash_string)
     )
+    # New observation id unique for each observation value
+    if "observation_id" not in homogenised_data_melted:
+        logger.info("Adding new observation id (only unique for this chunk)")
+        homogenised_data_melted["observation_id"] = homogenised_data_melted.index
     # Handle auxiliary variables
     homogenised_data_melted = _handle_aux_variables(
         melt_columns, cdm_tables_location, homogenised_data_melted
