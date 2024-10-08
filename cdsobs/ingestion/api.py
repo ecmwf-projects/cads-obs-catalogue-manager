@@ -92,7 +92,23 @@ def validate_and_homogenise(
         )
     else:
         data_renamed = data
-    # Check mandatory columns are present
+    # Add z coordinate if needed
+    if (
+        "z_coordinate" not in data_renamed
+        and source_definition.space_columns is not None
+        and source_definition.space_columns.z is not None
+    ):
+        z_column = source_definition.sdefinpace_columns.z
+        logger.info(f"Using {z_column} to define z_coordinate")
+        # We copy it so the original can still be melted as a main_variable.
+        data_renamed["z_coordinate"] = data_renamed.loc[:, z_column].copy()
+        zcol2zcoordtype = dict(altitude=0, pressure=1)
+        data_renamed["z_coordinate_type"] = zcol2zcoordtype[z_column]
+        data_renamed["z_coordinate_type"] = data_renamed["z_coordinate_type"].astype(
+            "int"
+        )
+
+        # Check mandatory columns are present
     check_mandatory_columns(data_renamed, source_definition)
     # Cast data types to those specified in Service Definition file.
     cast_to_descriptions(data_renamed, source_definition)
@@ -342,7 +358,7 @@ def _handle_aux_variables(
             homogenised_data_melted = homogenised_data_melted.drop(qf_col.name, axis=1)
             # Ensure is int and fill nans with 3 (missing according to the CDM)
             homogenised_data_melted["quality_flag"] = (
-                homogenised_data_melted["quality_flag"].fillna(3).astype("int")
+                homogenised_data_melted["quality_flag"].fillna(3).astype("uint8")
             )
     # Add processing level
     if melt_columns.processing_level:
@@ -373,7 +389,13 @@ def _add_uncertainty_fields(
         uncertainty_type_name = f"uncertainty_type{unc_type_code}"
         uncertainty_units_name = f"uncertainty_units{unc_type_code}"
         homogenised_data_melted[uncertainty_value_name] = numpy.nan
+        homogenised_data_melted[uncertainty_value_name] = homogenised_data_melted[
+            uncertainty_value_name
+        ].astype("float32")
         homogenised_data_melted[uncertainty_type_name] = unc_type_code
+        homogenised_data_melted[uncertainty_type_name] = homogenised_data_melted[
+            uncertainty_type_name
+        ].astype("uint8")
         homogenised_data_melted[uncertainty_units_name] = "NA"
 
         for unc_col in unc_cols:
