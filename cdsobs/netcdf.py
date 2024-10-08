@@ -18,8 +18,10 @@ def get_encoding_with_compression(
                 encoding[var].update(dict(dtype="S"))
             case "S" | "O", "char_to_str":
                 encoding[var].update(dict(dtype="str", compression=None))
+            case "M", _:
+                pass
             case _, _:
-                continue
+                encoding[var].update(dict(dtype=dataset[var].values.dtype))
     return encoding
 
 
