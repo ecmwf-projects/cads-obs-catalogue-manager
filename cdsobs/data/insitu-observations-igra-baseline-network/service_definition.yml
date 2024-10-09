@@ -14,20 +14,14 @@ sources:
         idstation: primary_station_id
         lat: latitude|station_configuration
         lon: longitude|station_configuration
-        press: air_pressure
+        press: pressure
         rh: relative_humidity
         temp: air_temperature
         wdir: wind_from_direction
         wspd: wind_speed
-      unit_changes:
-        air_pressure:
-          names:
-            Pa: Pa
-          offset: 0
-          scale: 1
     data_table: guan_data_value
     descriptions:
-      air_pressure:
+      pressure:
         description: Barometric air pressure
         dtype: float32
         units: Pa
@@ -72,6 +66,13 @@ sources:
         description: Horizontal speed of the wind, or movement of air, at the height of the observation
         dtype: float32
         units: m s-1
+      z_coordinate:
+        description: z coordinate of observation
+        dtype: float32
+        units: m
+      z_coordinate_type:
+        description: Type of z coordinate
+        dtype: uint8
     header_columns:
     - primary_station_id
     - report_timestamp
@@ -81,6 +82,10 @@ sources:
     join_ids:
       data: guan_data_header_id
       header: guandataheader_id
+    space_columns:
+      x: longitude|station_configuration
+      y: latitude|station_configuration
+      z: pressure
     main_variables:
     - geopotential_height
     - wind_from_direction
@@ -88,17 +93,18 @@ sources:
     - dew_point_depression
     - air_temperature
     - relative_humidity
+    - pressure
     mandatory_columns:
     - primary_station_id
     - report_timestamp
     - longitude|station_configuration
     - latitude|station_configuration
-    - air_pressure
+    - pressure
     - report_id
     order_by:
     - report_timestamp
     - report_id
-    - air_pressure
+    - pressure
   IGRA_H:
     cdm_mapping:
       melt_columns:
@@ -123,9 +129,9 @@ sources:
             name: relative_humidity_total_uncertainty
             units: '%'
       rename:
-        actual_time: actual_time
+        actual_time: date_time
         air_dewpoint_depression: dew_point_depression
-        air_pressure: air_pressure
+        air_pressure: pressure
         air_temperature: air_temperature
         air_temperature_total_uncertainty: air_temperature_total_uncertainty
         ascent_speed: vertical_speed_of_radiosonde
@@ -138,12 +144,11 @@ sources:
         longitude: longitude|station_configuration
         northward_wind_component: northward_wind_speed
         northward_wind_component_total_uncertainty: northward_wind_speed_total_uncertainty
-        radiosonde_code: radiosonde_code
         relative_humidity: relative_humidity
         relative_humidity_total_uncertainty: relative_humidity_total_uncertainty
         report_id: report_id
         report_timestamp: report_timestamp
-        sensor_model: sensor_model
+        sensor_model: sensor_id
         solar_zenith_angle: solar_zenith_angle
         station_name: primary_station_id
         water_vapor_volume_mixing_ratio: water_vapour_mixing_ratio
@@ -151,23 +156,12 @@ sources:
         wind_from_direction_total_uncertainty: wind_from_direction_total_uncertainty
         wind_speed: wind_speed
         wind_speed_total_uncertainty: wind_speed_total_uncertainty
-      unit_changes:
-        air_dewpoint_depression:
-          names:
-            K: K
-          offset: 0
-          scale: 1
-        air_temperature:
-          names:
-            K: K
-          offset: 0
-          scale: 1
     data_table: igra_h
     descriptions:
-      actual_time:
-        description: Release time of the sounding in date time UTC
+      date_time:
+        description: timestamp for observation
         dtype: datetime64[ns]
-      air_pressure:
+      pressure:
         description: Barometric air pressure
         dtype: float32
         units: Pa
@@ -210,9 +204,6 @@ sources:
       primary_station_id:
         description: Station identification code
         dtype: object
-      radiosonde_code:
-        description: Common Code table as from WMO definitions (code table 3685)
-        dtype: float32
       relative_humidity:
         description: The harmonized value relative humidity obtained using RHARM (Radiosouding HARMonization) approach
         dtype: float32
@@ -223,8 +214,8 @@ sources:
       report_timestamp:
         description: Observation date time UTC
         dtype: datetime64[ns]
-      sensor_model:
-        description: Details on the sensor used
+      sensor_id:
+        description: Unique ID for this instrument
         dtype: object
       solar_zenith_angle:
         description: The solar zenith angle is the angle between the zenith and the centre of the Sun's disc
@@ -246,6 +237,22 @@ sources:
         description: Horizontal speed of the wind, or movement of air, at the height of the observation
         dtype: float32
         units: m s-1
+      uncertainty_type5:
+        description: Uncertainty type 5
+        dtype: object
+      uncertainty_value5:
+        description: Uncertainty value 5
+        dtype: object
+      uncertainty_units5:
+        description: Uncertainty units 5
+        dtype: object
+      z_coordinate:
+        description: z coordinate of observation
+        dtype: float32
+        units: m
+      z_coordinate_type:
+        description: Type of z coordinate
+        dtype: uint8
     header_columns:
     - primary_station_id
     - radiosonde_code
@@ -268,6 +275,7 @@ sources:
     - frost_point_temperature
     - solar_zenith_angle
     - dew_point_depression
+    - pressure
     mandatory_columns:
     - primary_station_id
     - radiosonde_code
@@ -283,6 +291,7 @@ sources:
     - report_timestamp
     - report_id
     - air_pressure
-space_columns:
-  x: longitude|station_configuration
-  y: latitude|station_configuration
+    space_columns:
+      x: longitude|station_configuration
+      y: latitude|station_configuration
+      z: pressure
