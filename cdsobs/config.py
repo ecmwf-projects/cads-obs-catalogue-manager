@@ -7,6 +7,7 @@ import pydantic_settings
 import yaml
 from pydantic_core.core_schema import ValidationInfo
 
+from cdsobs.cdm.tables import DEFAULT_CDM_TABLES_TO_USE
 from cdsobs.utils.exceptions import ConfigError, ConfigNotFound
 from cdsobs.utils.types import LatTileSize, LonTileSize, TimeTileSize
 
@@ -123,11 +124,7 @@ class DatasetConfig(pydantic.BaseModel):
     reader: AvailableReaders | dict[
         str, AvailableReaders
     ] = "cdsobs.ingestion.readers.sql.read_header_and_data_tables"
-    available_cdm_tables: List[str] = [
-        "header_table",
-        "observations_table",
-        "station_configuration",
-    ]
+    available_cdm_tables: List[str] = DEFAULT_CDM_TABLES_TO_USE
     reader_extra_args: Optional[dict[str, str]] = None
     ingestion_db: str = "main"
     read_with_spatial_batches: bool = False
