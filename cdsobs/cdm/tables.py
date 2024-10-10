@@ -22,6 +22,7 @@ DEFAULT_CDM_TABLES_TO_USE = [
     "observations_table",
     "header_table",
     "uncertainty_table",
+    "sensor_configuration",
 ]
 
 
