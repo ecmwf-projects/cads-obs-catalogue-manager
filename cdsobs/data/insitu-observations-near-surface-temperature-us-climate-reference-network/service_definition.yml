@@ -225,6 +225,22 @@ sources:
         description: Average soil temperature measured at 5 cm below the surface level over the aggregation period.
         dtype: float32
         units: K
+      uncertainty_valueN:
+        description: "Uncertainty value N. Available uncertainty types are: 8 (negative random), 9 (positive random), 10 (negative systematic), 11  (positive systematic), 12 (negative quasisystematic), 13 (positive quasisystematic), 16 (negative total) and 17 (positive total)."
+        dtype: float32
+        units: Defined in uncertainty_unitsN
+      uncertainty_typeN:
+        description: Uncertainty type N
+        dtype: uint8
+      uncertainty_unitsN:
+        description: Units for uncertainty type N.
+        dtype: object
+      quality_flag:
+        description: Quality flag for observation
+        dtype: uint8
+      processing_level:
+        description: Level of processing applied to observation.
+        dtype: uint8
     main_variables:
     - air_temperature
     - daily_maximum_air_temperature
@@ -481,6 +497,22 @@ sources:
         description: The quantity with standard name downward_shortwave_irradiance_at_earth_surface, often called Total Solar Irradiance (TSI), is the radiation from the sun integrated over the whole electromagnetic spectrum and over the entire solar disk. The quantity applies outside the atmosphere, by default at a distance of one astronomical unit from the sun, but a coordinate or scalar coordinate variable of distance_from_sun can be used to specify a value other than the default. "Irradiance" means the power per unit area (called radiative flux in other standard names), the area being normal to the direction of flow of the radiant energy.
         dtype: float32
         units: W m-2
+      uncertainty_valueN:
+        description: "Uncertainty value N. Available uncertainty types are: 1 (random), 10 (negative systematic), 11  (positive systematic), 12 (negative quasisystematic), 13 (positive quasisystematic), 16 (negative total) and 17 (positive total)."
+        dtype: float32
+        units: Defined in uncertainty_unitsN
+      uncertainty_typeN:
+        description: Uncertainty type N
+        dtype: uint8
+      uncertainty_unitsN:
+        description: Units for uncertainty type N.
+        dtype: object
+      quality_flag:
+        description: Quality flag for observation
+        dtype: uint8
+      processing_level:
+        description: Level of processing applied to observation.
+        dtype: uint8
     main_variables:
     - air_temperature
     - daily_maximum_air_temperature
@@ -658,6 +690,22 @@ sources:
         description: Average infrared temperature of the soil measured using infrared thermal imaging technology, over the aggregation period.
         dtype: float32
         units: K
+      uncertainty_valueN:
+        description: "Uncertainty value N. Available uncertainty types are: 1 (random), 10 (negative systematic), 11  (positive systematic), 12 (negative quasisystematic), 13 (positive quasisystematic) , 16 (negative total) and 17 (positive total)."
+        dtype: float32
+        units: Defined in uncertainty_unitsN
+      uncertainty_typeN:
+        description: Uncertainty type N
+        dtype: uint8
+      uncertainty_unitsN:
+        description: Units for uncertainty type N.
+        dtype: object
+      quality_flag:
+        description: Quality flag for observation
+        dtype: uint8
+      processing_level:
+        description: Level of processing applied to observation.
+        dtype: uint8
     main_variables:
     - air_temperature
     - daily_maximum_air_temperature
@@ -814,6 +862,23 @@ sources:
         description: This parameter is the horizontal velocity of the air near the surface. It is measured using a 3-cup anemometer placed at the same height at the air temperature shield intake. The exact measurement height is 1.5 metres above the ground surface.
         dtype: float32
         units: m s-1
+      uncertainty_valueN:
+        description: "Uncertainty value N. Available uncertainty types are: 1 (random), 3 (quasisystematic), 10 (negative systematic), 11  (positive systematic), 16 (negative total) and 17 (positive total)."
+        dtype: float32
+        units: Defined in uncertainty_unitsN
+      uncertainty_typeN:
+        description: Uncertainty type N
+        dtype: uint8
+      uncertainty_unitsN:
+        description: Units for uncertainty type N.
+        dtype: object
+      quality_flag:
+        description: Quality flag for observation
+        dtype: uint8
+      processing_level:
+        description: Level of processing applied to observation.
+        dtype: uint8
+
     main_variables:
     - air_temperature
     - accumulated_precipitation
