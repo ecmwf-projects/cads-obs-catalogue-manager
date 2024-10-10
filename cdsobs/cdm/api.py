@@ -99,13 +99,16 @@ def get_cdm_fields(cdm_tables: CDMTables) -> list[str]:
     )
     cdm_variables += cdm_variables_with_table_names
     if "uncertainty_table" in cdm_tables:
+        n_uncertainties = 17
         vars_supporting_numbers = [
             "uncertainty_type",
             "uncertainty_units",
             "uncertainty_value",
         ]
         numbered_fields = [
-            v + str(n) for v in vars_supporting_numbers for n in range(1, 17)
+            v + str(n)
+            for v in vars_supporting_numbers
+            for n in range(1, n_uncertainties + 1)
         ]
         cdm_variables += numbered_fields
     return cdm_variables

@@ -105,35 +105,15 @@ sources:
         description: Barometric air pressure using silicon sensor up to 15.4 km, derived from GPS-altitude above
         dtype: float32
         units: Pa
-      uncertainty_value1:
-        description: Uncertainty value 1
+      uncertainty_valueN:
+        description: "Uncertainty value N. Available uncertainty types are: 1 (random), 2 (systematic) and 5  (total)"
         dtype: float32
-        units: See uncertainty_units1
-      uncertainty_type1:
-        description: Uncertainty type 1
+        units: Defined in uncertainty_unitsN
+      uncertainty_typeN:
+        description: Uncertainty type N
         dtype: uint8
-      uncertainty_units1:
-        description: Uncertainty units 1
-        dtype: object
-      uncertainty_value2:
-        description: Uncertainty value 2
-        dtype: float32
-        units: See uncertainty_units2
-      uncertainty_type2:
-        description: Uncertainty type 2
-        dtype: uint8
-      uncertainty_units2:
-        description: Uncertainty units 2
-        dtype: object
-      uncertainty_value5:
-        description: Uncertainty value 5
-        dtype: float32
-        units: See uncertainty_units5
-      uncertainty_type5:
-        description: Uncertainty type 5
-        dtype: uint8
-      uncertainty_units5:
-        description: Uncertainty units 5
+      uncertainty_unitsN:
+        description: Units for uncertainty type N.
         dtype: object
       air_relative_humidity_effective_vertical_resolution:
         description: Resolution (defined by 1 / cut-off frequency) of the relative humidity time in terms
