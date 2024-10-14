@@ -23,7 +23,7 @@ def test_adaptor(tmp_path):
     test_adaptor_config = {
         "entry_point": "cads_adaptors:ObservationsAdaptor",
         "collection_id": "insitu-observations-woudc-ozone-total-column-and-profiles",
-        "obs_api_url": "http://obscatalogue.cads-obs.compute.cci2.ecmwf.int",
+        "obs_api_url": "http://localhost:8000",
         "mapping": {
             "remap": {
                 "observation_type": {
@@ -51,11 +51,9 @@ def test_adaptor_uscrn(tmp_path):
 
     test_request = {
         "time_aggregation": "daily",
-        "format": "netCDF",
+        "format": "csv",
         "variable": [
-            "maximum_air_temperature",
-            "maximum_air_temperature_negative_total_uncertainty",
-            "maximum_air_temperature_positive_total_uncertainty",
+            "air_temperature",
         ],
         "year": ["2007"],
         "month": ["11"],
