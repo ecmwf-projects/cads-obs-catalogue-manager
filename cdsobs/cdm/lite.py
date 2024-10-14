@@ -60,6 +60,7 @@ optional_variable_names = [
     "fg_depar@body",
     "an_depar@body",
     "fg_depar@offline",
+    "record_timestamp",
 ]
 # Add uncetainty numbered vars programatycally, as they are to many to add by hand to
 # the list
