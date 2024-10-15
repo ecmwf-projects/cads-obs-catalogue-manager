@@ -196,6 +196,16 @@ sources:
         description: This parameter characterizes the delay of the GNSS signal on the path from a satellite to the receiver due to atmospheric refraction and bending, mapped into the zenith direction. It is expressed as an equivalent distance travelled additionally by the radio waves, due to the atmosphere. The numerical value of zenith total delay correlates with the amount of total column water vapour (i.e., not including effects of liquid water and/or ice) above the GNSS receiver antenna. It is hence used to estimate the total column water vapour.
         dtype: float32
         units: m
+      uncertainty_valueN:
+        description: "Uncertainty value N. Available uncertainty types are: 1 (random) and 5  (total)"
+        dtype: float32
+        units: Defined in uncertainty_unitsN
+      uncertainty_typeN:
+        description: Uncertainty type N
+        dtype: uint8
+      uncertainty_unitsN:
+        description: Units for uncertainty type N.
+        dtype: object
     header_columns:
     - primary_station_id
     - city
@@ -298,6 +308,16 @@ sources:
         description: This parameter characterizes the delay of the GNSS signal on the path from a satellite to the receiver due to atmospheric refraction and bending, mapped into the zenith direction. It is expressed as an equivalent distance travelled additionally by the radio waves, due to the atmosphere. The numerical value of zenith total delay correlates with the amount of total column water vapour (i.e., not including effects of liquid water and/or ice) above the GNSS receiver antenna. It is hence used to estimate the total column water vapour.
         dtype: float32
         units: m
+      uncertainty_valueN:
+        description: "Uncertainty value N. Available uncertainty types are: 1 (random) and 5  (total)"
+        dtype: float32
+        units: Defined in uncertainty_unitsN
+      uncertainty_typeN:
+        description: Uncertainty type N
+        dtype: uint8
+      uncertainty_unitsN:
+        description: Units for uncertainty type N.
+        dtype: object
     header_columns:
     - primary_station_id
     - city
