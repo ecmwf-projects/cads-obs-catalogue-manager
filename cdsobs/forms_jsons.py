@@ -119,7 +119,7 @@ def get_widgets_json(session, output_path: Path, dataset: str) -> Path:
     ]
     summary = stats_summary(catalogue_entries)
     widgets_json_content = dict()
-    widgets_json_content["variables"] = variables
+    widgets_json_content["variables"] = sorted(set(variables))
     time_coverage_start, time_coverage_end = summary["total time coverage"]
     start_year = int(time_coverage_start[0:4])
     end_year = int(time_coverage_end[0:4])
