@@ -402,7 +402,7 @@ def get_denormalized_table_file(
     )
     # Decode time
     if len(denormalized_table_file) > 0:
-        for time_field in ["record_timestamp", "report_timestamp"]:
+        for time_field in ["record_timestamp", "report_timestamp", "date_time"]:
             denormalized_table_file.loc[:, time_field] = cftime.num2date(
                 denormalized_table_file.loc[:, time_field],
                 constants.TIME_UNITS,
@@ -461,6 +461,10 @@ def _fix_table_data(
             ).astype("bytes")
         # Remove missing values to save memory
         table_data = table_data.loc[~table_data.observation_value.isnull()]
+        # Fix latitude and longitude adding lond and latd so they really represent the
+        # measurement location
+        table_data["latitude"] += table_data["latd"]
+        table_data["longitude"] += table_data["lond"]
     # Remove duplicate station records
     if table_name == "station_configuration":
         table_data = table_data.drop_duplicates(
@@ -500,6 +504,13 @@ def _fix_table_data(
         table_data = table_data.set_index(obs_id_name).rename(
             {"index": f"index|{table_name}"}, axis=1
         )
+    # Rename uncertainty
+    if table_name == "advanced_uncertainty":
+        table_data = table_data.rename(dict(desroziers_30="uncertainty_value"), axis=1)
+        table_data["uncertainty_type"] = 1
+        table_data.loc[:, "uncertainty_units"] = dataset_cdm["observations_table"][
+            "units"
+        ].values
     if "level_0" in table_data:
         table_data = table_data.drop("level_0", axis=1)
     primary_keys_are_unique = (

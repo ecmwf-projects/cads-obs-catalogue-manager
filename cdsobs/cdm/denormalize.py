@@ -38,6 +38,7 @@ def denormalize_tables(
         "era5fb_table",
         "advanced_homogenisation",
         "advanced_uncertainty",
+        "uncertainty_table",
     ]:
         if table_name in tables_to_use:
             if len(dataset_cdm["observations_table"]) != len(dataset_cdm[table_name]):
