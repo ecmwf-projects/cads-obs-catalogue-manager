@@ -5,8 +5,6 @@ import pandas
 import pytest
 import xarray
 
-from cdsobs.config import CDSObsConfig
-from cdsobs.constants import CONFIG_YML
 from cdsobs.retrieve.api import retrieve_observations
 from cdsobs.retrieve.models import RetrieveArgs
 from cdsobs.storage import S3Client
@@ -81,12 +79,11 @@ def test_retrieve(
 
 
 @pytest.mark.skip("Too slow")
-def test_retrieve_cuon():
-    test_config = CDSObsConfig.from_yaml(CONFIG_YML)
+def test_retrieve_cuon(test_repository, test_config):
     dataset_name = "insitu-comprehensive-upper-air-observation-network"
     params = {
         "dataset_source": "CUON",
-        "time_coverage": ["2000-01-01 00:00:00", "2000-12-31 00:00:00"],
+        "time_coverage": ["1960-01-01 00:00:00", "1960-02-28 00:00:00"],
         "variables": [
             "aerosol_absorption_optical_depth",
             "air_temperature",
@@ -103,7 +100,7 @@ def test_retrieve_cuon():
         Path("/tmp"),
         size_limit=1000000000000,
     )
-    print(output_file)
+    (print(output_file) @ pytest.mark.skip("Too slow"))
 
 
 def test_retrieve_gruan(test_repository, test_config):

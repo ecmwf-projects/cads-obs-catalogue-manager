@@ -504,6 +504,13 @@ def _fix_table_data(
         table_data = table_data.set_index(obs_id_name).rename(
             {"index": f"index|{table_name}"}, axis=1
         )
+    # Rename uncertainty
+    if table_name == "advanced_uncertainty":
+        table_data = table_data.rename(dict(desroziers_30="uncertainty_value"), axis=1)
+        table_data["uncertainty_type"] = 1
+        table_data.loc[:, "uncertainty_units"] = dataset_cdm["observations_table"][
+            "units"
+        ].values
     if "level_0" in table_data:
         table_data = table_data.drop("level_0", axis=1)
     primary_keys_are_unique = (
