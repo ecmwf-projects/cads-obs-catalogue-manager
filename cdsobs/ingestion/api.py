@@ -350,9 +350,9 @@ def _handle_aux_variables(
             homogenised_data_melted.loc[var_mask, "quality_flag"] = var_quality_flag
             homogenised_data_melted = homogenised_data_melted.drop(qf_col.name, axis=1)
             # Ensure is int and fill nans with 3 (missing according to the CDM)
-            homogenised_data_melted["quality_flag"] = (
-                homogenised_data_melted["quality_flag"].fillna(3).astype("uint8")
-            )
+        homogenised_data_melted["quality_flag"] = (
+            homogenised_data_melted["quality_flag"].fillna(3).astype("uint8")
+        )
     # Add processing level
     if melt_columns.processing_level:
         homogenised_data_melted["processing_level"] = 6
@@ -365,6 +365,9 @@ def _handle_aux_variables(
                 var_mask, "processing_level"
             ] = var_processing_level
             homogenised_data_melted = homogenised_data_melted.drop(pl_col.name, axis=1)
+        homogenised_data_melted["processing_level"] = homogenised_data_melted[
+            "processing_level"
+        ].astype("uint8")
     return homogenised_data_melted
 
 
@@ -382,9 +385,6 @@ def _add_uncertainty_fields(
         uncertainty_type_name = f"uncertainty_type{unc_type_code}"
         uncertainty_units_name = f"uncertainty_units{unc_type_code}"
         homogenised_data_melted[uncertainty_value_name] = numpy.nan
-        homogenised_data_melted[uncertainty_value_name] = homogenised_data_melted[
-            uncertainty_value_name
-        ].astype("float32")
         homogenised_data_melted[uncertainty_type_name] = unc_type_code
         homogenised_data_melted[uncertainty_type_name] = homogenised_data_melted[
             uncertainty_type_name
@@ -404,4 +404,7 @@ def _add_uncertainty_fields(
             ] = unc_col.units
             homogenised_data_melted = homogenised_data_melted.drop(unc_col.name, axis=1)
 
+        homogenised_data_melted[uncertainty_value_name] = homogenised_data_melted[
+            uncertainty_value_name
+        ].astype("float32")
     return homogenised_data_melted

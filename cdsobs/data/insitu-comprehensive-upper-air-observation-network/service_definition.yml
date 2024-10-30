@@ -155,6 +155,16 @@ sources:
       station_type:
         description: Type of station, e.g. land station, sea station etc
         dtype: int32
+      uncertainty_value:
+        description: Uncertainty value
+        dtype: float32
+        units: Defined in uncertainty_unitsN
+      uncertainty_type:
+        description: Uncertainty type
+        dtype: uint8
+      uncertainty_units:
+        description: Units for uncertainty
+        dtype: object
       units:
         description: abbreviated name of SI units of observation value, e.g. K, m/s or J/kg
         dtype: object

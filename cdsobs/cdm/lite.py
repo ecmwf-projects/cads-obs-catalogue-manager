@@ -60,22 +60,17 @@ optional_variable_names = [
     "fg_depar@body",
     "an_depar@body",
     "fg_depar@offline",
-    "uncertainty_type1",
-    "uncertainty_value1",
-    "uncertainty_units1",
-    "uncertainty_type2",
-    "uncertainty_value2",
-    "uncertainty_units2",
-    "uncertainty_type3",
-    "uncertainty_value3",
-    "uncertainty_units3",
-    "uncertainty_type4",
-    "uncertainty_value4",
-    "uncertainty_units4",
-    "uncertainty_type5",
-    "uncertainty_value5",
-    "uncertainty_units5",
+    "record_timestamp",
 ]
+# Add uncetainty numbered vars programatycally, as they are to many to add by hand to
+# the list
+number_of_uncertainty_types = 17
+uncertainty_numbered_vars = [
+    f"{unc_var}{n}"
+    for n in range(number_of_uncertainty_types + 1)
+    for unc_var in ["uncertainty_value", "uncertainty_type", "uncertainty_units"]
+]
+optional_variable_names += uncertainty_numbered_vars
 auxiliary_variable_names = [
     "total_uncertainty",
     "positive_total_uncertainty",
