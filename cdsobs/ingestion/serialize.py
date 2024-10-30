@@ -20,7 +20,6 @@ from cdsobs.ingestion.core import (
 )
 from cdsobs.netcdf import (
     get_encoding_with_compression,
-    get_encoding_with_compression_xarray,
 )
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.storage import StorageClient
@@ -277,17 +276,21 @@ def batch_to_netcdf(
         output_dir,
         f"{new_dataset_name}_{source}_{time_batch.year}_{time_batch.month:02d}.nc",
     )
-    homogenised_data_xr = homogenised_data.to_xarray()
-    if service_definition.global_attributes is not None:
-        homogenised_data.attrs = {
-            **homogenised_data.attrs,
-            **service_definition.global_attributes,
-        }
-    encoding = get_encoding_with_compression_xarray(
-        homogenised_data_xr, string_transform="str_to_char"
+    encoding = get_encoding_with_compression(
+        homogenised_data, string_transform="str_to_char"
     )
-    logger.info(f"Writing de-normalized and CDM mapped data to {output_path}")
-    homogenised_data_xr.to_netcdf(
-        output_path, encoding=encoding, engine="netcdf4", format="NETCDF4"
+    # Encode dates
+    attrs = dict()
+    for varname in homogenised_data.columns:
+        var_series = homogenised_data[varname]
+        if var_series.dtype.kind == "M":
+            homogenised_data[varname] = datetime_to_seconds(var_series)
+        attrs[varname] = dict(units=constants.TIME_UNITS)
+
+    write_pandas_to_netcdf(
+        output_path,
+        homogenised_data,
+        encoding,
+        attrs=service_definition.global_attributes,
     )
     return output_path
