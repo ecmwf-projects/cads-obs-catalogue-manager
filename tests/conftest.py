@@ -71,9 +71,13 @@ TEST_API_PARAMETERS = [
     #     "insitu-observations-gnss",
     #     "IGS_R3",
     # ),
+    # (
+    #     "insitu-observations-ndacc",
+    #     "Brewer_O3",
+    # ),
     (
         "insitu-observations-ndacc",
-        "Brewer_O3",
+        "CH4",
     ),
 ]
 

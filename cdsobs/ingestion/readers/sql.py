@@ -308,6 +308,7 @@ sqltype2numpytypes = {
     "bigint": "int64",
     "uuid": "object",
     "numeric": "float64",
+    "ARRAY": "object",
 }
 
 
@@ -363,10 +364,7 @@ def cast_to_right_types(
         # field_name = cast(str, colname)  # Workaround for bug in pandas-stubs
         input_dtype = input_dtypes.loc[field_name]
         sql_type = sql_types.loc[field_name]
-        try:
-            numpy_dtype = sqltype2numpytypes[sql_type]
-        except KeyError:
-            pass
+        numpy_dtype = sqltype2numpytypes[sql_type]
         if str(input_dtype) != numpy_dtype:
             # Check nullable integers and convert to int64 without nulls
             if (str(input_dtype) == "Int64") and data_from_sql[
