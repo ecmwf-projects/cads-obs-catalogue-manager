@@ -91,10 +91,7 @@ def main(old_path):
 
 
 if __name__ == "__main__":
-    input_sd_files = (
-        "insitu-observations-near-surface-temperature-us-climate-"
-        "reference-network/service_definition.json"
-    )
+    input_sd_files = "insitu-observations-ndacc/service_definition.json"
     for file in files("cdsobs").joinpath("data").glob(input_sd_files):  # type: ignore
         print(file)
         main(file)

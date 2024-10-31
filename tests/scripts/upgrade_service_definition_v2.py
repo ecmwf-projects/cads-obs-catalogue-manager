@@ -136,7 +136,7 @@ def main(old_path):
 
 
 if __name__ == "__main__":
-    input_sd_files = "insitu-" "*/service_definition.yml"
+    input_sd_files = "insitu-observations-ndacc/service_definition.yml"
     for file in files("cdsobs").joinpath("data").glob(input_sd_files):  # type: ignore
         print(file)
         main(file)

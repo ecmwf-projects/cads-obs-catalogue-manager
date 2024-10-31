@@ -141,6 +141,7 @@ dataset2sqlreader_function: dict[str, SQLReaderFunctionCallable] = {
     "insitu-observations-near-surface-temperature-us-climate-reference-network": read_time_partitioned_tables,
     "insitu-observations-gnss": read_time_partitioned_tables,
     "insitu-observations-woudc-ozone-total-column-and-profiles": read_sql_tables,
+    "insitu-observations-ndacc": read_time_partitioned_tables,
 }
 
 
@@ -216,6 +217,12 @@ def read_header_and_data_tables(
             "idstation in the header table."
         )
         data_table = data_table.drop(columns="idstation")
+    if source in ["Brewer_O3"]:
+        logger.warning(
+            "Deleted date_of_observation from header table as it conflicts with the"
+            "idstation in the header table."
+        )
+        header_table = header_table.drop(columns="date_of_observation")
     data_joined = join_header_and_data(header_table, data_table)
     return data_joined
 
@@ -297,6 +304,7 @@ sqltype2numpytypes = {
     "timestamp without time zone": "datetime64[ns]",
     "character": "object",
     "character varying": "object",
+    "text": "object",
     "bigint": "int64",
     "uuid": "object",
     "numeric": "float64",
@@ -355,7 +363,10 @@ def cast_to_right_types(
         # field_name = cast(str, colname)  # Workaround for bug in pandas-stubs
         input_dtype = input_dtypes.loc[field_name]
         sql_type = sql_types.loc[field_name]
-        numpy_dtype = sqltype2numpytypes[sql_type]
+        try:
+            numpy_dtype = sqltype2numpytypes[sql_type]
+        except KeyError:
+            pass
         if str(input_dtype) != numpy_dtype:
             # Check nullable integers and convert to int64 without nulls
             if (str(input_dtype) == "Int64") and data_from_sql[
