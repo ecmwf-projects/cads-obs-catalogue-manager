@@ -61,6 +61,7 @@ optional_variable_names = [
     "an_depar@body",
     "fg_depar@offline",
     "record_timestamp",
+    "desroziers_30_uncertainty",  # Temporally added for CUON
 ]
 # Add uncetainty numbered vars programatycally, as they are to many to add by hand to
 # the list
