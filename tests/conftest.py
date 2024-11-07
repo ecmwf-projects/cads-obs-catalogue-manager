@@ -75,10 +75,11 @@ TEST_API_PARAMETERS = [
     #     "insitu-observations-ndacc",
     #     "Brewer_O3",
     # ),
-    (
-        "insitu-observations-ndacc",
-        "CH4",
-    ),
+    # (
+    #     "insitu-observations-ndacc",
+    #     "CH4",
+    # ),
+    ("insitu-observations-ndacc", "CO")
 ]
 
 
