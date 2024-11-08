@@ -194,6 +194,8 @@ def read_header_and_data_tables(
     mandatory_columns = source_definition.get_raw_mandatory_columns()
     join_ids = source_definition.join_ids
     assert join_ids is not None
+    if source == "Dobson_O3":
+        header_table = header_table.drop("date_of_observation", axis=1)
     fields_header = header_columns + [join_ids.header] + mandatory_columns
     fields_header = list(set([f for f in fields_header if f in header_table.columns]))
     header_table = header_table[fields_header]

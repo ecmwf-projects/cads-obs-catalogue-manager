@@ -7,6 +7,101 @@ import yaml
 
 """ Convert old json examples into new service definition format (v1) """
 
+# Variables to rename respect the original service definition jsons
+
+VARS2RENAME_NDACC_COMMON = dict(
+    error_o3_vertical_column_density_du="total_ozone_column_total_uncertainty",
+    error_o3_vertical_column_density_mol="total_ozone_column_mol_total_uncertainty",
+    o3_air_mass_factor="total_ozone_column_air_mass_factor",
+    o3_vertical_column_density_du="total_ozone_column",
+    o3_vertical_column_density_mol="total_ozone_column_mol",
+    license_type="license_type",
+    idstation="primary_station_id",
+)
+
+VARS2RENAME = dict(
+    Brewer_O3=dict(
+        **VARS2RENAME_NDACC_COMMON,
+        lat="latitude|header_table",
+        lon="longitude|header_table",
+    ),
+    Dobson_O3=dict(
+        **VARS2RENAME_NDACC_COMMON,
+        lat="latitude|header_table",
+        lon="longitude|header_table",
+    ),
+    OzoneSonde_O3=dict(**VARS2RENAME_NDACC_COMMON),
+    CH4=dict(
+        **VARS2RENAME_NDACC_COMMON,
+        lat="latitude|observation_table",
+        lon="longitude|observation_table",
+        latitude_instrument="latitude|header_table",
+        longitude_instrument="longitude|header_table",
+    ),
+    CO=dict(
+        **VARS2RENAME_NDACC_COMMON,
+        lat="latitude|observation_table",
+        lon="longitude|observation_table",
+        latitude_instrument="latitude|header_table",
+        longitude_instrument="longitude|header_table",
+    ),
+    Ftir_profile_O3=dict(
+        **VARS2RENAME_NDACC_COMMON,
+        lat="latitude|observation_table",
+        lon="longitude|observation_table",
+        latitude_instrument="latitude|header_table",
+        longitude_instrument="longitude|header_table",
+        o3_column_absorption_solar="total_ozone_column",
+    ),
+    Mwr_profile_O3=dict(**VARS2RENAME_NDACC_COMMON),
+    Uvvis_profile_O3=dict(**VARS2RENAME_NDACC_COMMON),
+    Lidar_profile_O3=dict(
+        **VARS2RENAME_NDACC_COMMON,
+        lat="latitude|observation_table",
+        lon="longitude|observation_table",
+        latitude_instrument="latitude|header_table",
+        longitude_instrument="longitude|header_table",
+        o3_column_absorption_solar="total_ozone_column",
+    ),
+)
+
+VARS2ADD_UNITS = dict(Brewer_O3=dict(total_ozone_column_air_mass_factor="1"))
+
+GROUPS2RENAME = dict(
+    Brewer_O3=dict(error="total_uncertainty"),
+    Dobson_O3=dict(error="total_uncertainty"),
+    OzoneSonde_O3=dict(error="total_uncertainty"),
+    CH4=dict(error="total_uncertainty"),
+    CO=dict(error="total_uncertainty"),
+    Ftir_profile_O3=dict(error="total_uncertainty"),
+    Mwr_profile_O3=dict(error="total_uncertainty"),
+    Uvvis_profile_O3=dict(error="total_uncertainty"),
+    Lidar_profile_O3=dict(error="total_uncertainty"),
+)
+
+GROUPS2REMOVE = dict(Lidar_profile_O3=["originator_uncertainty"])
+
+ADD2MAIN_VARIABLES = dict(
+    Brewer_O3=["total_ozone_column_air_mass_factor"],
+)
+
+SPACE_COLUMNS2RENAME = dict(
+    location_latitude="latitude|header_table",
+    location_longitude="longitude|header_table",
+)
+ndacc_cords = ["latitude|header_table", "longitude|header_table"]
+ADD_TO_HEADER_COLUMNS = dict(
+    Brewer_O3=ndacc_cords,
+    Dobson_O3=ndacc_cords,
+    OzoneSonde_O3=ndacc_cords,
+    CH4=ndacc_cords,
+    CO=ndacc_cords,
+    Ftir_profile_O3=ndacc_cords,
+    Mwr_profile_O3=ndacc_cords,
+    Uvvis_profile_O3=ndacc_cords,
+    Lidar_profile_O3=ndacc_cords,
+)
+
 
 def main(old_path):
     with old_path.open("r") as op:
@@ -25,9 +120,15 @@ def main(old_path):
         # Fix descriptions, remove name_for_output and rename the keys to the
         # CDM variable names
         rename = cdm_mapping["rename"]
-        new_descriptions = get_new_descriptions(rename, sourcevals)
-        # Add new main variables sectoin
+        new_descriptions = get_new_descriptions(rename, source, sourcevals)
+        # Rename groups
+        if source in GROUPS2RENAME:
+            new_products = rename_groups(new_data, source)
+            new_data["sources"][source]["products"] = new_products
+        # Add new main variables section
         variables = get_source_variables(sourcevals, rename)
+        if source in ADD2MAIN_VARIABLES:
+            variables.extend(ADD2MAIN_VARIABLES[source])
         new_data["sources"][source]["main_variables"] = variables
         # remap mandatory columns
         new_data["sources"][source]["mandatory_columns"] = []
@@ -39,7 +140,14 @@ def main(old_path):
         # Fix header columns
         if "header_columns" in old_data["sources"][source]:
             header_columns = old_data["sources"][source]["header_columns"]
-            new_header_columns = [list(hc.values())[0] for hc in header_columns]
+            new_header_columns = [list(hc)[0] for hc in header_columns]
+            new_header_columns = [
+                rename_if_needed(hc, rename) for hc in new_header_columns
+            ]
+            if source in ADD_TO_HEADER_COLUMNS:
+                new_header_columns.extend(ADD_TO_HEADER_COLUMNS[source])
+            if source == "Dobson_O3":
+                new_header_columns.remove("report_timestamp")
             new_data["sources"][source]["header_columns"] = new_header_columns
         # Handle melt columns
         new_melt_columns = handle_uncertainty_flags_and_level(
@@ -48,9 +156,14 @@ def main(old_path):
         new_data["sources"][source]["cdm_mapping"]["melt_columns"] = new_melt_columns
         # Remove keys we do not want
         del new_data["sources"][source]["products"]
+        del new_data["sources"][source]["order_by"]
         if "array_columns" in new_data["sources"][source]:
             del new_data["sources"][source]["array_columns"]
 
+    # Fix coords name
+    new_data["space_columns"] = dict(
+        y="latitude|header_table", x="longitude|header_table"
+    )
     # Delete legacy sections
     del new_data["out_columns_order"]
     del new_data["products_hierarchy"]
@@ -58,6 +171,22 @@ def main(old_path):
     output_path = Path(Path(old_path).parent, Path(old_path).stem + "_new.yml")
     with output_path.open("w") as op:
         op.write(yaml.dump(new_data))
+
+
+def rename_groups(new_data, source):
+    new_products = []
+    for oldgroup in new_data["sources"][source]["products"]:
+        old_group_name = oldgroup["group_name"]
+        old_group_columns = oldgroup["columns"]
+        if old_group_name in GROUPS2RENAME[source]:
+            new_group = dict(
+                group_name=GROUPS2RENAME[source][old_group_name],
+                columns=old_group_columns,
+            )
+        else:
+            new_group = oldgroup
+        new_products.append(new_group)
+    return new_products
 
 
 def rename_if_needed(raw_unc_name, rename):
@@ -152,9 +281,9 @@ def get_source_variables(source_definition, rename) -> list[str]:
     return variables_renamed
 
 
-def get_new_descriptions(rename, sourcevals):
+def get_new_descriptions(rename, source, sourcevals):
     descriptions = sourcevals["descriptions"]
-    vars_str = ["station_name", "primary_station_id", "license"]
+    vars_str = ["station_name", "primary_station_id", "license", "license_type"]
     vars_datetime = [
         "report_timestamp",
         "report_timestamp_middle",
@@ -169,9 +298,10 @@ def get_new_descriptions(rename, sourcevals):
         "output_attributes",
         "averaging_kernel",
         "apriori",
+        "apriori_contribution",
         "random_covariance",
         "systematic_covariance",
-        "",
+        "originator_uncertainty",
     ]
     descriptions = {k.lower(): v for k, v in descriptions.items()}
     new_descriptions = {}
@@ -189,6 +319,14 @@ def get_new_descriptions(rename, sourcevals):
         else:
             new_values["dtype"] = "float32"
 
+        if source in VARS2ADD_UNITS and cdm_name in VARS2ADD_UNITS[source]:
+            new_values["units"] = VARS2ADD_UNITS[source][cdm_name]
+
+        if source in GROUPS2RENAME:
+            for v in values:
+                if v in GROUPS2RENAME[source]:
+                    new_values[GROUPS2RENAME[source][v]] = new_values.pop(v)
+
         new_descriptions[cdm_name] = new_values
         for attrname in values:
             if attrname in attrs_to_remove:
@@ -197,10 +335,21 @@ def get_new_descriptions(rename, sourcevals):
     return new_descriptions
 
 
+def get_renamed_varname(
+    original_name: str, original_descriptions: dict, source: str
+) -> str:
+    vars2rename_source = VARS2RENAME[source]
+    if original_name in vars2rename_source:
+        return vars2rename_source[original_name]
+    else:
+        return original_descriptions["name_for_output"]
+
+
 def get_cdm_mapping(new_data, old_path, source, sourcevals):
     cdm_mapping = dict()
     cdm_mapping["rename"] = {
-        k.lower(): v["name_for_output"] for k, v in sourcevals["descriptions"].items()
+        k.lower(): get_renamed_varname(k, v, source)
+        for k, v in sourcevals["descriptions"].items()
     }
     rename_dict = cdm_mapping["rename"]
     # Use station name as ID if no primary_station_id available
@@ -209,7 +358,6 @@ def get_cdm_mapping(new_data, old_path, source, sourcevals):
             0
         ]
         rename_dict[station_name_key] = "primary_station_id"
-        new_data["sources"][source]["header_columns"] = "primary_station_id"
 
     cdm_mapping["melt_columns"] = "CUON" not in str(old_path)
     cdm_mapping["unit_changes"] = {}

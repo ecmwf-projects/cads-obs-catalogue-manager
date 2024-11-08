@@ -79,7 +79,10 @@ TEST_API_PARAMETERS = [
     #     "insitu-observations-ndacc",
     #     "CH4",
     # ),
-    ("insitu-observations-ndacc", "CO")
+    # ("insitu-observations-ndacc", "CO"),
+    # ("insitu-observations-ndacc", "Dobson_O3"),
+    # ("insitu-observations-ndacc", "Ftir_profile_O3"),
+    ("insitu-observations-ndacc", "Lidar_profile_O3")
 ]
 
 

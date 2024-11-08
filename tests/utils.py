@@ -51,6 +51,15 @@ def get_test_years(source: str) -> Tuple[int, int]:
         case "CO":
             start_year = 1995
             end_year = 1995
+        case "Dobson_O3":
+            start_year = 1995
+            end_year = 1995
+        case "Ftir_profile_O3":
+            start_year = 1997
+            end_year = 1997
+        case "Lidar_profile_O3":
+            start_year = 2020
+            end_year = 2020
         case _:
             raise NotImplementedError(f"Unsupported source {source}")
     return start_year, end_year
