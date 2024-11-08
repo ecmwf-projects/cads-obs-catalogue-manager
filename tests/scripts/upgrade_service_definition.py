@@ -30,7 +30,11 @@ VARS2RENAME = dict(
         lat="latitude|header_table",
         lon="longitude|header_table",
     ),
-    OzoneSonde_O3=dict(**VARS2RENAME_NDACC_COMMON),
+    OzoneSonde_O3=dict(
+        **VARS2RENAME_NDACC_COMMON,
+        lat="latitude|header_table",
+        lon="longitude|header_table",
+    ),
     CH4=dict(
         **VARS2RENAME_NDACC_COMMON,
         lat="latitude|observation_table",
@@ -53,8 +57,22 @@ VARS2RENAME = dict(
         longitude_instrument="longitude|header_table",
         o3_column_absorption_solar="total_ozone_column",
     ),
-    Mwr_profile_O3=dict(**VARS2RENAME_NDACC_COMMON),
-    Uvvis_profile_O3=dict(**VARS2RENAME_NDACC_COMMON),
+    Mwr_profile_O3=dict(
+        **VARS2RENAME_NDACC_COMMON,
+        lat="latitude|observation_table",
+        lon="longitude|observation_table",
+        latitude_instrument="latitude|header_table",
+        longitude_instrument="longitude|header_table",
+        o3_column_absorption_solar="total_ozone_column",
+    ),
+    Uvvis_profile_O3=dict(
+        **VARS2RENAME_NDACC_COMMON,
+        lat="latitude|observation_table",
+        lon="longitude|observation_table",
+        latitude_instrument="latitude|header_table",
+        longitude_instrument="longitude|header_table",
+        o3_column_absorption_solar="total_ozone_column",
+    ),
     Lidar_profile_O3=dict(
         **VARS2RENAME_NDACC_COMMON,
         lat="latitude|observation_table",
@@ -76,10 +94,12 @@ GROUPS2RENAME = dict(
     Ftir_profile_O3=dict(error="total_uncertainty"),
     Mwr_profile_O3=dict(error="total_uncertainty"),
     Uvvis_profile_O3=dict(error="total_uncertainty"),
-    Lidar_profile_O3=dict(error="total_uncertainty"),
+    Lidar_profile_O3=dict(combined_uncertainty="total_uncertainty"),
 )
 
-GROUPS2REMOVE = dict(Lidar_profile_O3=["originator_uncertainty"])
+GROUPS2REMOVE = dict(
+    Lidar_profile_O3=["originator_uncertainty"], Uvvis_profile_O3="Uvvis_profile_O3"
+)
 
 ADD2MAIN_VARIABLES = dict(
     Brewer_O3=["total_ozone_column_air_mass_factor"],
@@ -283,7 +303,13 @@ def get_source_variables(source_definition, rename) -> list[str]:
 
 def get_new_descriptions(rename, source, sourcevals):
     descriptions = sourcevals["descriptions"]
-    vars_str = ["station_name", "primary_station_id", "license", "license_type"]
+    vars_str = [
+        "station_name",
+        "primary_station_id",
+        "license",
+        "license_type",
+        "funding",
+    ]
     vars_datetime = [
         "report_timestamp",
         "report_timestamp_middle",
