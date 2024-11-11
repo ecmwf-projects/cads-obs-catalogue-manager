@@ -35,6 +35,8 @@ VARS2RENAME = dict(
         **VARS2RENAME_NDACC_COMMON,
         lat="latitude|header_table",
         lon="longitude|header_table",
+        press="pressure",
+        alt="altitude",
     ),
     CH4=dict(
         **VARS2RENAME_NDACC_COMMON,
@@ -42,6 +44,9 @@ VARS2RENAME = dict(
         lon="longitude|observation_table",
         latitude_instrument="latitude|header_table",
         longitude_instrument="longitude|header_table",
+        pressure_independent="pressure",
+        temperature_independent="air_temperature",
+        altitude="altitude",
     ),
     CO=dict(
         **VARS2RENAME_NDACC_COMMON,
@@ -49,6 +54,9 @@ VARS2RENAME = dict(
         lon="longitude|observation_table",
         latitude_instrument="latitude|header_table",
         longitude_instrument="longitude|header_table",
+        pressure_independent="pressure",
+        temperature_independent="air_temperature",
+        altitude="altitude",
     ),
     Ftir_profile_O3=dict(
         **VARS2RENAME_NDACC_COMMON,
@@ -112,22 +120,27 @@ GROUPS2REMOVE = dict(
 
 ADD2MAIN_VARIABLES = dict(
     Brewer_O3=["total_ozone_column_air_mass_factor"],
+    Dobson_O3=["total_ozone_column_air_mass_factor"],
+    OzoneSonde_O3=["pressure", "equivalent_potential_temperature"],
+    CH4=["pressure"],
+    CO=["pressure"],
 )
 
-rename_location_coords = dict(
-    location_latitude="latitude|header_table",
-    location_longitude="longitude|header_table",
+space_columns = dict(
+    x="longitude|header_table",
+    y="latitude|header_table",
 )
-SPACE_COLUMNS2RENAME = dict(
-    Brewer_O3=rename_location_coords,
-    Dobson_O3=rename_location_coords,
-    OzoneSonde_O3=rename_location_coords,
-    CH4=rename_location_coords,
-    CO=rename_location_coords,
-    Ftir_profile_O3=rename_location_coords,
-    Mwr_profile_O3=rename_location_coords,
-    Uvvis_profile_O3=rename_location_coords,
-    Lidar_profile_O3=rename_location_coords,
+space_colums_w_altitude = dict(**space_columns, z="altitude")
+SPACE_COLUMNS2ADD = dict(
+    Brewer_O3=space_columns,
+    Dobson_O3=space_columns,
+    OzoneSonde_O3=space_colums_w_altitude,
+    CH4=space_colums_w_altitude,
+    CO=space_colums_w_altitude,
+    Ftir_profile_O3=space_colums_w_altitude,
+    Mwr_profile_O3=space_colums_w_altitude,
+    Uvvis_profile_O3=space_colums_w_altitude,
+    Lidar_profile_O3=space_colums_w_altitude,
 )
 ndacc_cords = ["latitude|header_table", "longitude|header_table"]
 ADD_TO_HEADER_COLUMNS = dict(
@@ -152,7 +165,7 @@ class SourceFixerMappings:
     vars2add_units: dict[str, str] | None
     groups2rename: dict[str, str] | None
     add2main_variables: dict[str, str] | None
-    space_columns2rename: dict[str, str] | None
+    space_columns2add: dict[str, str] | None
     add2header_columns: dict[str, str] | None
     melt_columns: bool = False
 
@@ -167,7 +180,7 @@ def main(old_path):
         "contactemail": "https://support.ecmwf.int",
         "licence_list": "20180314_Copernicus_License_V1.1",
     }
-    # Add CDM mapping
+    # Upgrade sources section
     sources = old_data["sources"]
     for source, sourcevals in sources.items():
         fixer_mappings = SourceFixerMappings(
@@ -176,7 +189,7 @@ def main(old_path):
             vars2add_units=VARS2ADD_UNITS.get(source),
             groups2rename=GROUPS2RENAME.get(source),
             add2main_variables=ADD2MAIN_VARIABLES.get(source),
-            space_columns2rename=SPACE_COLUMNS2RENAME.get(source),
+            space_columns2add=SPACE_COLUMNS2ADD.get(source),
             add2header_columns=ADD_TO_HEADER_COLUMNS.get(source),
             melt_columns="CUON" not in str(old_path),
         )
@@ -200,9 +213,13 @@ def main(old_path):
         )
         new_data["sources"][source]["descriptions"] = new_descriptions_fixed
         # Rename groups
-        if source in GROUPS2RENAME or source in RAWVARS2RENAME:
-            new_products = rename_groups(new_data, source)
-            new_data["sources"][source]["products"] = new_products
+        if (
+            fixer_mappings.groups2rename is not None
+            or fixer_mappings.rawvars2rename is not None
+        ):
+            new_products = new_data["sources"][source]["products"]
+            new_products_fixed = rename_groups(new_products, fixer_mappings)
+            new_data["sources"][source]["products"] = new_products_fixed
         # Add new main variables section
         variables = get_source_variables(sourcevals, rename)
         if source in ADD2MAIN_VARIABLES:
@@ -222,8 +239,10 @@ def main(old_path):
             new_header_columns = [
                 rename_if_needed(hc, rename) for hc in new_header_columns
             ]
-            if source in ADD_TO_HEADER_COLUMNS:
-                new_header_columns.extend(ADD_TO_HEADER_COLUMNS[source])
+            add2header_columns = fixer_mappings.add2header_columns
+            if add2header_columns is not None:
+                new_header_columns.extend(add2header_columns)
+            # TODO: Check this
             if source == "Dobson_O3":
                 new_header_columns.remove("report_timestamp")
             new_data["sources"][source]["header_columns"] = new_header_columns
@@ -237,40 +256,44 @@ def main(old_path):
         del new_data["sources"][source]["order_by"]
         if "array_columns" in new_data["sources"][source]:
             del new_data["sources"][source]["array_columns"]
-
-    # Fix coords name
-    new_data["space_columns"] = dict(
-        y="latitude|header_table", x="longitude|header_table"
-    )
+        # Fix coords name
+        new_data["sources"][source][
+            "space_columns"
+        ] = fixer_mappings.space_columns2add.copy()
     # Delete legacy sections
     del new_data["out_columns_order"]
     del new_data["products_hierarchy"]
+    new_data["space_columns"] = None
     # Dump to YAML
     output_path = Path(Path(old_path).parent, Path(old_path).stem + "_new.yml")
     with output_path.open("w") as op:
         op.write(yaml.dump(new_data))
 
 
-def rename_groups(new_data, source):
-    new_products = []
-    for oldgroup in new_data["sources"][source]["products"]:
+def rename_groups(
+    new_products: list[dict], fixer_mappings: SourceFixerMappings
+) -> list[dict]:
+    new_products_fixed = []
+    for oldgroup in new_products:
         old_group_name = oldgroup["group_name"]
         old_group_columns = oldgroup["columns"]
-        if old_group_name in GROUPS2RENAME[source]:
+        groups2rename = fixer_mappings.groups2rename
+        if old_group_name in groups2rename:
             new_group = dict(
-                group_name=GROUPS2RENAME[source][old_group_name],
+                group_name=groups2rename[old_group_name],
                 columns=old_group_columns,
             )
         else:
             new_group = oldgroup
-        if source in RAWVARS2RENAME:
+        rawvars2rename = fixer_mappings.rawvars2rename
+        if rawvars2rename is not None:
             for field in new_group["columns"].copy():
-                if field in RAWVARS2RENAME[source]:
+                if field in rawvars2rename:
                     new_group["columns"].remove(field)
-                    new_field = RAWVARS2RENAME[source][field]
+                    new_field = rawvars2rename[field]
                     new_group["columns"].append(new_field)
-        new_products.append(new_group)
-    return new_products
+        new_products_fixed.append(new_group)
+    return new_products_fixed
 
 
 def rename_if_needed(raw_name: str, rename: dict) -> str:
