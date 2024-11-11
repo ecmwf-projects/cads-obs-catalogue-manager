@@ -1,5 +1,6 @@
 import copy
 import json
+from dataclasses import dataclass
 from importlib.resources import files
 from pathlib import Path
 
@@ -67,11 +68,11 @@ VARS2RENAME = dict(
     ),
     Uvvis_profile_O3=dict(
         **VARS2RENAME_NDACC_COMMON,
-        lat="latitude|observation_table",
-        lon="longitude|observation_table",
-        latitude_instrument="latitude|header_table",
-        longitude_instrument="longitude|header_table",
-        o3_column_absorption_solar="total_ozone_column",
+        latitude="latitude|observation_table",
+        longitude="longitude|observation_table",
+        lat="latitude|header_table",
+        lon="longitude|header_table",
+        o3_column_stratospheric_scatter_solar_zenith="total_ozone_column",
     ),
     Lidar_profile_O3=dict(
         **VARS2RENAME_NDACC_COMMON,
@@ -81,6 +82,14 @@ VARS2RENAME = dict(
         longitude_instrument="longitude|header_table",
         o3_column_absorption_solar="total_ozone_column",
     ),
+)
+
+
+RAWVARS2RENAME = dict(
+    Uvvis_profile_O3=dict(
+        o3_column_stratospheric_scatter_solar_zenith_uncertainty_random_standard="o3_column_stratospheric_scatter_solar_zenith_uncertainty_random",
+        o3_column_stratospheric_scatter_solar_zenith_uncertainty_systematic_standard="o3_column_stratospheric_scatter_solar_zenith_uncertainty_system",
+    )
 )
 
 VARS2ADD_UNITS = dict(Brewer_O3=dict(total_ozone_column_air_mass_factor="1"))
@@ -105,9 +114,20 @@ ADD2MAIN_VARIABLES = dict(
     Brewer_O3=["total_ozone_column_air_mass_factor"],
 )
 
-SPACE_COLUMNS2RENAME = dict(
+rename_location_coords = dict(
     location_latitude="latitude|header_table",
     location_longitude="longitude|header_table",
+)
+SPACE_COLUMNS2RENAME = dict(
+    Brewer_O3=rename_location_coords,
+    Dobson_O3=rename_location_coords,
+    OzoneSonde_O3=rename_location_coords,
+    CH4=rename_location_coords,
+    CO=rename_location_coords,
+    Ftir_profile_O3=rename_location_coords,
+    Mwr_profile_O3=rename_location_coords,
+    Uvvis_profile_O3=rename_location_coords,
+    Lidar_profile_O3=rename_location_coords,
 )
 ndacc_cords = ["latitude|header_table", "longitude|header_table"]
 ADD_TO_HEADER_COLUMNS = dict(
@@ -123,6 +143,20 @@ ADD_TO_HEADER_COLUMNS = dict(
 )
 
 
+@dataclass
+class SourceFixerMappings:
+    """Mappings for fixing problems in original service definition JSONS."""
+
+    vars2rename: dict[str, str] | None
+    rawvars2rename: dict[str, str] | None
+    vars2add_units: dict[str, str] | None
+    groups2rename: dict[str, str] | None
+    add2main_variables: dict[str, str] | None
+    space_columns2rename: dict[str, str] | None
+    add2header_columns: dict[str, str] | None
+    melt_columns: bool = False
+
+
 def main(old_path):
     with old_path.open("r") as op:
         old_data = json.load(op)
@@ -136,13 +170,37 @@ def main(old_path):
     # Add CDM mapping
     sources = old_data["sources"]
     for source, sourcevals in sources.items():
-        cdm_mapping = get_cdm_mapping(new_data, old_path, source, sourcevals)
+        fixer_mappings = SourceFixerMappings(
+            vars2rename=VARS2RENAME.get(source),
+            rawvars2rename=RAWVARS2RENAME.get(source),
+            vars2add_units=VARS2ADD_UNITS.get(source),
+            groups2rename=GROUPS2RENAME.get(source),
+            add2main_variables=ADD2MAIN_VARIABLES.get(source),
+            space_columns2rename=SPACE_COLUMNS2RENAME.get(source),
+            add2header_columns=ADD_TO_HEADER_COLUMNS.get(source),
+            melt_columns="CUON" not in str(old_path),
+        )
+        # Fix raw names in descriptions
+        new_descriptions = new_data["sources"][source]["descriptions"]
+        if fixer_mappings.rawvars2rename is not None:
+            rawvars2rename = fixer_mappings.rawvars2rename
+            for k, v in new_descriptions.copy().items():
+                if k in rawvars2rename:
+                    renamed_field = rawvars2rename[k]
+                    field_desc = new_descriptions.pop(k)
+                    new_descriptions[renamed_field] = field_desc
+        # Get cdm mapping section
+        cdm_mapping = get_cdm_mapping(new_descriptions, fixer_mappings)
+        new_data["sources"][source]["cdm_mapping"] = cdm_mapping
         # Fix descriptions, remove name_for_output and rename the keys to the
         # CDM variable names
         rename = cdm_mapping["rename"]
-        new_descriptions = get_new_descriptions(rename, source, sourcevals)
+        new_descriptions_fixed = fix_new_descriptions(
+            rename, new_descriptions, fixer_mappings
+        )
+        new_data["sources"][source]["descriptions"] = new_descriptions_fixed
         # Rename groups
-        if source in GROUPS2RENAME:
+        if source in GROUPS2RENAME or source in RAWVARS2RENAME:
             new_products = rename_groups(new_data, source)
             new_data["sources"][source]["products"] = new_products
         # Add new main variables section
@@ -156,7 +214,7 @@ def main(old_path):
             if mcol not in rename:
                 rename[mcol] = mcol
             new_data["sources"][source]["mandatory_columns"].append(rename[mcol])
-        new_data["sources"][source]["descriptions"] = new_descriptions
+
         # Fix header columns
         if "header_columns" in old_data["sources"][source]:
             header_columns = old_data["sources"][source]["header_columns"]
@@ -205,15 +263,21 @@ def rename_groups(new_data, source):
             )
         else:
             new_group = oldgroup
+        if source in RAWVARS2RENAME:
+            for field in new_group["columns"].copy():
+                if field in RAWVARS2RENAME[source]:
+                    new_group["columns"].remove(field)
+                    new_field = RAWVARS2RENAME[source][field]
+                    new_group["columns"].append(new_field)
         new_products.append(new_group)
     return new_products
 
 
-def rename_if_needed(raw_unc_name, rename):
+def rename_if_needed(raw_name: str, rename: dict) -> str:
     try:
-        unc_col_name = rename[raw_unc_name]
+        unc_col_name = rename[raw_name]
     except KeyError:
-        unc_col_name = raw_unc_name
+        unc_col_name = raw_name
     return unc_col_name
 
 
@@ -301,21 +365,11 @@ def get_source_variables(source_definition, rename) -> list[str]:
     return variables_renamed
 
 
-def get_new_descriptions(rename, source, sourcevals):
-    descriptions = sourcevals["descriptions"]
-    vars_str = [
-        "station_name",
-        "primary_station_id",
-        "license",
-        "license_type",
-        "funding",
-    ]
-    vars_datetime = [
-        "report_timestamp",
-        "report_timestamp_middle",
-        "record_timestamp",
-        "date_time",
-    ]
+def fix_new_descriptions(
+    rename: dict[str, str],
+    new_descriptions: dict[str, dict],
+    fixer_mappings: SourceFixerMappings,
+) -> dict[str, dict]:
     attrs_to_remove = [
         "name_for_output",
         "long_name",
@@ -329,53 +383,74 @@ def get_new_descriptions(rename, source, sourcevals):
         "systematic_covariance",
         "originator_uncertainty",
     ]
-    descriptions = {k.lower(): v for k, v in descriptions.items()}
-    new_descriptions = {}
-    for rawname, values in descriptions.items():
-        if rawname in rename:
-            cdm_name = rename[rawname]
-        else:
-            cdm_name = rawname
-        new_values = values.copy()
+    new_descriptions = {k.lower(): v for k, v in new_descriptions.items()}
+    for rawname, desc_mapping in new_descriptions.copy().items():
+        cdm_name = rename_if_needed(rawname, rename)
+        new_desc_mapping = desc_mapping.copy()
+        dtype = get_dtype(cdm_name)
+        new_desc_mapping["dtype"] = dtype
+        vars2add_units = fixer_mappings.vars2add_units
+        if vars2add_units is not None and cdm_name in vars2add_units:
+            new_desc_mapping["units"] = vars2add_units[cdm_name]
+        groups2rename = fixer_mappings.groups2rename
+        if groups2rename is not None:
+            for key, val in desc_mapping.items():
+                if key in groups2rename:
+                    new_desc_mapping[groups2rename[key]] = new_desc_mapping.pop(key)
 
-        if cdm_name in vars_str:
-            new_values["dtype"] = "object"
-        elif cdm_name in vars_datetime:
-            new_values["dtype"] = "datetime64[ns]"
-        else:
-            new_values["dtype"] = "float32"
-
-        if source in VARS2ADD_UNITS and cdm_name in VARS2ADD_UNITS[source]:
-            new_values["units"] = VARS2ADD_UNITS[source][cdm_name]
-
-        if source in GROUPS2RENAME:
-            for v in values:
-                if v in GROUPS2RENAME[source]:
-                    new_values[GROUPS2RENAME[source][v]] = new_values.pop(v)
-
-        new_descriptions[cdm_name] = new_values
-        for attrname in values:
+        new_descriptions[cdm_name] = new_desc_mapping
+        if cdm_name != rawname:
+            del new_descriptions[rawname]
+        for attrname in desc_mapping:
             if attrname in attrs_to_remove:
-                new_values.pop(attrname)
+                new_desc_mapping.pop(attrname)
+        rawvars2rename = fixer_mappings.rawvars2rename
+        if rawvars2rename is not None:
+            for key, val in new_desc_mapping.copy().items():
+                if new_desc_mapping[key] in rawvars2rename:
+                    new_desc_mapping[key] = rawvars2rename[val]
 
     return new_descriptions
 
 
+def get_dtype(cdm_name) -> str:
+    vars_str = [
+        "station_name",
+        "primary_station_id",
+        "license",
+        "license_type",
+        "funding",
+    ]
+    vars_datetime = [
+        "report_timestamp",
+        "report_timestamp_middle",
+        "record_timestamp",
+        "date_time",
+    ]
+    if cdm_name in vars_str:
+        dtype = "object"
+    elif cdm_name in vars_datetime:
+        dtype = "datetime64[ns]"
+    else:
+        dtype = "float32"
+    return dtype
+
+
 def get_renamed_varname(
-    original_name: str, original_descriptions: dict, source: str
+    original_name: str, original_descriptions: dict, fixer_mappings: SourceFixerMappings
 ) -> str:
-    vars2rename_source = VARS2RENAME[source]
-    if original_name in vars2rename_source:
-        return vars2rename_source[original_name]
+    vars2rename = fixer_mappings.vars2rename
+    if original_name in vars2rename:
+        return vars2rename[original_name]
     else:
         return original_descriptions["name_for_output"]
 
 
-def get_cdm_mapping(new_data, old_path, source, sourcevals):
+def get_cdm_mapping(new_descriptions: dict[str, dict], fixer_mappings) -> dict:
     cdm_mapping = dict()
     cdm_mapping["rename"] = {
-        k.lower(): get_renamed_varname(k, v, source)
-        for k, v in sourcevals["descriptions"].items()
+        k.lower(): get_renamed_varname(k, v, fixer_mappings)
+        for k, v in new_descriptions.items()
     }
     rename_dict = cdm_mapping["rename"]
     # Use station name as ID if no primary_station_id available
@@ -384,10 +459,7 @@ def get_cdm_mapping(new_data, old_path, source, sourcevals):
             0
         ]
         rename_dict[station_name_key] = "primary_station_id"
-
-    cdm_mapping["melt_columns"] = "CUON" not in str(old_path)
     cdm_mapping["unit_changes"] = {}
-    new_data["sources"][source]["cdm_mapping"] = cdm_mapping
     return cdm_mapping
 
 
