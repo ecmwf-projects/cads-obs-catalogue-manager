@@ -40,8 +40,8 @@ VARS2RENAME = dict(
     ),
     CH4=dict(
         **VARS2RENAME_NDACC_COMMON,
-        lat="latitude|observation_table",
-        lon="longitude|observation_table",
+        lat="latitude|observations_table",
+        lon="longitude|observations_table",
         latitude_instrument="latitude|header_table",
         longitude_instrument="longitude|header_table",
         pressure_independent="pressure",
@@ -50,8 +50,8 @@ VARS2RENAME = dict(
     ),
     CO=dict(
         **VARS2RENAME_NDACC_COMMON,
-        lat="latitude|observation_table",
-        lon="longitude|observation_table",
+        lat="latitude|observations_table",
+        lon="longitude|observations_table",
         latitude_instrument="latitude|header_table",
         longitude_instrument="longitude|header_table",
         pressure_independent="pressure",
@@ -60,35 +60,58 @@ VARS2RENAME = dict(
     ),
     Ftir_profile_O3=dict(
         **VARS2RENAME_NDACC_COMMON,
-        lat="latitude|observation_table",
-        lon="longitude|observation_table",
+        lat="latitude|observations_table",
+        lon="longitude|observations_table",
         latitude_instrument="latitude|header_table",
         longitude_instrument="longitude|header_table",
         o3_column_absorption_solar="total_ozone_column",
+        pressure_independent="pressure",
+        temperature_independent="air_temperature",
+        altitude="altitude",
+        h2o_mixing_ratio_volume_absorption_solar="water_vapour_mixing_ratio",
+        integration_time="report_duration",
+        surface_pressure_independent="air_pressure",
     ),
     Mwr_profile_O3=dict(
         **VARS2RENAME_NDACC_COMMON,
-        lat="latitude|observation_table",
-        lon="longitude|observation_table",
+        lat="latitude|observations_table",
+        lon="longitude|observations_table",
         latitude_instrument="latitude|header_table",
         longitude_instrument="longitude|header_table",
         o3_column_absorption_solar="total_ozone_column",
+        pressure_independent="pressure",
+        temperature_independent="air_temperature",
+        altitude="altitude",
+        h2o_mixing_ratio_volume_absorption_solar="water_vapour_mixing_ratio",
+        integration_time="report_duration",
+        surface_pressure_independent="air_pressure",
     ),
     Uvvis_profile_O3=dict(
         **VARS2RENAME_NDACC_COMMON,
-        latitude="latitude|observation_table",
-        longitude="longitude|observation_table",
+        latitude="latitude|observations_table",
+        longitude="longitude|observations_table",
         lat="latitude|header_table",
         lon="longitude|header_table",
         o3_column_stratospheric_scatter_solar_zenith="total_ozone_column",
+        pressure_independent="pressure",
+        temperature_independent="air_temperature",
+        altitude="altitude",
+        h2o_mixing_ratio_volume_absorption_solar="water_vapour_mixing_ratio",
+        integration_time="report_duration",
+        surface_pressure_independent="air_pressure",
     ),
     Lidar_profile_O3=dict(
         **VARS2RENAME_NDACC_COMMON,
-        lat="latitude|observation_table",
-        lon="longitude|observation_table",
+        lat="latitude|observations_table",
+        lon="longitude|observations_table",
         latitude_instrument="latitude|header_table",
         longitude_instrument="longitude|header_table",
         o3_column_absorption_solar="total_ozone_column",
+        pressure_independent="pressure",
+        temperature_independent="air_temperature",
+        altitude="altitude",
+        h2o_mixing_ratio_volume_absorption_solar="water_vapour_mixing_ratio",
+        integration_time="report_duration",
     ),
 )
 
@@ -124,6 +147,19 @@ ADD2MAIN_VARIABLES = dict(
     OzoneSonde_O3=["pressure", "equivalent_potential_temperature"],
     CH4=["pressure"],
     CO=["pressure"],
+    Ftir_profile_O3=[
+        "pressure",
+        "water_vapor_total_column",
+        "water_vapour_mixing_ratio",
+        "solar_zenith_angle",
+        "solar_azimuth_angle",
+        "air_temperature",
+        "air_pressure",
+    ],
+    Lidar_profile_O3=[
+        "pressure",
+        "air_temperature",
+    ],
 )
 
 space_columns = dict(
@@ -265,7 +301,7 @@ def main(old_path):
     del new_data["products_hierarchy"]
     new_data["space_columns"] = None
     # Dump to YAML
-    output_path = Path(Path(old_path).parent, Path(old_path).stem + "_new.yml")
+    output_path = Path(Path(old_path).parent, Path(old_path).stem + ".yml")
     with output_path.open("w") as op:
         op.write(yaml.dump(new_data))
 
