@@ -329,7 +329,7 @@ def rename_groups(
         old_group_name = oldgroup["group_name"]
         old_group_columns = oldgroup["columns"]
         groups2rename = fixer_mappings.groups2rename
-        if old_group_name in groups2rename:
+        if groups2rename is not None and old_group_name in groups2rename:
             new_group = dict(
                 group_name=groups2rename[old_group_name],
                 columns=old_group_columns,
@@ -515,7 +515,7 @@ def get_renamed_varname(
     original_name: str, original_descriptions: dict, fixer_mappings: SourceFixerMappings
 ) -> str:
     vars2rename = fixer_mappings.vars2rename
-    if original_name in vars2rename:
+    if vars2rename is not None and original_name in vars2rename:
         return vars2rename[original_name]
     else:
         return original_descriptions["name_for_output"]

@@ -277,6 +277,9 @@ def batch_to_netcdf(
         output_dir,
         f"{new_dataset_name}_{source}_{time_batch.year}_{time_batch.month:02d}.nc",
     )
+    for field in homogenised_data:
+        if homogenised_data[field].dtype == "string":
+            homogenised_data[field] = homogenised_data[field].str.encode("UTF-8")
     homogenised_data_xr = homogenised_data.to_xarray()
     if service_definition.global_attributes is not None:
         homogenised_data.attrs = {
