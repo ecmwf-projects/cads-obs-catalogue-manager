@@ -502,6 +502,9 @@ def get_dtype(cdm_name) -> str:
         "methane_total_column_averaging_kernel",
         "carbon_monoxide_total_column_averaging_kernel",
         "carbon_monoxide_volume_mixing_ratio_averaging_kernel",
+        "ozone_number_density_altitude_resolution_df_transfer_function",
+        "ozone_number_density_altitude_resolution_distance_from_impulse",
+        "air_pressure_source",
     ]
     vars_datetime = [
         "report_timestamp",

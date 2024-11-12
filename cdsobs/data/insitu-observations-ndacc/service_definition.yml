@@ -934,11 +934,11 @@ sources:
         units: '1'
       ozone_number_density_altitude_resolution_df_transfer_function:
         description: Transfer Function of Digital Filter used.
-        dtype: float32
+        dtype: object
         units: '1'
       ozone_number_density_altitude_resolution_distance_from_impulse:
         description: Distance from impulse to use with Impulse Response (0 at location of Impulse).
-        dtype: float32
+        dtype: object
         units: '1'
       ozone_number_density_altitude_resolution_impulse_response:
         description: 'Vertical resolution: impulse response.'
