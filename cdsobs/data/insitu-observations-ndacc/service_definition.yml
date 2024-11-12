@@ -187,7 +187,7 @@ sources:
         units: Emolec cm-2
       methane_total_column_averaging_kernel:
         description: Total vertical column averaging kernel for CH4 derived from mixing ratio averaging kernel.
-        dtype: float32
+        dtype: object
         units: '1'
       methane_volume_mixing_ratio:
         description: Vertical CH4 profile from solar absorption measurements.
@@ -365,7 +365,7 @@ sources:
         units: Emolec cm-2
       carbon_monoxide_total_column_averaging_kernel:
         description: Total vertical column averaging kernel for CO derived from mixing ratio averaging kernel.
-        dtype: float32
+        dtype: object
         units: '1'
       carbon_monoxide_volume_mixing_ratio:
         description: Vertical CO profile from solar absorption measurements.
@@ -377,7 +377,7 @@ sources:
         units: ppmv
       carbon_monoxide_volume_mixing_ratio_averaging_kernel:
         description: Averaging kernel matrix (AVK) of the retrieved vertical CO profile, in VMR/VMR (Volume Mixing Ratio) units.
-        dtype: float32
+        dtype: object
         units: '1'
       carbon_monoxide_volume_mixing_ratio_random_covariance:
         description: Total random error covariance matrix associated with the retrieved CO vertical profiles, in VMR (Volume Mixing Ratio) units.
@@ -691,7 +691,7 @@ sources:
         units: Emolec cm-2
       ozone_total_column_averaging_kernel:
         description: Total vertical column averaging kernel for O3 derived from mixing ratio averaging kernel.
-        dtype: float32
+        dtype: object
         units: '1'
       ozone_volume_mixing_ratio:
         description: Vertical O3 profile from solar absorption measurements.
@@ -703,7 +703,7 @@ sources:
         units: ppmv
       ozone_volume_mixing_ratio_averaging_kernel:
         description: Averaging kernel matrix (AVK) of the retrieved vertical O3 profile, in VMR/VMR (Volume Mixing Ratio) units.
-        dtype: float32
+        dtype: object
         units: '1'
       ozone_volume_mixing_ratio_random_covariance:
         description: Total random error covariance matrix associated with the retrieved O3 vertical profiles, in VMR (Volume Mixing Ratio) units.
@@ -1158,7 +1158,7 @@ sources:
         dtype: float32
       ozone_volume_mixing_ratio_averaging_kernel:
         description: Averaging kernel matrix (AVK) of the retrieved vertical O3 profile, in VMR/VMR (volume mixin ratio) units.
-        dtype: float32
+        dtype: object
         units: '1'
       pressure:
         description: Effective air pressure at each altitude.
@@ -1529,7 +1529,7 @@ sources:
         units: Pmolec cm-2
       ozone_total_column_averaging_kernel:
         description: Averaging kernel matrix associated with the total tropospheric vertical column of the target gas retrieved from zenith DOAS measurements.
-        dtype: float32
+        dtype: object
         units: '1'
       ozone_volume_mixing_ratio_apriori:
         description: A-priori target vertical profile associated with the profile retrieval from zenith DOAS measurements.

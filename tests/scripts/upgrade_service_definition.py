@@ -497,6 +497,11 @@ def get_dtype(cdm_name) -> str:
         "cloud_conditions",
         "height_level_boundaries",
         "methane_volume_mixing_ratio_averaging_kernel",
+        "ozone_volume_mixing_ratio_averaging_kernel",
+        "ozone_total_column_averaging_kernel",
+        "methane_total_column_averaging_kernel",
+        "carbon_monoxide_total_column_averaging_kernel",
+        "carbon_monoxide_volume_mixing_ratio_averaging_kernel",
     ]
     vars_datetime = [
         "report_timestamp",
