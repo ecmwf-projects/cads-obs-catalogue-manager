@@ -160,6 +160,21 @@ ADD2MAIN_VARIABLES = dict(
         "pressure",
         "air_temperature",
     ],
+    Uvvis_profile_O3=[
+        "pressure",
+        "instrument_viewing_azimuth_angle",
+        "instrument_viewing_zenith_angle",
+        "air_temperature",
+        "solar_zenith_angle",
+        "solar_azimuth_angle",
+        "ozone_slant_column",
+    ],
+    Mwr_profile_O3=[
+        "pressure",
+        "air_temperature",
+        "instrument_viewing_azimuth_angle",
+        "instrument_viewing_zenith_angle",
+    ],
 )
 
 space_columns = dict(
@@ -479,6 +494,7 @@ def get_dtype(cdm_name) -> str:
         "license",
         "license_type",
         "funding",
+        "cloud_conditions",
     ]
     vars_datetime = [
         "report_timestamp",
@@ -524,6 +540,7 @@ def get_cdm_mapping(new_descriptions: dict[str, dict], fixer_mappings) -> dict:
 
 if __name__ == "__main__":
     input_sd_files = "insitu-observations-ndacc/service_definition.json"
+    # TODO: Only ready for NDACC for the moment
     for file in files("cdsobs").joinpath("data").glob(input_sd_files):  # type: ignore
         print(file)
         main(file)
