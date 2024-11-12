@@ -144,7 +144,7 @@ sources:
         dtype: object
       height_level_boundaries:
         description: Upper and lower boundaries of the layers for which partial columns are reported. 2D matrix providing the layer boundaries used for vertical profile retrieval.
-        dtype: float32
+        dtype: object
         units: m
       height_of_station_above_sea_level:
         description: 'Altitude of the location of the instrument. '
@@ -199,7 +199,7 @@ sources:
         units: ppmv
       methane_volume_mixing_ratio_averaging_kernel:
         description: Averaging kernel matrix (AVK) of the retrieved vertical CH4 profile, in VMR/VMR (Volume Mixing Ratio) units.
-        dtype: float32
+        dtype: object
         units: '1'
       methane_volume_mixing_ratio_random_covariance:
         description: Total random error covariance matrix associated with the retrieved CH4 vertical profiles, in VMR (Volume Mixing Ratio) units.
@@ -392,7 +392,7 @@ sources:
         dtype: object
       height_level_boundaries:
         description: Upper and lower boundaries of the layers for which partial columns are reported. 2D matrix providing the layer boundaries used for vertical profile retrieval.
-        dtype: float32
+        dtype: object
         units: m
       height_of_station_above_sea_level:
         description: 'Altitude of the location of the instrument. '
@@ -652,7 +652,7 @@ sources:
         dtype: object
       height_level_boundaries:
         description: Upper and lower boundaries of the layers for which partial COLUMNs are reported. 2D matrix providing the layer boundaries used for vertical profile retrieval.
-        dtype: float32
+        dtype: object
         units: m
       height_of_station_above_sea_level:
         description: Altitude of the location of the instrument.
@@ -1478,7 +1478,7 @@ sources:
         dtype: object
       height_level_boundaries:
         description: Upper and lower boundaries of the layers for which partial columns are reported. 2D matrix providing the layer boundaries used for vertical profile retrieval.
-        dtype: float32
+        dtype: object
         units: m
       height_of_station_above_sea_level:
         description: Altitude of the location of the instrument.

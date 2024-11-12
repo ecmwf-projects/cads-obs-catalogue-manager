@@ -495,6 +495,8 @@ def get_dtype(cdm_name) -> str:
         "license_type",
         "funding",
         "cloud_conditions",
+        "height_level_boundaries",
+        "methane_volume_mixing_ratio_averaging_kernel",
     ]
     vars_datetime = [
         "report_timestamp",
