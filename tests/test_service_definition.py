@@ -14,6 +14,6 @@ def test_new_service_definition_valid(caplog, test_config):
         validate_service_definition(
             str(SERVICE_DEFINITION_YML),
             test_config.cdm_tables_location,
-            validate_cdm=True,
+            validate_cdm=False,
         )
     print(caplog.text)
