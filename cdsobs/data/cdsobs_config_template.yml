@@ -96,3 +96,12 @@ datasets:
   reader: "cdsobs.ingestion.readers.netcdf.read_flat_netcdfs"
   reader_extra_args:
     input_dir: "test"
+- name: insitu-observations-ndacc
+  lon_tile_size: 180
+  lat_tile_size: 90
+  available_cdm_tables:
+  - observations_table
+  - header_table
+  - station_configuration
+  - uncertainty_table
+  reader: "cdsobs.ingestion.readers.sql.read_header_and_data_tables"

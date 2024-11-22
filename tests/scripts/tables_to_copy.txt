@@ -1,10 +1,22 @@
-# Header table name, data table name, header index name, header index name in data, database name
-woudc_ozonesonde_header,woudc_ozonesonde_value,id,header_id,woudc2
-woudc_totalozone_header,woudc_totalozone_value,id,header_id,woudc2
-guan_data_header,guan_data_value,guandataheader_id,guan_data_header_id,baron
-None,igra_h,None,None,baron
-gruan_data_header,gruan_data_value,g_product_id,gruan_data_header_id,baron
-None,unc_subhourly,None,None,uscrn
-None,unc_hourly,None,None,uscrn
-None,unc_daily,None,None,uscrn
-None,unc_monthly,None,None,uscrn
+# database_name, header table name, data table name, header index name, header index name in data, database name
+#woudc_ozonesonde_header,woudc_ozonesonde_value,id,header_id,woudc2
+#woudc_totalozone_header,woudc_totalozone_value,id,header_id,woudc2
+#guan_data_header,guan_data_value,guandataheader_id,guan_data_header_id,baron
+#None,igra_h,None,None,baron
+#gruan_data_header,gruan_data_value,g_product_id,gruan_data_header_id,baron
+#None,unc_subhourly,None,None,uscrn
+#None,unc_hourly,None,None,uscrn
+#None,unc_daily,None,None,uscrn
+#None,unc_monthly,None,None,uscrn
+ch4_ftir_data_header,ch4_ftir_data_value,dataheader_id,ch4_ftir_data_header_id,ndacc
+co_ftir_data_header,co_ftir_data_value,dataheader_id,co_ftir_data_header_id,ndacc
+ozone_ndacc_brewer_data_header,ozone_ndacc_brewer_data_value,dataheader_id,ozone_ndacc_brewer_data_header_id,ndacc
+ozone_ndacc_dobson_data_header,ozone_ndacc_dobson_data_value,dataheader_id,ozone_ndacc_dobson_data_header_id,ndacc
+ozone_ndacc_ozonesonde_data_header,ozone_ndacc_ozonesonde_data_value,dataheader_id,ozone_ndacc_ozonesonde_data_header_id,ndacc
+o3_ftir_data_header,o3_ftir_data_value,dataheader_id,o3_ftir_data_header_id,ndacc
+o3_mwr_data_header,o3_mwr_data_value,dataheader_id,o3_mwr_data_header_id,ndacc
+o3_uvvis_data_header,o3_uvvis_data_value,dataheader_id,o3_uvvis_data_header_id,ndacc
+o3_lidar_data_header,o3_lidar_data_value,dataheader_id,o3_lidar_data_header_id,ndacc
+#ipw_gnss_data_header,ipw_gnss_data_value,dataheader_id,ipw_gnss_data_header_id,gnss_db
+#ipw_epn_repro2_data_header,ipw_epn_repro2_data_value,dataheader_id,ipw_epn_data_header_id,gnss_db
+#ipw_igs_repro3_data_header,ipw_igs_repro3_data_value,dataheader_id,ipw_igs_repro3_data_header_id,igs_repro3_db

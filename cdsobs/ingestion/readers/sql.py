@@ -141,6 +141,7 @@ dataset2sqlreader_function: dict[str, SQLReaderFunctionCallable] = {
     "insitu-observations-near-surface-temperature-us-climate-reference-network": read_time_partitioned_tables,
     "insitu-observations-gnss": read_time_partitioned_tables,
     "insitu-observations-woudc-ozone-total-column-and-profiles": read_sql_tables,
+    "insitu-observations-ndacc": read_time_partitioned_tables,
 }
 
 
@@ -193,6 +194,8 @@ def read_header_and_data_tables(
     mandatory_columns = source_definition.get_raw_mandatory_columns()
     join_ids = source_definition.join_ids
     assert join_ids is not None
+    if source == "Dobson_O3":
+        header_table = header_table.drop("date_of_observation", axis=1)
     fields_header = header_columns + [join_ids.header] + mandatory_columns
     fields_header = list(set([f for f in fields_header if f in header_table.columns]))
     header_table = header_table[fields_header]
@@ -216,6 +219,12 @@ def read_header_and_data_tables(
             "idstation in the header table."
         )
         data_table = data_table.drop(columns="idstation")
+    if source in ["Brewer_O3"]:
+        logger.warning(
+            "Deleted date_of_observation from header table as it conflicts with the"
+            "idstation in the header table."
+        )
+        header_table = header_table.drop(columns="date_of_observation")
     data_joined = join_header_and_data(header_table, data_table)
     return data_joined
 
@@ -297,9 +306,11 @@ sqltype2numpytypes = {
     "timestamp without time zone": "datetime64[ns]",
     "character": "object",
     "character varying": "object",
+    "text": "object",
     "bigint": "int64",
     "uuid": "object",
     "numeric": "float64",
+    "ARRAY": "object",
 }
 
 

@@ -6,6 +6,7 @@ from pprint import pprint
 import yaml
 
 from cdsobs.cdm.lite import auxiliary_variable_names
+from tests.scripts.upgrade_service_definition import handle_uncertainty_flags_and_level
 
 """ Convert old json examples into new service definition format (v1) """
 
@@ -34,79 +35,7 @@ def main(old_path):
         variables = get_source_variables(new_sourcevals, rename)
         new_data["sources"][source]["main_variables"] = variables
         # Handle cdm mapping
-
-        if source != "CUON":
-            products = [p["group_name"] for p in new_sourcevals["products"]]
-            new_melt_columns = {}
-            new_cdm_mapping["melt_columns"] = new_melt_columns
-            if any(["uncertainty" in p for p in products]):
-                uncertainty = dict()
-                for main_variable in variables:
-                    main_var_description = new_data["sources"][source]["descriptions"][
-                        main_variable
-                    ]
-                    for val in main_var_description:
-                        if "uncertainty" in val:
-                            raw_unc_name = main_var_description[val]
-                            try:
-                                unc_col_name = rename[raw_unc_name]
-                            except KeyError:
-                                unc_col_name = raw_unc_name
-                            unc_col_units = new_data["sources"][source]["descriptions"][
-                                unc_col_name
-                            ]["units"]
-                            if val not in uncertainty:
-                                uncertainty[val] = []
-                            uncertainty[val].append(
-                                dict(
-                                    name=unc_col_name,
-                                    main_variable=main_variable,
-                                    units=unc_col_units,
-                                )
-                            )
-                new_melt_columns["uncertainty"] = uncertainty
-
-            if any(["flag" in p for p in products]):
-                quality_flag = dict()
-                for main_variable in variables:
-                    main_var_description = new_data["sources"][source]["descriptions"][
-                        main_variable
-                    ]
-                    for val in main_var_description:
-                        if "quality_flag" in val:
-                            raw_flag_name = main_var_description[val]
-                            try:
-                                flag_col_name = rename[raw_flag_name]
-                            except KeyError:
-                                flag_col_name = raw_flag_name
-                            if val not in quality_flag:
-                                quality_flag[val] = []
-                            quality_flag[val].append(
-                                dict(name=flag_col_name, main_variable=main_variable)
-                            )
-
-                new_melt_columns["quality_flag"] = quality_flag
-
-            if any(["processing_level" in p for p in products]):
-                processing_level = dict()
-                for main_variable in variables:
-                    main_var_description = new_data["sources"][source]["descriptions"][
-                        main_variable
-                    ]
-                    for val in main_var_description:
-                        if "processing_level" in val:
-                            raw_pl_name = main_var_description[val]
-                            try:
-                                pl_col_name = rename[raw_pl_name]
-                            except KeyError:
-                                pl_col_name = raw_pl_name
-                            if val not in processing_level:
-                                processing_level[val] = []
-                            processing_level[val].append(
-                                dict(name=pl_col_name, main_variable=main_variable)
-                            )
-
-                new_melt_columns["processing_level"] = processing_level
+        handle_uncertainty_flags_and_level(new_data, new_sourcevals, source, variables)
         # Fix descriptions, remove name_for_output and rename the keys to the
         # CDM variable names
         new_descriptions = new_sourcevals["descriptions"]
@@ -136,7 +65,7 @@ def main(old_path):
 
 
 if __name__ == "__main__":
-    input_sd_files = "insitu-" "*/service_definition.yml"
+    input_sd_files = "insitu-observations-ndacc/service_definition.yml"
     for file in files("cdsobs").joinpath("data").glob(input_sd_files):  # type: ignore
         print(file)
         main(file)
