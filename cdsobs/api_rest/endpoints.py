@@ -1,7 +1,7 @@
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated, Iterator
+from typing import Annotated, Collection, Iterator
 
 import sqlalchemy.orm
 from fastapi import APIRouter, Depends, HTTPException
@@ -118,5 +118,5 @@ def get_dataset_service_definition(dataset: str) -> ServiceDefinition:
 
 
 @router.get("/cdm/lite_variables")
-def get_cdm_lite_variables() -> dict[str, list[str] | dict]:
+def get_cdm_lite_variables() -> dict[str, Collection[str]]:
     return cdm_lite_variables
