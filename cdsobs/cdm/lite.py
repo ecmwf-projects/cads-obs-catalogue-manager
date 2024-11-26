@@ -1,3 +1,5 @@
+from typing import Any
+
 global_attributes_names = [
     "comments",
     "description",
@@ -94,7 +96,7 @@ auxiliary_variable_names = [
 ]
 
 
-cdm_lite_variables = dict(
+cdm_lite_variables: dict[str, list[str] | dict[str, dict[str, Any]]] = dict(
     mandatory=variable_names,
     optional=optional_variable_names,
     auxiliary=auxiliary_variable_names,
