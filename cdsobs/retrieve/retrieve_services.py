@@ -109,10 +109,8 @@ def filter_retrieve_constraints(
     return ConstraintsSchema.from_table(retrieve_table)
 
 
-def get_urls_and_check_size(
+def get_urls(
     entries: Sequence[Catalogue],
-    retrieve_args: RetrieveArgs,
-    size_limit: int,
     storage_url: str,
 ) -> list[str]:
     """
@@ -122,7 +120,6 @@ def get_urls_and_check_size(
     are garbage collected.
     """
     object_urls = [f"{storage_url}/{e.asset}" for e in entries]
-    _check_data_size(entries, retrieve_args, size_limit)
     return object_urls
 
 

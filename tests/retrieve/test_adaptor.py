@@ -130,6 +130,7 @@ def test_adaptor_gnss(tmp_path):
         "year": ["2000"],
         "month": ["10"],
         "day": [f"{i:02d}" for i in range(1, 32)],
+        "area": ["50", "-10", "20", "10"],
     }
     test_form = {}
     # + "/v1/AUTH_{public_user}" will be needed to work with S3 ceph public urls, but it
