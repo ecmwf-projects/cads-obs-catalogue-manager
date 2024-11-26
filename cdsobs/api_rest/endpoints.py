@@ -117,5 +117,5 @@ def get_dataset_service_definition(dataset: str) -> ServiceDefinition:
 
 
 @router.get("/cdm/lite_variables")
-def get_cdm_lite_variables() -> dict[str, list[str]]:
+def get_cdm_lite_variables() -> dict[str, list[str] | dict]:
     return cdm_lite_variables

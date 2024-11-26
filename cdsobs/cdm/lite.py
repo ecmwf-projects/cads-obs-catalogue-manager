@@ -1,3 +1,5 @@
+from typing import Any
+
 global_attributes_names = [
     "comments",
     "description",
@@ -92,8 +94,33 @@ auxiliary_variable_names = [
     "humidity_bias_estimate",
     "wind_bias_estimate",
 ]
-cdm_lite_variables = dict(
+
+
+cdm_lite_variables: dict[str, list[str] | dict[str, dict[str, Any]]] = dict(
     mandatory=variable_names,
     optional=optional_variable_names,
     auxiliary=auxiliary_variable_names,
+    attributes={
+        "uncertainty_value_1": {"long_name": "random_uncertainty"},
+        "uncertainty_value_10": {"long_name": "negative_systematic_uncertainty"},
+        "uncertainty_value_11": {"long_name": "positive_systematic_uncertainty"},
+        "uncertainty_value_12": {"long_name": "negative_quasisystematic_uncertainty"},
+        "uncertainty_value_13": {"long_name": "positive_quasisystematic_uncertainty"},
+        "uncertainty_value_14": {"long_name": "negative_structured_random_uncertainty"},
+        "uncertainty_value_15": {"long_name": "positive_structured_random_uncertainty"},
+        "uncertainty_value_16": {"long_name": "negative_total_uncertainty"},
+        "uncertainty_value_17": {"long_name": "positive_total_uncertainty"},
+        "uncertainty_value_2": {"long_name": "systematic_uncertainty"},
+        "uncertainty_value_3": {"long_name": "quasisystematic_uncertainty"},
+        "uncertainty_value_4": {"long_name": "structured_random_uncertainty"},
+        "uncertainty_value_5": {"long_name": "total_uncertainty"},
+        "uncertainty_value_6": {
+            "long_name": "ozone_partial_pressure_total_uncertainty_uncertainty"
+        },
+        "uncertainty_value_7": {
+            "long_name": "ozone_partial_pressure_percentage_uncertainty_uncertainty"
+        },
+        "uncertainty_value_8": {"long_name": "negative_random_uncertainty"},
+        "uncertainty_value_9": {"long_name": "positive_random_uncertainty"},
+    },
 )

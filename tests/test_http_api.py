@@ -64,7 +64,9 @@ def test_capabilities_datasets(test_config, test_repository):
         "insitu-observations-gruan-reference-network",
         "insitu-observations-near-surface-temperature-us-climate-reference-network",
         "insitu-observations-gnss",
+        "insitu-observations-ndacc",
     ]
+
     assert actual == expected
 
 
