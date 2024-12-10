@@ -149,6 +149,7 @@ def test_adaptor_gnss(tmp_path):
             "rename": {"network_type": "dataset_source", "variable": "variables"},
             "force": {},
         },
+        "licences": ["licence-to-use-copernicus-products", "gnss-data-policy"],
     }
     adaptor = ObservationsAdaptor(test_form, **test_adaptor_config)
     result = adaptor.retrieve(test_request)

@@ -58,7 +58,10 @@ def retrieve_observations(
         global_attributes = get_service_definition(
             retrieve_args.dataset
         ).global_attributes
-    cdm_lite_vars = list(itertools.chain.from_iterable(cdm_lite_variables.values()))
+    field_attributes = cdm_lite_variables["attributes"]
+    cdm_lite_vars = list(
+        set(itertools.chain.from_iterable(cdm_lite_variables.values()))
+    )
     context = Context()
     output_path = retrieve_data(
         retrieve_args.dataset,
@@ -66,6 +69,7 @@ def retrieve_observations(
         output_dir,
         object_urls,
         cdm_lite_vars,
+        field_attributes,
         global_attributes,
         context,
     )
