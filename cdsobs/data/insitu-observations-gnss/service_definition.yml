@@ -1,6 +1,8 @@
 global_attributes:
   contactemail: https://support.ecmwf.int
-  licence_list: 20180314_Copernicus_License_V1.1
+  licence_list:
+  - licence-to-use-copernicus-products
+  - gnss-data-policy
   responsible_organisation: ECMWF
 sources:
   EPN:
