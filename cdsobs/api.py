@@ -193,7 +193,9 @@ def _run_ingestion_pipeline_for_batch(
       By default, these time intervals will be skipped.
     """
     if not update and _entry_exists(dataset_name, session, source, time_space_batch):
-        logger.warning("A partition with the chosen parameters already exists")
+        logger.warning(
+            "A partition with the chosen parameters already exists and update is set to False."
+        )
     else:
         sorted_partitions = _read_homogenise_and_partition(
             config, dataset_name, service_definition, source, time_space_batch
