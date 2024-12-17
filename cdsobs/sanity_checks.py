@@ -32,7 +32,7 @@ def run_sanity_checks(
     test: bool = False,
 ):
     for dataset_name in datasets_to_check:
-        service_definition = get_service_definition(dataset_name)
+        service_definition = get_service_definition(config, dataset_name)
         if test:
             sources = ["OzoneSonde"]
         else:
@@ -79,7 +79,7 @@ def _sanity_check_dataset(
         check_if_missing_in_object_storage(catalogue_repo, s3_client, dataset_name)
         # Retrieve and check output
         output_path = retrieve_observations(
-            config.catalogue_db.get_url(),
+            config,
             s3_client.public_url_base,
             retrieve_args,
             Path(tmpdir),

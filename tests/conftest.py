@@ -156,13 +156,14 @@ def test_s3_client_pertest(test_config):
 class TestRepository:
     catalogue_repository: CatalogueRepository
     s3_client: StorageClient
+    config: CDSObsConfig
 
 
 @pytest.fixture(scope="module")
 def test_repository(test_session, test_s3_client, test_config):
     """The whole thing, session to the catalogue DB and storage client."""
     for dataset_name, dataset_source in TEST_API_PARAMETERS:
-        service_definition = get_service_definition(dataset_name)
+        service_definition = get_service_definition(test_config, dataset_name)
         start_year, end_year = get_test_years(dataset_source)
         run_ingestion_pipeline(
             dataset_name,
@@ -175,7 +176,7 @@ def test_repository(test_session, test_s3_client, test_config):
         )
 
     catalogue_repository = CatalogueRepository(test_session)
-    return TestRepository(catalogue_repository, test_s3_client)
+    return TestRepository(catalogue_repository, test_s3_client, test_config)
 
 
 @pytest.fixture

@@ -14,7 +14,7 @@ def test_batch_to_netcdf(test_config, tmp_path):
     year = 1969
     month = 1
     output_dir = tmp_path
-    service_definition = get_service_definition(dataset_name)
+    service_definition = get_service_definition(test_config, dataset_name)
     dataset_config = test_config.get_dataset(dataset_name)
     dataset_metadata = get_dataset_metadata(
         test_config, dataset_config, service_definition, source

@@ -1,4 +1,3 @@
-import importlib
 from pathlib import Path
 
 import pydantic.error_wrappers
@@ -6,6 +5,7 @@ import yaml
 
 from cdsobs.cdm.api import get_cdm_fields, read_cdm_code_table
 from cdsobs.cdm.tables import read_cdm_tables
+from cdsobs.config import CDSObsConfig
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.service_definition.validation import logger
 
@@ -83,10 +83,14 @@ def validate_cdm_in_sc(cdm_fields, cdm_variables, service_definition):
             )
 
 
-def get_service_definition(dataset_name: str) -> ServiceDefinition:
+def get_service_definition(
+    config: CDSObsConfig, dataset_name: str
+) -> ServiceDefinition:
+    cadsobs_insitu_location = config.cads_obs_insitu_location
     path_to_json = Path(
-        str(importlib.resources.files("cdsobs")),
-        f"data/{dataset_name}/service_definition.yml",
+        cadsobs_insitu_location,
+        "cads-forms-insitu",
+        f"{dataset_name}/service_definition.yml",
     )
     with open(path_to_json) as f:
         data = yaml.safe_load(f)

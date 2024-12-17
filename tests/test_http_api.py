@@ -45,10 +45,10 @@ def test_read_main(test_repository, test_config, tmp_path):
     ]
 
 
-def test_service_definition():
+def test_service_definition(test_config):
     dataset = "insitu-observations-gnss"
     actual = client.get(f"/{dataset}/service_definition").json()
-    expected = get_service_definition(dataset).dict()
+    expected = get_service_definition(test_config, dataset).model_dump()
     assert actual == expected
 
 

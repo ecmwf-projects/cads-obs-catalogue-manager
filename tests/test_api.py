@@ -19,7 +19,7 @@ def test_run_ingestion_pipeline(
     dataset_name, source, test_session, test_config, caplog, tmp_path
 ):
     start_year, end_year = get_test_years(source)
-    service_definition = get_service_definition(dataset_name)
+    service_definition = get_service_definition(test_config, dataset_name)
     os.environ["CADSOBS_AVOID_MULTIPROCESS"] = "0"
     run_ingestion_pipeline(
         dataset_name,
@@ -48,7 +48,7 @@ def test_run_ingestion_pipeline(
 def test_make_cdm(test_config, tmp_path, caplog):
     dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
     source = "OzoneSonde"
-    service_definition = get_service_definition(dataset_name)
+    service_definition = get_service_definition(test_config, dataset_name)
     start_year, end_year = get_test_years(source)
     run_make_cdm(
         dataset_name,

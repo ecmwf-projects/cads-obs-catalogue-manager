@@ -18,7 +18,7 @@ from cdsobs.service_definition.api import get_service_definition
 def test_check_cdm_compliance(test_config, caplog):
     dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
     source = "OzoneSonde"
-    service_definition = get_service_definition(dataset_name)
+    service_definition = get_service_definition(test_config, dataset_name)
     homogenised_data = _get_homogenised_data(
         dataset_name, service_definition, source, test_config
     )
@@ -43,7 +43,7 @@ def _get_homogenised_data(dataset_name, service_definition, source, test_config)
 def test_apply_variable_unit_change(test_config):
     dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
     source = "OzoneSonde"
-    service_definition = get_service_definition(dataset_name)
+    service_definition = get_service_definition(test_config, dataset_name)
     homogenised_data = _get_homogenised_data(
         dataset_name, service_definition, source, test_config
     )
