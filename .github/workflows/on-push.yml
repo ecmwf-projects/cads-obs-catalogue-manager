@@ -39,7 +39,6 @@ jobs:
         ref: 'new-variables'
         path: common_data_model
     - name: Download cads-forms-insitu
-      uses: actions/checkout@v4
       env:
         BITBUCKET_TOKEN: ${{ secrets.BITBUCKET_TOKEN }}
       timeout-minutes: 2
