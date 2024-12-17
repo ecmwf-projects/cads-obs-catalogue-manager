@@ -41,10 +41,11 @@ jobs:
     - name: Download cads-forms-insitu
       uses: actions/checkout@v3
       with:
-        repository: https://git.ecmwf.int/scm/cds/cads-forms-insitu.git
+        repository: cds/cads-forms-insitu.git
         ref: 'dev'
         path: cads-forms-insitu
         token: ${{ secrets.BITBUCKET_TOKEN }}
+        github-server-url: https://git.ecmwf.int/scm/cds
     - name: Deploy test ingestion database
       env:
         TEST_INGESTION_DB_PASS: ${{ secrets.TEST_INGESTION_DB_PASS }}
