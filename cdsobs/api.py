@@ -29,6 +29,7 @@ from cdsobs.ingestion.serialize import serialize_partition
 from cdsobs.metadata import get_dataset_metadata
 from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.retrieve.filter_datasets import between
+from cdsobs.service_definition.api import get_service_definition
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.storage import S3Client
 from cdsobs.utils.logutils import get_logger
@@ -38,7 +39,6 @@ logger = get_logger(__name__)
 
 def run_ingestion_pipeline(
     dataset_name: str,
-    service_definition: ServiceDefinition,
     source: str,
     session: Session,
     config: CDSObsConfig,
@@ -60,8 +60,6 @@ def run_ingestion_pipeline(
     ----------
     dataset_name :
       Name of the dataset, for example insitu-observations-woudc-ozone-total-column-and-profiles
-    service_definition :
-      Object produced parsing the service_definition.json.
     source :
       Name of the data type to read from the dataset. For example "OzoneSonde".
     session :
@@ -80,6 +78,7 @@ def run_ingestion_pipeline(
       Month to start reading the data. It only applies to the first year of the interval.
       Default is 1.
     """
+    service_definition = get_service_definition(config, dataset_name)
 
     def _run_for_batch(time_space_batch):
         try:
@@ -106,7 +105,6 @@ def run_ingestion_pipeline(
 
 def run_make_cdm(
     dataset_name: str,
-    service_definition: ServiceDefinition,
     source: str,
     config: CDSObsConfig,
     start_year: int,
@@ -125,8 +123,6 @@ def run_make_cdm(
     ----------
     dataset_name :
       Name of the dataset, for example insitu-observations-woudc-ozone-total-column-and-profiles
-    service_definition
-      Object produced parsing the service_definition.json.
     source
      Name of the data type to read from the dataset. For example "OzoneSonde".
     config
@@ -142,6 +138,7 @@ def run_make_cdm(
       make_production. If False, the data only will be loaded and checked for CDM
       compliance in memory.
     """
+    service_definition = get_service_definition(config, dataset_name)
 
     def _run_for_batch(time_batch):
         try:

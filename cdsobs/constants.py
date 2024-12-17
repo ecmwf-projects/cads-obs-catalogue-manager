@@ -12,10 +12,6 @@ TIME_UNITS = f"seconds since {TIME_UNITS_REFERENCE_DATE}"
 
 # From here, all constants are for the tests
 cdsobs_path = typing.cast(Path, importlib.resources.files("cdsobs"))
-SERVICE_DEFINITION_YML = Path(
-    cdsobs_path,
-    "data/insitu-observations-woudc-ozone-total-column-and-profiles/service_definition.yml",
-)
 
 TEST_VAR_OUT = "air_temperature"
 

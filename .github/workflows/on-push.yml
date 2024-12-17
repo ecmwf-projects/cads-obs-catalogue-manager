@@ -38,6 +38,13 @@ jobs:
         repository: ecmwf-projects/cdm-obs.git
         ref: 'new-variables'
         path: common_data_model
+    - name: Download cads-forms-insitu
+      uses: actions/checkout@v3
+      with:
+        repository: https://git.ecmwf.int/scm/cds/cads-forms-insitu.git
+        ref: 'dev'
+        path: cads-forms-insitu
+        token: ${{ secrets.BITBUCKET_TOKEN }}
     - name: Deploy test ingestion database
       env:
         TEST_INGESTION_DB_PASS: ${{ secrets.TEST_INGESTION_DB_PASS }}
@@ -88,6 +95,7 @@ jobs:
         STORAGE_SECRET_KEY: ${{ secrets.STORAGE_SECRET_KEY}}
         STORAGE_SECURE: ${{ secrets.STORAGE_SECURE}}
         CDM_TABLES_LOCATION: ${{ github.workspace }}
+        CADS_OBS_INSITU_LOCATION: ${{ github.workspace }}
       run: |
         ls ${GITHUB_WORKSPACE}/common_data_model/*
         make unit-tests COV_REPORT=xml

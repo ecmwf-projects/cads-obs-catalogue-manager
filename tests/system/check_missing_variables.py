@@ -24,7 +24,6 @@ def test_run_ingestion_pipeline(
     os.environ["CADSOBS_AVOID_MULTIPROCESS"] = "0"
     run_ingestion_pipeline(
         dataset_name,
-        service_definition,
         source,
         test_session,
         test_config,
