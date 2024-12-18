@@ -59,7 +59,7 @@ def test_retrieve(
     retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
     start = datetime.now()
     output_file = retrieve_observations(
-        test_config.catalogue_db.get_url(),
+        test_config,
         test_repository.s3_client.base,
         retrieve_args,
         tmp_path,
@@ -94,7 +94,7 @@ def test_retrieve_cuon(test_repository, test_config):
     retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
     s3_client = S3Client.from_config(test_config.s3config)
     output_file = retrieve_observations(
-        test_config.catalogue_db.get_url(),
+        test_config,
         s3_client.base,
         retrieve_args,
         Path("/tmp"),
@@ -130,7 +130,7 @@ def test_retrieve_gruan(test_repository, test_config):
     retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
     s3_client = S3Client.from_config(test_config.s3config)
     output_file = retrieve_observations(
-        test_config.catalogue_db.get_url(),
+        test_config,
         s3_client.base,
         retrieve_args,
         Path("/tmp"),

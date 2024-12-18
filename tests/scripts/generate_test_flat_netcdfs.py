@@ -22,7 +22,7 @@ def main():
     end_year = 1969
     config = CDSObsConfig.from_yaml(CONFIG_YML)
     output_dir = Path(Path(__file__).parent.parent, "data", "woudc_netcdfs")
-    service_definition = get_service_definition(dataset_name)
+    service_definition = get_service_definition(config, dataset_name)
     variables = get_variables_from_service_definition(service_definition, source)
     dataset_params = DatasetMetadata(dataset_name, source, variables)
     for year, month in product(range(start_year, end_year + 1), range(1, 13)):

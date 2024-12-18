@@ -1,9 +1,11 @@
+import os
 from pathlib import Path
 
 import numpy
 import yaml
 
 from cdsobs.cdm.lite import cdm_lite_variables
+from cdsobs.config import read_and_validate_config
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.service_definition.service_definition_models import Description
 
@@ -14,7 +16,9 @@ def main():
         v for section in cdm_lite_variables for v in cdm_lite_variables[section]
     ]
     vardict = numpy.load("dic_type_attributes.npy", allow_pickle=True).item()
-    service_definition = get_service_definition(dataset_name)
+    cdsobs_config_yml = Path(os.environ.get("CDSOBS_CONFIG"))
+    config = read_and_validate_config(cdsobs_config_yml)
+    service_definition = get_service_definition(config, dataset_name)
     descriptions = service_definition.sources["CUON"].descriptions
 
     for name, description in descriptions.items():
