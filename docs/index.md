@@ -31,15 +31,12 @@ catalogue_db:
   port: 5433
   db_name: cataloguedbtest
 # Configuration of the S3 storage of the observation repository.
-# public_url_endpoint is optional and will be appended to the host (ceph S3 needs it).
 # namespace will be prepended to the bucket names, to prevent collisions.
 s3config:
   access_key: some_access_key
   secret_key: some_secret_key
   host: s3.cds.ecmwf.int
   port: 443
-  secure: true
-  public_url_endpoint: swift/v1/AUTH_XXXX
   namespace: cds2-obs-dev
 # The following are configuration variables specific for each dataset.
 # Supported keywords are:
@@ -237,25 +234,29 @@ The command line interface is available under the cadsobs command:
 
  Copernicus Climate & Atmoshpere Data Store Observation Manager Command Line Interface
 
-╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ --install-completion          Install completion for the current shell.                                            │
-│ --show-completion             Show completion for the current shell, to copy it or customize the installation.     │
-│ --help                        Show this message and exit.                                                          │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ─────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ catalogue-dataset-info            Get catalogue info for certain dataset.                                          │
-│ check-consistency                 Check if catalogue db and object storage are consistent.                         │
-│ copy-dataset                      Copy all catalogue datasets entries and its S3 assets.                           │
-│ delete-dataset                    Permanently delete the given dataset from the catalogue and the storage.         │
-│ get_forms_jsons                   Save the geco output json files in a folder, optionally upload it.               │
-│ list-catalogue                    List entries in the catalogue. Accepts arguments to filter the output.           │
-│ list-datasets                     List all datasets and versions.                                                  │
-│ make-cdm                          Will prepare the data to be uploaded to the observation repository, without      │
-│                                   actually uploading it. It can be used for testing.                               │
-│ make-production                   Upload datasets to the CADS observation repository.                              │
-│ retrieve                          Retrieve datasets from the CADS observation repository.                          │
-│ validate-service-definition-json  Validate a service definition JSON file.                                         │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ───────────────────────────────────────────────────────────────────────────────────╮
+│ --install-completion          Install completion for the current shell.                     │
+│ --show-completion             Show completion for the current shell, to copy it or          │
+│                               customize the installation.                                   │
+│ --help                        Show this message and exit.                                   │
+╰─────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ──────────────────────────────────────────────────────────────────────────────────╮
+│ catalogue-dataset-info        Get catalogue info for certain dataset.                       │
+│ check-consistency             Check if catalogue db and object storage are consistent.      │
+│ copy-dataset                  Copy all catalogue datasets entries and its S3 assets.        │
+│ delete-dataset                Permanently delete the given dataset from the catalogue and   │
+│                               the storage.                                                  │
+│ get_forms_jsons               Save the geco output json files in a folder, optionally       │
+│                               upload it.                                                    │
+│ list-catalogue                List entries in the catalogue. Accepts arguments to filter    │
+│                               the output.                                                   │
+│ list-datasets                 List all datasets and versions.                               │
+│ make-cdm                      Prepare the data to be uploaded without actually uploading    │
+│                               it.                                                           │
+│ make-production               Upload datasets to the CADS observation repository.           │
+│ retrieve                      Retrieve datasets from the CADS observation repository.       │
+│ validate-service-definition   Validate a service definition YAML file.                      │
+╰─────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
 #### Validate service defintion
@@ -264,7 +265,7 @@ Simply validates the correctness of the service definition JSON file. All the er
 encountered will appear on the log.
 
 ```commandline
- Usage: cadsobs validate-service-definition-json [OPTIONS]
+ Usage: cadsobs validate-service-definition [OPTIONS]
                                                  SERVICE_DEFINITION_JSON
 
  Validate a service definition JSON file.
@@ -298,29 +299,30 @@ values on the template are for the test instance and not valid for production.
  Usage: cadsobs make-production [OPTIONS]
 
  Upload datasets to the CADS observation repository.
- Read input data for a CADS observations dataset, homogenises it, partitions it and uploads
- it to the observation catalogue and storage.
+ Read input data for a CADS observations dataset, homogenises it, partitions it and uploads it
+ to the observation catalogue and storage.
 
-╭─ Options ──────────────────────────────────────────────────────────────────────────────────╮
-│ *  --dataset             -d      TEXT     Dataset name [required]                          │
-│ *  --service-definition  -s      PATH     Path to the service_definition.json [required]   │
-│ *  --start-year                  INTEGER  Year to start processing the data [required]     │
-│ *  --end-year                    INTEGER  Year to stop processing the data [required]      │
-│    --config              -c      PATH     Path to the cdsobs_config yml. If not provided,  │
-│                                           the function will search for the file            │
-│                                           $HOME/.cdsobs/cdsobs_config.yml                  │
-│                                           [env var: CDSOBS_CONFIG]                         │
-│    --source                      TEXT     Process only a given source, by default it       │
-│                                           processes all                                    │
-│                                           [default: all]                                   │
-│    --verbose             -v               Sets log level to debug                          │
-│    --update              -u               If set, data overlapping in time (year and       │
-│                                           month) with existing partitions will be read in  │
-│                                           order to check if it changed these need to be    │
-│                                           updated. By default, these time intervals will   │
-│                                           be skipped.                                      │
-│    --help                                 Show this message and exit.                      │
-╰────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ───────────────────────────────────────────────────────────────────────────────────╮
+│ *  --dataset      -d      TEXT     Dataset name [required]                                  │
+│ *  --start-year           INTEGER  Year to start processing the data [required]             │
+│ *  --end-year             INTEGER  Year to stop processing the data [required]              │
+│    --config       -c      PATH     Path to the cdsobs_config yml. If not provided, the      │
+│                                    function will search for the file                        │
+│                                    $HOME/.cdsobs/cdsobs_config.yml                          │
+│                                    [env var: CDSOBS_CONFIG]                                 │
+│ *  --source               TEXT     Source to process. Sources are defined in the service    │
+│                                    definition file,in the sources mapping.                  │
+│                                    [default: None]                                          │
+│                                    [required]                                               │
+│    --update       -u               If set, data overlapping in time (year and month) with   │
+│                                    existing partitions will be read in order to check if it │
+│                                    changed these need to be updated. By default, these time │
+│                                    intervals will be skipped.                               │
+│    --start-month          INTEGER  Month to start reading the data. It only applies to the  │
+│                                    first year of the interval. Default is 1.                │
+│                                    [default: 1]                                             │
+│    --help                          Show this message and exit.                              │
+╰─────────────────────────────────────────────────────────────────────────────────────────────╯
 
 ```
 
@@ -336,18 +338,19 @@ defined by --output-dir argument.
 
  Retrieve datasets from the CADS observation repository.
 
-╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────╮
-│    --config           -c       PATH     Path to the cdsobs_config yml. If not provided, the function │
-│                                         will search for the file $HOME/.cdsobs/cdsobs_config.yml     │
-│                                         [env var: CDSOBS_CONFIG]                                     │
-│ *  --retrieve-params  -p       PATH     Path to a JSON file with the retrieve params. [required]     │
-│ *  --output-dir       -o       PATH     Directory where to write the output file. [required]         │
-│    --size-limit       -sl      INTEGER  Specify a size limit for the data size retrieved in bytes.   │
-│    --np                        INTEGER  Number of processes to be used by dask, default is 8.if the  │
-│                                         partitions are large, this may use too much memory.           │
-│                                         [default: 8]                                                 │
-│    --help                               Show this message and exit.                                  │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ───────────────────────────────────────────────────────────────────────────────────╮
+│    --config           -c       PATH     Path to the cdsobs_config yml. If not provided, the │
+│                                         function will search for the file                   │
+│                                         $HOME/.cdsobs/cdsobs_config.yml                     │
+│                                         [env var: CDSOBS_CONFIG]                            │
+│ *  --retrieve-params  -p       PATH     Path to a JSON file with the retrieve params.       │
+│                                         [required]                                          │
+│ *  --output-dir       -o       PATH     Directory where to write the output file.           │
+│                                         [required]                                          │
+│    --size-limit       -sl      INTEGER  Specify a size limit for the data size retrieved in │
+│                                         bytes.                                              │
+│    --help                               Show this message and exit.                         │
+╰─────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
 The following is an example of the JSON file to be passed to --retrieve-params.
@@ -528,16 +531,19 @@ that the dataset version will be reset to 1.0 in the catalogue.
 
  Save the geco output json files in a folder, optionally upload it.
 
-╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────╮
-│ *  --dataset     -d      TEXT  Dataset name [required]                                               │
-│    --config      -c      PATH  Path to the cdsobs_config yml. If not provided, the function will     │
-│                                search for the file $HOME/.cdsobs/cdsobs_config.yml                   │
-│                                [env var: CDSOBS_CONFIG]                                              │
-│    --output-dir  -o      PATH  Directory where to write the output if --save-data is enabled.        │
-│                                [default: /tmp]                                                       │
-│    --upload      -u                                                                                  │
-│    --help                      Show this message and exit.                                           │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ───────────────────────────────────────────────────────────────────────────────────╮
+│ *  --dataset        -d      TEXT  Dataset name [required]                                   │
+│    --config         -c      PATH  Path to the cdsobs_config yml. If not provided, the       │
+│                                   function will search for the file                         │
+│                                   $HOME/.cdsobs/cdsobs_config.yml                           │
+│                                   [env var: CDSOBS_CONFIG]                                  │
+│    --output-dir     -o      PATH  Directory where to write the output if --save-data is     │
+│                                   enabled.                                                  │
+│                                   [default: /tmp]                                           │
+│    --upload         -u                                                                      │
+│    --stations_file  -s                                                                      │
+│    --help                         Show this message and exit.                               │
+╰─────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
 ### Python API

@@ -276,7 +276,7 @@ def read_ingestion_tables(
 
 def get_function_reference(sql_reader_function: Callable) -> str:
     """Return function reference as module.name."""
-    module = inspect.getmodule(sql_reader_function).__name__
+    module = inspect.getmodule(sql_reader_function).__name__  # type: ignore
     name = sql_reader_function.__name__
     return module + "." + name
 
