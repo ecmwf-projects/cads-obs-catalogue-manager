@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pprint import pformat
 from typing import Iterator, List
 
 import pandas
@@ -87,15 +88,17 @@ def check_table_cdm_compliance(
     """
     table_name = table_def.name
     table_field_mapping = get_cdm_table_mapping(cdm_tables, homogenised_data, table_def)
-    logger.info(
-        f"Found the following fields for {table_name=}: "
-        f"{table_field_mapping.fields_found + table_field_mapping.fields_with_suffix}"
+    fields_found = (
+        table_field_mapping.fields_found + table_field_mapping.fields_with_suffix
     )
-    foreign_fields = table_field_mapping.foreign_fields
+    logger.info(
+        f"Found the following fields for {table_name}: " f"{pformat(fields_found)}"
+    )
+    foreign_fields = [f.name for f in table_field_mapping.foreign_fields]
     if len(foreign_fields) > 0:
         logger.info(
             "Also, the following fields can be mapped from their names in "
-            f"children tables: {foreign_fields=}"
+            f"children tables: {pformat(foreign_fields)}"
         )
     # Check the primary keys for this table are available and NaN free
     _check_primary_keys(table_field_mapping, homogenised_data)
@@ -143,14 +146,6 @@ def _check_data_types(
             logger.warning(
                 f"For {field=} {input_data_dtype=} does not match with {cdm_numpy_dtype=}"
             )
-        else:
-            # Warn if timestamp without timeszones is used
-            if cdm_dtype == "timestamp with timezone" and not hasattr(
-                input_data_dtype, "tz"
-            ):
-                logger.warning(
-                    f"{field=} does not have timezone information, UTC is assumed."
-                )
 
 
 def get_cdm_table_mapping(

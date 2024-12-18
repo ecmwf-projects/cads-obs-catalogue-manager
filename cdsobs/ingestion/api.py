@@ -1,6 +1,7 @@
 from hashlib import sha1
 from importlib import import_module
 from pathlib import Path
+from pprint import pformat
 from typing import List
 
 import numpy
@@ -138,8 +139,9 @@ def check_mandatory_columns(
     all_columns = set(data_renamed.columns)
     missing_mandatory_columns = mandatory_columns.difference(all_columns)
     if len(missing_mandatory_columns) > 0:
-        logger.warning(f"Mandatory columns {missing_mandatory_columns} are missing")
-        # raise MissingMandatoryColumns
+        logger.warning(
+            f"Mandatory columns {pformat(missing_mandatory_columns)} are missing"
+        )
 
 
 def cast_to_descriptions(
@@ -232,7 +234,6 @@ def read_batch_data(
     # Explicitly remove this reference to reduce memory usage
     del data_table
     source_definition = service_definition.sources[source]
-    logger.info("Applying the melt columns configuration.")
     if source_definition.cdm_mapping.melt_columns is not None:
         logger.info("Melting variable columns as requested")
         homogenised_data = _melt_variables(
@@ -322,7 +323,8 @@ def _melt_variables(
     # Check for variables not in the code table
     cdm_vars = set(code_dict)
     not_found = set(homogenised_data_melted["observed_variable"].unique()) - cdm_vars
-    logger.warning(f"Some variables were not found in the CDM: {not_found}")
+    if len(not_found) > 0:
+        logger.warning(f"Some variables were not found in the CDM: {not_found}")
     return homogenised_data_melted
 
 

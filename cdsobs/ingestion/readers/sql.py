@@ -1,5 +1,6 @@
 import datetime
-from typing import Any, Protocol, Tuple
+import inspect
+from typing import Any, Callable, Protocol, Tuple
 
 import connectorx as cx
 import pandas
@@ -258,7 +259,8 @@ def read_ingestion_tables(
     A tuple with the header and data tables
     """
     # Read tables
-    logger.info(f"Reading ingestion tables with {sql_reader_function=}")
+    function_file = get_function_reference(sql_reader_function)
+    logger.info(f"Reading ingestion tables with {function_file}")
     if not source_definition.is_multitable():
         header_table_name = None
     else:
@@ -270,6 +272,13 @@ def read_ingestion_tables(
     header = cast_to_right_types(header, sql_data_types)
     data = cast_to_right_types(data, sql_data_types)
     return header, data
+
+
+def get_function_reference(sql_reader_function: Callable) -> str:
+    """Return function reference as module.name."""
+    module = inspect.getmodule(sql_reader_function).__name__
+    name = sql_reader_function.__name__
+    return module + "." + name
 
 
 def get_sql_data_types(

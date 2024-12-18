@@ -87,12 +87,13 @@ def get_service_definition(
     config: CDSObsConfig, dataset_name: str
 ) -> ServiceDefinition:
     cadsobs_insitu_location = config.cads_obs_insitu_location
-    path_to_json = Path(
+    path_to_yaml = Path(
         cadsobs_insitu_location,
         "cads-forms-insitu",
         f"{dataset_name}/service_definition.yml",
     )
-    with open(path_to_json) as f:
+    logger.info(f"Reading service definition file from {path_to_yaml}")
+    with open(path_to_yaml) as f:
         data = yaml.safe_load(f)
 
     return ServiceDefinition(**data)
