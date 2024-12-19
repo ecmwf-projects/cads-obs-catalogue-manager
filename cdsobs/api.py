@@ -78,6 +78,9 @@ def run_ingestion_pipeline(
       Month to start reading the data. It only applies to the first year of the interval.
       Default is 1.
     """
+    logger.info("----------------------------------------------------------------")
+    logger.info("Running ingestion pipeline")
+    logger.info("----------------------------------------------------------------")
     service_definition = get_service_definition(config, dataset_name)
 
     def _run_for_batch(time_space_batch):
@@ -138,6 +141,9 @@ def run_make_cdm(
       make_production. If False, the data only will be loaded and checked for CDM
       compliance in memory.
     """
+    logger.info("----------------------------------------------------------------")
+    logger.info("Running make cdm")
+    logger.info("----------------------------------------------------------------")
     service_definition = get_service_definition(config, dataset_name)
 
     def _run_for_batch(time_batch):
@@ -152,7 +158,7 @@ def run_make_cdm(
                 time_batch,
             )
         except EmptyBatchException:
-            logger.warning(f"Not found for {time_batch=}")
+            logger.warning(f"No data found for {time_batch=}")
 
     main_iterator = _get_main_iterator(
         config, dataset_name, source, start_year, end_year

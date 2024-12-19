@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
+from pprint import pformat
 from typing import List, Optional
 
 import fsspec
@@ -76,7 +77,7 @@ def to_cdm_dataset(partition: DatasetPartition) -> CdmDataset:
     if len(removed_variables) > 0:
         logger.warning(
             "The following variables where read but are not in the CDM and "
-            f"are going to be dropped: {removed_variables}"
+            f"are going to be dropped: {pformat(removed_variables)}"
         )
     return CdmDataset(data, partition.partition_params, partition.dataset_metadata)
 

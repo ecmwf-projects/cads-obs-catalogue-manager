@@ -93,6 +93,8 @@ def get_partitions(
             station_ids,
             sources,
         )
+        # Remove group columns from the data
+        group_data = group_data.drop(group_columns, axis=1)
         yield DatasetPartition(
             dataset_params, partition_params, group_data, constraints
         )
