@@ -1,23 +1,23 @@
 ingestion_databases:
   main:
-    db_user: someuser
-    pwd: somepassword
-    host: somehost
-    port: 5431
-    db_name: ingestion
+    db_user: user
+    pwd: testpass
+    host: localhost
+    port: 25432
+    db_name: baron
 catalogue_db:
-  db_user: someuser
+  db_user: docker
   pwd: docker
   host: localhost
-  port: 5432
-  db_name: catalogue-dev
+  port: 5433
+  db_name: cataloguedbtest
 s3config:
-  access_key: somekey
-  secret_key: some_secret_key
-  host: object-store.os-api.cci2.ecmwf.int
-  port: 443
-  secure: true
-  namespace: somenamespace
+  access_key: minioadmin
+  secret_key: minioadmin
+  host: 127.0.0.1
+  port: 9000
+  secure: false
+  namespace: cds2-obs-dev
 datasets:
 - name: insitu-observations-woudc-ozone-total-column-and-profiles
   lon_tile_size: 180
