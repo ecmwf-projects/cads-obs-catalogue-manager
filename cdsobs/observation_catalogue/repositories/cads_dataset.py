@@ -42,3 +42,7 @@ class CadsDatasetRepository(BaseRepository):
         return self.session.scalar(
             sa.select(CadsDataset).filter(CadsDataset.name == dataset_name)
         )
+
+    def delete_dataset(self, dataset_name: str):
+        dataset = self.get_dataset(dataset_name)
+        self.session.delete(dataset)
