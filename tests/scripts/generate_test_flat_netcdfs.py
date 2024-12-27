@@ -1,6 +1,8 @@
 from itertools import product
 from pathlib import Path
 
+from cdsobs.cdm.api import read_cdm_code_tables
+from cdsobs.cdm.tables import read_cdm_tables
 from cdsobs.config import CDSObsConfig
 from cdsobs.constants import CONFIG_YML
 from cdsobs.ingestion.api import EmptyBatchException
@@ -15,16 +17,25 @@ from cdsobs.service_definition.api import get_service_definition
 
 
 def main():
-    dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
-    new_dataset_name = "insitu-observations-woudc-netcdfs"
-    source = "OzoneSonde"
-    start_year = 1969
-    end_year = 1969
+    dataset_name = "insitu-observations-gruan-reference-network"
+    new_dataset_name = "insitu-observations-gruan-reference-network-netcdfs"
+    source = "GRUAN"
+    start_year = 2010
+    end_year = 2011
     config = CDSObsConfig.from_yaml(CONFIG_YML)
-    output_dir = Path(Path(__file__).parent.parent, "data", "woudc_netcdfs")
+    output_dir = Path("/tmp")
     service_definition = get_service_definition(config, dataset_name)
     variables = get_variables_from_service_definition(service_definition, source)
-    dataset_params = DatasetMetadata(dataset_name, source, variables)
+    cdm_tables = read_cdm_tables(config.cdm_tables_location)
+    cdm_code_tables = read_cdm_code_tables(config.cdm_tables_location)
+    dataset_params = DatasetMetadata(
+        dataset_name,
+        source,
+        variables,
+        cdm_tables,
+        cdm_code_tables,
+        service_definition.space_columns,
+    )
     for year, month in product(range(start_year, end_year + 1), range(1, 13)):
         time_space_batch = TimeSpaceBatch(TimeBatch(year, month))
         try:
