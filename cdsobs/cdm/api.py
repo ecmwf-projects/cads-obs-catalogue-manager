@@ -328,7 +328,7 @@ def check_cdm_compliance(
     return table_field_mappings
 
 
-def apply_unit_changes(
+def define_units(
     homogenised_data: pandas.DataFrame,
     source_definition: SourceDefinition,
     cdm_variable_table: CDMCodeTable,

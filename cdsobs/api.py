@@ -8,8 +8,8 @@ import pandas
 from sqlalchemy.orm import Session
 
 from cdsobs.cdm.api import (
-    apply_unit_changes,
     check_cdm_compliance,
+    define_units,
 )
 from cdsobs.config import CDSObsConfig, DatasetConfig
 from cdsobs.ingestion.api import (
@@ -294,11 +294,12 @@ def _read_homogenise_and_partition(
     # Check CDM compliance
     check_cdm_compliance(homogenised_data, dataset_metadata.cdm_tables)
     # Apply unit changes
-    homogenised_data = apply_unit_changes(
-        homogenised_data,
-        service_definition.sources[source],
-        dataset_metadata.cdm_code_tables["observed_variable"],
-    )
+    if "units" not in homogenised_data.columns:
+        homogenised_data = define_units(
+            homogenised_data,
+            service_definition.sources[source],
+            dataset_metadata.cdm_code_tables["observed_variable"],
+        )
     year = time_space_batch.time_batch.year
     lon_tile_size = dataset_config.get_tile_size("lon", source, year)
     lat_tile_size = dataset_config.get_tile_size("lat", source, year)
