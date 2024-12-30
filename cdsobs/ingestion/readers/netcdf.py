@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Tuple
 
 import pandas
 import xarray
@@ -20,7 +19,7 @@ def read_flat_netcdfs(
     source: str,
     time_space_batch: TimeSpaceBatch,
     input_dir: str,
-) -> Tuple[pandas.DataFrame, pandas.Series]:
+) -> pandas.DataFrame:
     if time_space_batch.space_batch != "global":
         logger.warning("This reader does not support subsetting in space.")
     time_batch = time_space_batch.time_batch
@@ -30,7 +29,6 @@ def read_flat_netcdfs(
     )
     if netcdf_path.exists():
         data = xarray.open_dataset(netcdf_path).to_pandas()
-        data_types = data.dtypes
     else:
         raise EmptyBatchException
-    return data, data_types  # type: ignore
+    return data
