@@ -95,7 +95,7 @@ def validate_and_homogenise(
         data_renamed = data
     # Add z coordinate if needed
     if (
-        "z_coordinate" not in data_renamed
+        "z_coordinate" not in data_renamed.columns
         and source_definition.space_columns is not None
         and source_definition.space_columns.z is not None
     ):
