@@ -6,6 +6,7 @@ import xarray
 from cdsobs.config import CDSObsConfig
 from cdsobs.ingestion.api import EmptyBatchException
 from cdsobs.ingestion.core import TimeSpaceBatch
+from cdsobs.retrieve.filter_datasets import get_var_code_dict
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.utils.logutils import get_logger
 
@@ -31,4 +32,7 @@ def read_flat_netcdfs(
         data = xarray.open_dataset(netcdf_path).to_pandas()
     else:
         raise EmptyBatchException
+    # Decode variable names
+    code_dict = get_var_code_dict(config.cdm_tables_location)
+    data["observed_variable"] = data["observed_variable"].map(code_dict)
     return data
