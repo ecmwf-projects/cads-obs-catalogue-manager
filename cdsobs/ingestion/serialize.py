@@ -7,7 +7,7 @@ import numpy
 import pandas
 
 from cdsobs import constants
-from cdsobs.cdm.api import CdmDataset, to_cdm_dataset
+from cdsobs.cdm.api import CdmDataset, define_units, to_cdm_dataset
 from cdsobs.config import CDSObsConfig
 from cdsobs.ingestion.api import read_batch_data
 from cdsobs.ingestion.core import (
@@ -282,6 +282,11 @@ def batch_to_netcdf(
     for field in homogenised_data:
         if homogenised_data[field].dtype == "string":
             homogenised_data[field] = homogenised_data[field].str.encode("UTF-8")
+    homogenised_data = define_units(
+        homogenised_data,
+        service_definition.sources[source],
+        dataset_params.cdm_code_tables["observed_variable"],
+    )
     encoded_data, var2code_subset = encode_observed_variables(
         dataset_params.cdm_code_tables, homogenised_data
     )
