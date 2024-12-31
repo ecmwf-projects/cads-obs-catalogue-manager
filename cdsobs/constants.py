@@ -17,7 +17,7 @@ TEST_VAR_OUT = "air_temperature"
 
 DATE_FORMAT = "%Y-%m-%d, %H:%M:%S"
 
-CONFIG_YML = Path(cdsobs_path, "data/cdsobs_config_template.yml")
+CONFIG_YML = Path(Path(cdsobs_path).parent, "tests", "data", "cdsobs_config_test.yml")
 
 DS_TEST_NAME = "insitu-observations-woudc-ozone-total-column-and-profiles"
 

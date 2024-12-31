@@ -7,7 +7,7 @@ import numpy
 import pandas
 
 from cdsobs import constants
-from cdsobs.cdm.api import CdmDataset, to_cdm_dataset
+from cdsobs.cdm.api import CdmDataset, define_units, to_cdm_dataset
 from cdsobs.config import CDSObsConfig
 from cdsobs.ingestion.api import read_batch_data
 from cdsobs.ingestion.core import (
@@ -131,24 +131,10 @@ def to_netcdf(
     # Encode variable names as integer
     if encode_variables:
         logger.info("Encoding observed variables using the CDM variable codes.")
-        code_table = cdm_dataset.dataset_params.cdm_code_tables[
-            "observed_variable"
-        ].table
-        # strip to remove extra spaces
-        var2code = get_var2code(code_table)
-        encoded_data = (
-            cdm_dataset.dataset["observed_variable"]
-            .str.encode("UTF-8")
-            .map(var2code)
-            .astype("uint8")
-        )
+        cdm_code_tables = cdm_dataset.dataset_params.cdm_code_tables
+        data = cdm_dataset.dataset
+        encoded_data, var2code_subset = encode_observed_variables(cdm_code_tables, data)
         cdm_dataset.dataset["observed_variable"] = encoded_data
-        codes_in_data = encoded_data.unique()
-        var2code_subset = {
-            var.decode("ascii"): code
-            for var, code in var2code.items()
-            if code in codes_in_data
-        }
         encoding["observed_variable"]["dtype"] = encoded_data.dtype
         attrs["observed_variable"] = dict(
             labels=list(var2code_subset), codes=list(var2code_subset.values())
@@ -164,6 +150,22 @@ def to_netcdf(
         output_path, cdm_dataset.dataset.reset_index(), encoding=encoding, attrs=attrs
     )
     return output_path
+
+
+def encode_observed_variables(cdm_code_tables, data):
+    code_table = cdm_code_tables["observed_variable"].table
+    # strip to remove extra spaces
+    var2code = get_var2code(code_table)
+    encoded_data = (
+        data["observed_variable"].str.encode("UTF-8").map(var2code).astype("uint8")
+    )
+    codes_in_data = encoded_data.unique()
+    var2code_subset = {
+        var.decode("ascii"): code
+        for var, code in var2code.items()
+        if code in codes_in_data
+    }
+    return encoded_data, var2code_subset
 
 
 def get_var2code(code_table):
@@ -280,15 +282,28 @@ def batch_to_netcdf(
     for field in homogenised_data:
         if homogenised_data[field].dtype == "string":
             homogenised_data[field] = homogenised_data[field].str.encode("UTF-8")
+    homogenised_data = define_units(
+        homogenised_data,
+        service_definition.sources[source],
+        dataset_params.cdm_code_tables["observed_variable"],
+    )
+    encoded_data, var2code_subset = encode_observed_variables(
+        dataset_params.cdm_code_tables, homogenised_data
+    )
+    homogenised_data["observed_variable"] = encoded_data
     homogenised_data_xr = homogenised_data.to_xarray()
     if service_definition.global_attributes is not None:
         homogenised_data.attrs = {
             **homogenised_data.attrs,
             **service_definition.global_attributes,
         }
+    homogenised_data_xr["observed_variable"].attrs = dict(
+        labels=list(var2code_subset), codes=list(var2code_subset.values())
+    )
     encoding = get_encoding_with_compression_xarray(
         homogenised_data_xr, string_transform="str_to_char"
     )
+    encoding["observed_variable"]["dtype"] = str(encoded_data.dtype)
     logger.info(f"Writing de-normalized and CDM mapped data to {output_path}")
     homogenised_data_xr.to_netcdf(
         output_path, encoding=encoding, engine="netcdf4", format="NETCDF4"

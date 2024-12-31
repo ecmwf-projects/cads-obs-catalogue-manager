@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Tuple
 
 import pandas
 import xarray
@@ -7,6 +6,7 @@ import xarray
 from cdsobs.config import CDSObsConfig
 from cdsobs.ingestion.api import EmptyBatchException
 from cdsobs.ingestion.core import TimeSpaceBatch
+from cdsobs.retrieve.filter_datasets import get_var_code_dict
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.utils.logutils import get_logger
 
@@ -20,7 +20,7 @@ def read_flat_netcdfs(
     source: str,
     time_space_batch: TimeSpaceBatch,
     input_dir: str,
-) -> Tuple[pandas.DataFrame, pandas.Series]:
+) -> pandas.DataFrame:
     if time_space_batch.space_batch != "global":
         logger.warning("This reader does not support subsetting in space.")
     time_batch = time_space_batch.time_batch
@@ -30,7 +30,9 @@ def read_flat_netcdfs(
     )
     if netcdf_path.exists():
         data = xarray.open_dataset(netcdf_path).to_pandas()
-        data_types = data.dtypes
     else:
         raise EmptyBatchException
-    return data, data_types  # type: ignore
+    # Decode variable names
+    code_dict = get_var_code_dict(config.cdm_tables_location)
+    data["observed_variable"] = data["observed_variable"].map(code_dict)
+    return data
