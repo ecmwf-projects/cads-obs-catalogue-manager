@@ -105,6 +105,7 @@ def _process_table(
             "index",
             "recordtimestamp",
             "string1",
+            "string4",
             "type",
             "expver",
             "class",
@@ -542,7 +543,7 @@ def read_nc_file_slices(
             file_vars = [
                 fv
                 for fv in numpy.array(hfile["recordindices"])
-                if fv not in vals_to_exclude
+                if (fv not in vals_to_exclude) and ("string" not in fv)
             ]
             record_times = hfile["recordindices"]["recordtimestamp"]
             # load record record_times
@@ -568,8 +569,13 @@ def read_nc_file_slices(
                     times_indices = numpy.searchsorted(
                         record_times, (selected_start, selected_end)
                     )
+                    first_index = times_indices[0]
+                    if times_indices[1] == len(ris[variable]):
+                        last_index = times_indices[1] - 1
+                    else:
+                        last_index = times_indices[1]
                     selectors[variable] = slice(
-                        ris[variable][times_indices[0]], ris[variable][times_indices[1]]
+                        ris[variable][first_index], ris[variable][last_index]
                     )
                 result = CUONFileandSlices(nc_file, selectors)
     except Exception as e:
