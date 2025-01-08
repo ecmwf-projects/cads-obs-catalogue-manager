@@ -262,7 +262,7 @@ def open_asset(cdm_netcdf: str, decode_variables: bool = False) -> xarray.Datase
 
 
 def read_cdm_code_table(cdm_tables_location: Path, name: str) -> CDMCodeTable:
-    table_path = Path(cdm_tables_location, f"z/tables/{name}.dat")
+    table_path = Path(cdm_tables_location, f"cdm-obs/tables/{name}.dat")
     table_data = pandas.read_csv(
         table_path,
         delimiter="\t",
