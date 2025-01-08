@@ -1,6 +1,6 @@
 # Define a table for the variable-group-matching - for now just a dict:
 # I do not know all those variables, so some might be in the wrong group - please
-# have a look at: https://github.com/glamod/common_data_model/tree/master/table_definitions
+# have a look at: https://github.com/ecmwf-projects/cdm-obs/tree/master/table_definitions
 # to create the table for the matching observations_table - contains all the
 # observations - one row for each observation moment
 import warnings
@@ -176,9 +176,7 @@ def read_cdm_table(cdm_tables_location: Path, name: str) -> CDMTable:
     -------
     CDMTable object which contains the name and a pandas.DataFrame with the data.
     """
-    table_path = Path(
-        cdm_tables_location, f"common_data_model/table_definitions/{name}.csv"
-    )
+    table_path = Path(cdm_tables_location, f"cdm-obs/table_definitions/{name}.csv")
     table_data = pandas.read_csv(
         table_path,
         delimiter="\t",
