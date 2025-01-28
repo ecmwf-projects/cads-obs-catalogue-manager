@@ -411,6 +411,11 @@ def get_denormalized_table_file(
             )
     else:
         logger.warning(f"No data was found in file {file_and_slices.path}")
+    # Need this here to avoid nans in this variable that is an integer
+    denormalized_table_file["uncertainty_type"] = 1
+    denormalized_table_file["uncertainty_type"] = denormalized_table_file[
+        "uncertainty_type"
+    ].astype("int")
     # Decode variable names
     code_dict = get_var_code_dict(config.cdm_tables_location)
     denormalized_table_file["observed_variable"] = denormalized_table_file[
@@ -511,6 +516,7 @@ def _fix_table_data(
     if table_name == "advanced_uncertainty":
         table_data = table_data.rename(dict(desroziers_30="uncertainty_value"), axis=1)
         table_data["uncertainty_type"] = 1
+        table_data["uncertainty_type"] = table_data["uncertainty_type"].astype("int")
         table_data.loc[:, "uncertainty_units"] = dataset_cdm["observations_table"][
             "units"
         ].values
