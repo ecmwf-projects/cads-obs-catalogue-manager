@@ -439,6 +439,7 @@ def _fix_table_data(
             "platform_type",
             "station_type",
             "crs",
+            "profile_id",
         ]
         table_data = table_data.drop(vars_to_drop, axis=1, errors="ignore")
 
@@ -466,6 +467,7 @@ def _fix_table_data(
         # measurement location
         table_data["latitude"] += table_data["latd"]
         table_data["longitude"] += table_data["lond"]
+        table_data["date_time"] += table_data["timed"]
     # Remove duplicate station records
     if table_name == "station_configuration":
         table_data = table_data.drop_duplicates(
