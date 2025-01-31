@@ -115,18 +115,24 @@ def test_config():
 def test_session(test_config):
     session = get_session(test_config.catalogue_db, reset=True)
     yield session
-    session.close()
     # To reset database. Comment  this line to see test results.
-    Base.metadata.drop_all(session.get_bind())
+    engine = session.get_bind()
+    session.commit()
+    Base.metadata.drop_all(engine)
+    session.close()
+    engine.dispose()
 
 
 @pytest.fixture()
 def test_session_pertest(test_config):
     session = get_session(test_config.catalogue_db, reset=True)
+    engine = session.get_bind()
     yield session
-    session.close()
     # To reset database. Comment  this line to see test results.
+    session.commit()
     Base.metadata.drop_all(session.get_bind())
+    session.close()
+    engine.dispose()
 
 
 @pytest.fixture
@@ -156,17 +162,17 @@ def test_s3_client_pertest(test_config):
 class TestRepository:
     catalogue_repository: CatalogueRepository
     s3_client: StorageClient
+    config: CDSObsConfig
 
 
 @pytest.fixture(scope="module")
 def test_repository(test_session, test_s3_client, test_config):
     """The whole thing, session to the catalogue DB and storage client."""
     for dataset_name, dataset_source in TEST_API_PARAMETERS:
-        service_definition = get_service_definition(dataset_name)
+        get_service_definition(test_config, dataset_name)
         start_year, end_year = get_test_years(dataset_source)
         run_ingestion_pipeline(
             dataset_name,
-            service_definition,
             dataset_source,
             test_session,
             test_config,
@@ -175,7 +181,9 @@ def test_repository(test_session, test_s3_client, test_config):
         )
 
     catalogue_repository = CatalogueRepository(test_session)
-    return TestRepository(catalogue_repository, test_s3_client)
+    test_repository = TestRepository(catalogue_repository, test_s3_client, test_config)
+    yield test_repository
+    test_repository.catalogue_repository.session.close()
 
 
 @pytest.fixture

@@ -11,6 +11,7 @@ import sqlalchemy as sa
 from fsspec.implementations.http import HTTPFileSystem
 
 from cdsobs.cli._catalogue_explorer import stats_summary
+from cdsobs.config import CDSObsConfig
 from cdsobs.constraints import iterative_ordering
 from cdsobs.observation_catalogue.models import Catalogue
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
@@ -27,22 +28,23 @@ def get_forms_jsons(
     catalogue_repository: CatalogueRepository,
     output_path: Path,
     storage_client: S3Client,
+    config: CDSObsConfig,
     upload_to_storage: bool = False,
     get_stations_file: bool = False,
 ) -> Tuple[Path, ...]:
     """Save the geco output json files in a folder."""
     # widgets.json
     session = catalogue_repository.session
-    widgets_file = get_widgets_json(session, output_path, dataset)
+    widgets_file = get_widgets_json(session, config, output_path, dataset)
     # constraints
     constraints_file = get_constraints_json(session, output_path, dataset)
     # variables
-    variables_file = get_variables_json(dataset, output_path)
+    variables_file = get_variables_json(dataset, config, output_path)
     json_files: Tuple[Path, ...] = (widgets_file, constraints_file, variables_file)
     # stations file is optional and not computed by default
     if get_stations_file:
         stations_file = get_station_summary(
-            dataset, session, storage_client.public_url_base, output_path
+            dataset, session, config, storage_client.public_url_base, output_path
         )
         json_files += (stations_file,)
     if upload_to_storage:
@@ -55,9 +57,9 @@ def get_forms_jsons(
     return json_files
 
 
-def get_variables_json(dataset: str, output_path: Path) -> Path:
+def get_variables_json(dataset: str, config: CDSObsConfig, output_path: Path) -> Path:
     """JSON file with the variables and their metadata."""
-    service_definition = get_service_definition(dataset)
+    service_definition = get_service_definition(config, dataset)
     variables_json_content = {}
     for source_name, source in service_definition.sources.items():
         descriptions = {k: v.model_dump() for k, v in source.descriptions.items()}
@@ -108,10 +110,12 @@ def get_constraints_json(session, output_path: Path, dataset) -> Path:
     return constraints_path
 
 
-def get_widgets_json(session, output_path: Path, dataset: str) -> Path:
+def get_widgets_json(
+    session, config: CDSObsConfig, output_path: Path, dataset: str
+) -> Path:
     """JSON file with the variables and their metadata."""
     catalogue_entries = get_catalogue_entries_stream(session, dataset)
-    service_definition = get_service_definition(dataset)
+    service_definition = get_service_definition(config, dataset)
     variables = [
         v
         for s in service_definition.sources
@@ -142,7 +146,7 @@ def get_widgets_json(session, output_path: Path, dataset: str) -> Path:
 
 
 def get_station_summary(
-    dataset: str, session, storage_url: str, output_path: Path
+    dataset: str, session, config: CDSObsConfig, storage_url: str, output_path: Path
 ) -> Path:
     """Iterate over the input files to get the stations and their metadata."""
     stations_output_path = Path(output_path, "stations.json")
@@ -150,7 +154,7 @@ def get_station_summary(
 
     df_list = []
 
-    service_definition = get_service_definition(dataset)
+    service_definition = get_service_definition(config, dataset)
     for source in service_definition.sources:
         if service_definition.space_columns is None:
             space_columns = service_definition.sources[source].space_columns

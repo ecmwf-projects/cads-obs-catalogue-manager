@@ -33,7 +33,7 @@ def configure_logger() -> None:
         format="%(message)s",
         stream=sys.stdout,
     )
-    logging_format = os.environ.get("CADSOBS_LOGGING_FORMAT", "JSON")
+    logging_format = os.environ.get("CADSOBS_LOGGING_FORMAT", "CONSOLE")
     if logging_format == "CONSOLE":
         renderer = structlog.dev.ConsoleRenderer(colors=False)
     elif logging_format == "JSON":

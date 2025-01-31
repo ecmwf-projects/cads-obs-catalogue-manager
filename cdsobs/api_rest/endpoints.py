@@ -99,17 +99,23 @@ def get_capabilities(
 
 
 @router.get("/capabilities/{dataset}/sources")
-def get_sources(dataset: str) -> list[str]:
+def get_sources(
+    dataset: str,
+    session: Annotated[HttpAPISession, Depends(session_gen)],
+) -> list[str]:
     """Get available sources for a given dataset."""
-    service_definition = get_service_definition(dataset)
+    service_definition = get_service_definition(session.cdsobs_config, dataset)
     return list(service_definition.sources)
 
 
 @router.get("/{dataset}/service_definition")
-def get_dataset_service_definition(dataset: str) -> ServiceDefinition:
+def get_dataset_service_definition(
+    dataset: str,
+    session: Annotated[HttpAPISession, Depends(session_gen)],
+) -> ServiceDefinition:
     """Get the service definition for a dataset."""
     try:
-        return get_service_definition(dataset)
+        return get_service_definition(session.cdsobs_config, dataset)
     except FileNotFoundError:
         raise make_http_exception(
             status_code=404, message=f"Service definition not found for {dataset=}"

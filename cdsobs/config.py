@@ -13,8 +13,16 @@ from cdsobs.utils.types import LatTileSize, LonTileSize, TimeTileSize
 
 
 def _get_default_cdm_tables_location() -> Path:
-    if "CDM_TABLES_LOCATION" in os.environ:
-        return Path(os.environ["CDM_TABLES_LOCATION"])
+    return _get_default_location("CDM_TABLES_LOCATION")
+
+
+def _get_default_cads_forms_insitu_location() -> Path:
+    return _get_default_location("CADS_OBS_INSITU_LOCATION")
+
+
+def _get_default_location(env_varname: str) -> Path:
+    if env_varname in os.environ:
+        return Path(os.environ[env_varname])
     else:
         return Path.home().joinpath(".cdsobs")
 
@@ -183,6 +191,7 @@ class CDSObsConfig(pydantic.BaseModel):
     ingestion_databases: Dict[str, DBConfig]
     datasets: List[DatasetConfig]
     cdm_tables_location: Path = _get_default_cdm_tables_location()
+    cads_obs_insitu_location: Path = _get_default_cads_forms_insitu_location()
 
     @classmethod
     def from_yaml(cls, config_file: Path) -> "CDSObsConfig":

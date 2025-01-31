@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
+from pprint import pformat
 from typing import List, Optional
 
 import fsspec
@@ -76,7 +77,7 @@ def to_cdm_dataset(partition: DatasetPartition) -> CdmDataset:
     if len(removed_variables) > 0:
         logger.warning(
             "The following variables where read but are not in the CDM and "
-            f"are going to be dropped: {removed_variables}"
+            f"are going to be dropped: {pformat(removed_variables)}"
         )
     return CdmDataset(data, partition.partition_params, partition.dataset_metadata)
 
@@ -261,7 +262,7 @@ def open_asset(cdm_netcdf: str, decode_variables: bool = False) -> xarray.Datase
 
 
 def read_cdm_code_table(cdm_tables_location: Path, name: str) -> CDMCodeTable:
-    table_path = Path(cdm_tables_location, f"common_data_model/tables/{name}.dat")
+    table_path = Path(cdm_tables_location, f"cdm-obs/tables/{name}.dat")
     table_data = pandas.read_csv(
         table_path,
         delimiter="\t",
@@ -327,7 +328,7 @@ def check_cdm_compliance(
     return table_field_mappings
 
 
-def apply_unit_changes(
+def define_units(
     homogenised_data: pandas.DataFrame,
     source_definition: SourceDefinition,
     cdm_variable_table: CDMCodeTable,

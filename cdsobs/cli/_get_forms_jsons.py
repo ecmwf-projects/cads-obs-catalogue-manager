@@ -42,6 +42,7 @@ def get_forms_jsons_command(
             dataset_name,
             catalogue_repository,
             output_dir,
+            config=config,
             upload_to_storage=upload,
             storage_client=storage_client,
             get_stations_file=stations_file,

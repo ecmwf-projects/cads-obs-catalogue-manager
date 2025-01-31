@@ -1,3 +1,4 @@
+import os
 from io import BytesIO
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -50,6 +51,8 @@ def copy_dataset(
 
 
 def _copy_dataset_impl(cdsobs_config_yml, dataset, dest_config_yml, dest_dataset):
+    if dest_dataset is None:
+        dest_dataset = dataset
     check_params(dest_config_yml, dataset, dest_dataset)
 
     try:
@@ -191,7 +194,7 @@ def catalogue_copy(
     for entry in entries:
         # This is needed to load the constraints as it is a deferred attribute.
         # However if we load them the other attributes will dissappear from __dict__
-        # There is no way apparently if doing this better in sqlalchemy
+        # There is no way apparently of doing this better in sqlalchemy
         entry_dict = {
             col.name: getattr(entry, col.name) for col in entry.__table__.columns
         }
@@ -246,8 +249,9 @@ def s3_export(init_s3client: S3Client, dest_s3client: S3Client, entries, dest_da
             name = object_url.split("/")[-1]
             response = requests.get(object_url, stream=True)
             response.raise_for_status()
+            tmp_base = "/tmp" if os.getenv("GITHUB_ACTIONS") else "/dev/shm"
             with (
-                NamedTemporaryFile(dir="/dev/shm") as ntf,
+                NamedTemporaryFile(dir=tmp_base) as ntf,
                 BytesIO(response.content) as bc,
             ):
                 ntf.write(bc.read())

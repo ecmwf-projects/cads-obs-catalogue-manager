@@ -4,7 +4,7 @@ import pytest
 from typer.testing import CliRunner
 
 from cdsobs.cli.app import app
-from cdsobs.constants import CONFIG_YML, SERVICE_DEFINITION_YML
+from cdsobs.constants import CONFIG_YML
 
 runner = CliRunner()
 
@@ -16,22 +16,23 @@ def test_cli_make_production(verbose):
         "make-production",
         "--dataset",
         "insitu-observations-woudc-ozone-total-column-and-profiles",
-        "--service-definition",
-        SERVICE_DEFINITION_YML,
         "--config",
         CONFIG_YML,
         "--start-year",
         1969,
         "--end-year",
         1970,
+        "--source",
+        "OzoneSonde",
     ]
     if verbose:
         args += ["--verbose"]
     result = runner.invoke(app, args, catch_exceptions=False)
+    print(result.stdout)
     assert result.exit_code == 0
 
 
-# @pytest.mark.skip(reason="this test does not reset db after running")
+@pytest.mark.skip(reason="this test does not reset db after running")
 def test_cli_retrieve(tmp_path, test_repository):
     runner = CliRunner()
     test_json_str = """[
@@ -75,8 +76,6 @@ def test_cli_make_cdm(tmp_path):
         "make-cdm",
         "--dataset",
         "insitu-observations-woudc-ozone-total-column-and-profiles",
-        "--service-definition",
-        SERVICE_DEFINITION_YML,
         "--config",
         CONFIG_YML,
         "--start-year",
@@ -86,6 +85,8 @@ def test_cli_make_cdm(tmp_path):
         "--save-data",
         "--output-dir",
         tmp_path,
+        "--source",
+        "OzoneSonde",
     ]
     result = runner.invoke(app, args, catch_exceptions=False)
     assert result.exit_code == 0

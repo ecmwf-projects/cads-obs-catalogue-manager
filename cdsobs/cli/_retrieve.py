@@ -62,7 +62,7 @@ def retrieve(
     config = validate_config(cdsobs_config_yml)
     s3_client = S3Client.from_config(config.s3config)
     output_file = retrieve_observations(
-        config.catalogue_db.get_url(),
+        config,
         s3_client.public_url_base,
         retrieve_args,
         output_dir,

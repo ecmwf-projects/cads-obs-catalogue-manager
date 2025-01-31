@@ -5,6 +5,7 @@ from pathlib import Path
 from cads_adaptors.adaptors.cadsobs.retrieve import retrieve_data
 
 from cdsobs.cdm.lite import cdm_lite_variables
+from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.retrieve.models import RetrieveArgs
 from cdsobs.retrieve.retrieve_services import (
@@ -19,7 +20,7 @@ logger = get_logger(__name__)
 
 
 def retrieve_observations(
-    catalogue_url: str,
+    config: CDSObsConfig,
     storage_url: str,
     retrieve_args: RetrieveArgs,
     output_dir: Path,
@@ -33,9 +34,8 @@ def retrieve_observations(
 
     Parameters
     ----------
-    catalogue_url:
-      URL of the catalogue database including credentials, in the form of
-      "postgresql+psycopg2://someuser:somepass@hostname:port/catalogue"
+    config:
+      Configuration of the obs repo
     storage_url:
       Storage URL
     retrieve_args :
@@ -49,14 +49,17 @@ def retrieve_observations(
 
     logger.info("Starting retrieve pipeline.")
     # Query the storage to get the URLS of the files that contain the data requested
-    with get_database_session(catalogue_url) as session:
+    with get_database_session(config.catalogue_db.get_url()) as session:
         catalogue_repository = CatalogueRepository(session)
         entries = _get_catalogue_entries(catalogue_repository, retrieve_args)
         object_urls = get_urls(entries, storage_url)
         global_attributes = get_service_definition(
-            retrieve_args.dataset
+            config, retrieve_args.dataset
         ).global_attributes
-    cdm_lite_vars = list(itertools.chain.from_iterable(cdm_lite_variables.values()))
+    field_attributes = cdm_lite_variables["attributes"]
+    cdm_lite_vars = list(
+        set(itertools.chain.from_iterable(cdm_lite_variables.values()))
+    )
     context = Context()
     output_path = retrieve_data(
         retrieve_args.dataset,
@@ -64,6 +67,7 @@ def retrieve_observations(
         output_dir,
         object_urls,
         cdm_lite_vars,
+        field_attributes,
         global_attributes,
         context,
     )

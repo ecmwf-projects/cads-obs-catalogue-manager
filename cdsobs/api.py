@@ -8,8 +8,8 @@ import pandas
 from sqlalchemy.orm import Session
 
 from cdsobs.cdm.api import (
-    apply_unit_changes,
     check_cdm_compliance,
+    define_units,
 )
 from cdsobs.config import CDSObsConfig, DatasetConfig
 from cdsobs.ingestion.api import (
@@ -29,6 +29,7 @@ from cdsobs.ingestion.serialize import serialize_partition
 from cdsobs.metadata import get_dataset_metadata
 from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.retrieve.filter_datasets import between
+from cdsobs.service_definition.api import get_service_definition
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.storage import S3Client
 from cdsobs.utils.logutils import get_logger
@@ -38,7 +39,6 @@ logger = get_logger(__name__)
 
 def run_ingestion_pipeline(
     dataset_name: str,
-    service_definition: ServiceDefinition,
     source: str,
     session: Session,
     config: CDSObsConfig,
@@ -60,8 +60,6 @@ def run_ingestion_pipeline(
     ----------
     dataset_name :
       Name of the dataset, for example insitu-observations-woudc-ozone-total-column-and-profiles
-    service_definition :
-      Object produced parsing the service_definition.json.
     source :
       Name of the data type to read from the dataset. For example "OzoneSonde".
     session :
@@ -80,6 +78,10 @@ def run_ingestion_pipeline(
       Month to start reading the data. It only applies to the first year of the interval.
       Default is 1.
     """
+    logger.info("----------------------------------------------------------------")
+    logger.info("Running ingestion pipeline")
+    logger.info("----------------------------------------------------------------")
+    service_definition = get_service_definition(config, dataset_name)
 
     def _run_for_batch(time_space_batch):
         try:
@@ -106,7 +108,6 @@ def run_ingestion_pipeline(
 
 def run_make_cdm(
     dataset_name: str,
-    service_definition: ServiceDefinition,
     source: str,
     config: CDSObsConfig,
     start_year: int,
@@ -125,8 +126,6 @@ def run_make_cdm(
     ----------
     dataset_name :
       Name of the dataset, for example insitu-observations-woudc-ozone-total-column-and-profiles
-    service_definition
-      Object produced parsing the service_definition.json.
     source
      Name of the data type to read from the dataset. For example "OzoneSonde".
     config
@@ -142,6 +141,10 @@ def run_make_cdm(
       make_production. If False, the data only will be loaded and checked for CDM
       compliance in memory.
     """
+    logger.info("----------------------------------------------------------------")
+    logger.info("Running make cdm")
+    logger.info("----------------------------------------------------------------")
+    service_definition = get_service_definition(config, dataset_name)
 
     def _run_for_batch(time_batch):
         try:
@@ -155,7 +158,7 @@ def run_make_cdm(
                 time_batch,
             )
         except EmptyBatchException:
-            logger.warning(f"Not found for {time_batch=}")
+            logger.warning(f"No data found for {time_batch=}")
 
     main_iterator = _get_main_iterator(
         config, dataset_name, source, start_year, end_year
@@ -196,7 +199,9 @@ def _run_ingestion_pipeline_for_batch(
       By default, these time intervals will be skipped.
     """
     if not update and _entry_exists(dataset_name, session, source, time_space_batch):
-        logger.warning("A partition with the chosen parameters already exists")
+        logger.warning(
+            "A partition with the chosen parameters already exists and update is set to False."
+        )
     else:
         sorted_partitions = _read_homogenise_and_partition(
             config, dataset_name, service_definition, source, time_space_batch
@@ -289,11 +294,12 @@ def _read_homogenise_and_partition(
     # Check CDM compliance
     check_cdm_compliance(homogenised_data, dataset_metadata.cdm_tables)
     # Apply unit changes
-    homogenised_data = apply_unit_changes(
-        homogenised_data,
-        service_definition.sources[source],
-        dataset_metadata.cdm_code_tables["observed_variable"],
-    )
+    if "units" not in homogenised_data.columns:
+        homogenised_data = define_units(
+            homogenised_data,
+            service_definition.sources[source],
+            dataset_metadata.cdm_code_tables["observed_variable"],
+        )
     year = time_space_batch.time_batch.year
     lon_tile_size = dataset_config.get_tile_size("lon", source, year)
     lat_tile_size = dataset_config.get_tile_size("lat", source, year)

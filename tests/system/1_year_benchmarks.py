@@ -64,7 +64,7 @@ def main():
         config.catalogue_db
     ) as session, tempfile.TemporaryDirectory() as tmpdir:
         for dataset_name in TEST_DATASETS:
-            service_definition = get_service_definition(dataset_name)
+            service_definition = get_service_definition(config, dataset_name)
             sources = service_definition.sources
 
             for dataset_source in sources:
@@ -95,9 +95,8 @@ def main():
                 retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
                 s3_client = S3Client.from_config(config.s3config)
                 start_time = time.perf_counter()
-                catalogue_url = config.catalogue_db.get_url()
                 retrieve_funct(
-                    catalogue_url,
+                    config,
                     s3_client.public_url_base,
                     retrieve_args,
                     tmpdir,
@@ -128,7 +127,7 @@ def main():
                 retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
                 start_time = time.perf_counter()
                 retrieve_funct(
-                    catalogue_url,
+                    config,
                     s3_client.public_url_base,
                     retrieve_args,
                     tmpdir,
@@ -152,7 +151,7 @@ def main():
                 retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
                 start_time = time.perf_counter()
                 retrieve_funct(
-                    catalogue_url,
+                    config,
                     s3_client.public_url_base,
                     retrieve_args,
                     tmpdir,

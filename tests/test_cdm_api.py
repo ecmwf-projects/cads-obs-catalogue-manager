@@ -1,8 +1,8 @@
 import pytest
 
 from cdsobs.cdm.api import (
-    apply_unit_changes,
     check_cdm_compliance,
+    define_units,
     read_cdm_code_tables,
 )
 from cdsobs.cdm.tables import read_cdm_tables
@@ -18,7 +18,7 @@ from cdsobs.service_definition.api import get_service_definition
 def test_check_cdm_compliance(test_config, caplog):
     dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
     source = "OzoneSonde"
-    service_definition = get_service_definition(dataset_name)
+    service_definition = get_service_definition(test_config, dataset_name)
     homogenised_data = _get_homogenised_data(
         dataset_name, service_definition, source, test_config
     )
@@ -43,19 +43,19 @@ def _get_homogenised_data(dataset_name, service_definition, source, test_config)
 def test_apply_variable_unit_change(test_config):
     dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
     source = "OzoneSonde"
-    service_definition = get_service_definition(dataset_name)
+    service_definition = get_service_definition(test_config, dataset_name)
     homogenised_data = _get_homogenised_data(
         dataset_name, service_definition, source, test_config
     )
     source_definition = service_definition.sources[source]
     cdm_code_tables = read_cdm_code_tables(test_config.cdm_tables_location)
-    actual = apply_unit_changes(
+    actual = define_units(
         homogenised_data, source_definition, cdm_code_tables["observed_variable"]
     )
     assert "original_units" in actual and "units" in actual and len(actual) > 0
 
     with pytest.raises(RuntimeError):
         source_definition.descriptions["geopotential_height"].units = "wrong"
-        apply_unit_changes(
+        define_units(
             homogenised_data, source_definition, cdm_code_tables["observed_variable"]
         )

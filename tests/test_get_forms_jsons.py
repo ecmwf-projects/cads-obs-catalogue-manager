@@ -9,6 +9,7 @@ def test_get_forms_jsons(test_repository, tmp_path):
         dataset,
         test_repository.catalogue_repository,
         tmp_path,
+        config=test_repository.config,
         upload_to_storage=True,
         storage_client=s3_client,
         get_stations_file=True,
