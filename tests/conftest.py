@@ -115,18 +115,24 @@ def test_config():
 def test_session(test_config):
     session = get_session(test_config.catalogue_db, reset=True)
     yield session
-    session.close()
     # To reset database. Comment  this line to see test results.
-    Base.metadata.drop_all(session.get_bind())
+    engine = session.get_bind()
+    session.commit()
+    Base.metadata.drop_all(engine)
+    session.close()
+    engine.dispose()
 
 
 @pytest.fixture()
 def test_session_pertest(test_config):
     session = get_session(test_config.catalogue_db, reset=True)
+    engine = session.get_bind()
     yield session
-    session.close()
     # To reset database. Comment  this line to see test results.
+    session.commit()
     Base.metadata.drop_all(session.get_bind())
+    session.close()
+    engine.dispose()
 
 
 @pytest.fixture
@@ -175,7 +181,9 @@ def test_repository(test_session, test_s3_client, test_config):
         )
 
     catalogue_repository = CatalogueRepository(test_session)
-    return TestRepository(catalogue_repository, test_s3_client, test_config)
+    test_repository = TestRepository(catalogue_repository, test_s3_client, test_config)
+    yield test_repository
+    test_repository.catalogue_repository.session.close()
 
 
 @pytest.fixture
