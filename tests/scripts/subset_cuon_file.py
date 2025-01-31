@@ -1,12 +1,10 @@
 # Select a few moths only for the tests
 from pathlib import Path
 
-import cftime
-import netCDF4
+import h5py
 import numpy
 import xarray
 
-from cdsobs.constants import TIME_UNITS
 from cdsobs.ingestion.core import TimeBatch
 from cdsobs.ingestion.readers.cuon import read_nc_file_slices
 
@@ -26,6 +24,12 @@ def concat_chars(in_ds: xarray.Dataset) -> xarray.Dataset:
     return out_ds
 
 
+def open_dataset_group(ifile: Path, table_name: str) -> xarray.Dataset:
+    return xarray.open_dataset(
+        ifile, group=table_name, engine="h5netcdf", decode_times=False
+    )
+
+
 def main(ifile: Path, nfile):
     time_batch = TimeBatch(1960, 1)
     file_and_slices = read_nc_file_slices(ifile, time_batch)
@@ -38,10 +42,10 @@ def main(ifile: Path, nfile):
 
     ofile = Path(ifile.parent.parent, ifile.name.replace(".nc", "_small.nc"))
     print(f"Writing subset to {ofile}")
-    with netCDF4.Dataset(ifile) as inc:
-        groups = list(inc.groups)
+    with h5py.File(ifile) as f:
+        groups = list(f)
 
-    with xarray.open_dataset(ifile, group="observations_table") as obs_ds:
+    with open_dataset_group(ifile, "observations_table") as obs_ds:
         varcodes = sorted(set(obs_ds["observed_variable"].values))
         obs_ds_subset_list = []
         for vc in varcodes:
@@ -53,8 +57,9 @@ def main(ifile: Path, nfile):
         obs_ds_subset = concat_chars(obs_ds_subset)
         obs_ds_subset.to_netcdf(ofile, mode="a", group="observations_table")
 
-    with xarray.open_dataset(ifile, group="header_table") as header_ds:
+    with open_dataset_group(ifile, "header_table") as header_ds:
         # Get the first 100 times
+        header_ds = concat_chars(header_ds)
         report_id_mask = header_ds["report_id"].load().isin(report_ids)
         header_ds = header_ds.sel(index=report_id_mask)
         header_ds = concat_chars(header_ds)
@@ -66,7 +71,7 @@ def main(ifile: Path, nfile):
     ]
     for table_name in tables_remaining:
         if table_name in sorted_by_variable:
-            with xarray.open_dataset(ifile, group=table_name) as table_ds:
+            with open_dataset_group(ifile, table_name) as table_ds:
                 table_ds_subset_list = []
                 for vc in varcodes:
                     table_ds_var = table_ds.isel(
@@ -75,7 +80,7 @@ def main(ifile: Path, nfile):
                     table_ds_subset_list.append(table_ds_var)
                 table_ds_subset = xarray.concat(table_ds_subset_list, dim="index")
         else:
-            with xarray.open_dataset(ifile, group=table_name) as table_ds:
+            with open_dataset_group(ifile, table_name) as table_ds:
                 if len(table_ds.index) == len(report_id_mask):
                     table_ds_subset = table_ds.sel(index=report_id_mask)
                 elif table_name == "recordindices":
@@ -108,11 +113,9 @@ def main(ifile: Path, nfile):
                     recordtimestamps = (
                         header_ds.set_index(index="report_id")
                         .sel(index=report_ids)
-                        .report_timestamp
+                        .report_timestamp.values
                     )
-                    table_ds_subset["recordtimestamp"][:] = cftime.date2num(
-                        recordtimestamps.to_index().to_pydatetime(), units=TIME_UNITS
-                    )
+                    table_ds_subset["recordtimestamp"][:] = recordtimestamps
                 else:
                     table_ds_subset = table_ds
                 if table_name == "station_configuration_codes":

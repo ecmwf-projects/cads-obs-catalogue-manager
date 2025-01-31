@@ -61,15 +61,19 @@ def delete_dataset(
         except (Exception, KeyboardInterrupt):
             catalogue_rollback(catalogue_session, deleted_entries)
             raise
-    nd = len(deleted_entries)
-    console.print(f"[bold green] {nd} entries deleted from {dataset}. [/bold green]")
-    nremaining = catalogue_session.scalar(select(func.count()).select_from(Catalogue))
-    if nremaining == 0:
-        CadsDatasetRepository(catalogue_session).delete_dataset(dataset)
+        nd = len(deleted_entries)
         console.print(
-            f"[bold green] Deleted {dataset} from datasets table as it was left empty. "
-            f"[/bold green]"
+            f"[bold green] {nd} entries deleted from {dataset}. [/bold green]"
         )
+        nremaining = catalogue_session.scalar(
+            select(func.count()).select_from(Catalogue)
+        )
+        if nremaining == 0:
+            CadsDatasetRepository(catalogue_session).delete_dataset(dataset)
+            console.print(
+                f"[bold green] Deleted {dataset} from datasets table as it was left empty. "
+                f"[/bold green]"
+            )
 
 
 def delete_from_catalogue(

@@ -105,6 +105,7 @@ def _process_table(
             "index",
             "recordtimestamp",
             "string1",
+            "string4",
             "type",
             "expver",
             "class",
@@ -410,6 +411,11 @@ def get_denormalized_table_file(
             )
     else:
         logger.warning(f"No data was found in file {file_and_slices.path}")
+    # Need this here to avoid nans in this variable that is an integer
+    denormalized_table_file["uncertainty_type"] = 1
+    denormalized_table_file["uncertainty_type"] = denormalized_table_file[
+        "uncertainty_type"
+    ].astype("int")
     # Decode variable names
     code_dict = get_var_code_dict(config.cdm_tables_location)
     denormalized_table_file["observed_variable"] = denormalized_table_file[
@@ -438,6 +444,7 @@ def _fix_table_data(
             "platform_type",
             "station_type",
             "crs",
+            "profile_id",
         ]
         table_data = table_data.drop(vars_to_drop, axis=1, errors="ignore")
 
@@ -465,6 +472,7 @@ def _fix_table_data(
         # measurement location
         table_data["latitude"] += table_data["latd"]
         table_data["longitude"] += table_data["lond"]
+        table_data["date_time"] += table_data["timed"]
     # Remove duplicate station records
     if table_name == "station_configuration":
         table_data = table_data.drop_duplicates(
@@ -508,6 +516,7 @@ def _fix_table_data(
     if table_name == "advanced_uncertainty":
         table_data = table_data.rename(dict(desroziers_30="uncertainty_value"), axis=1)
         table_data["uncertainty_type"] = 1
+        table_data["uncertainty_type"] = table_data["uncertainty_type"].astype("int")
         table_data.loc[:, "uncertainty_units"] = dataset_cdm["observations_table"][
             "units"
         ].values
@@ -542,7 +551,7 @@ def read_nc_file_slices(
             file_vars = [
                 fv
                 for fv in numpy.array(hfile["recordindices"])
-                if fv not in vals_to_exclude
+                if (fv not in vals_to_exclude) and ("string" not in fv)
             ]
             record_times = hfile["recordindices"]["recordtimestamp"]
             # load record record_times
@@ -568,8 +577,13 @@ def read_nc_file_slices(
                     times_indices = numpy.searchsorted(
                         record_times, (selected_start, selected_end)
                     )
+                    first_index = times_indices[0]
+                    if times_indices[1] == len(ris[variable]):
+                        last_index = times_indices[1] - 1
+                    else:
+                        last_index = times_indices[1]
                     selectors[variable] = slice(
-                        ris[variable][times_indices[0]], ris[variable][times_indices[1]]
+                        ris[variable][first_index], ris[variable][last_index]
                     )
                 result = CUONFileandSlices(nc_file, selectors)
     except Exception as e:

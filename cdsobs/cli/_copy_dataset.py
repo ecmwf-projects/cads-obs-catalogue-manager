@@ -1,3 +1,4 @@
+import os
 from io import BytesIO
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -248,8 +249,9 @@ def s3_export(init_s3client: S3Client, dest_s3client: S3Client, entries, dest_da
             name = object_url.split("/")[-1]
             response = requests.get(object_url, stream=True)
             response.raise_for_status()
+            tmp_base = "/tmp" if os.getenv("GITHUB_ACTIONS") else "/dev/shm"
             with (
-                NamedTemporaryFile(dir="/dev/shm") as ntf,
+                NamedTemporaryFile(dir=tmp_base) as ntf,
                 BytesIO(response.content) as bc,
             ):
                 ntf.write(bc.read())

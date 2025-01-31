@@ -144,7 +144,7 @@ def to_netcdf(
         var_series = cdm_dataset.dataset[varname]
         if var_series.dtype.kind == "M":
             cdm_dataset.dataset[varname] = datetime_to_seconds(var_series)
-    attrs["report_timestamp"] = dict(units=constants.TIME_UNITS)
+            attrs[varname] = dict(units=constants.TIME_UNITS)
     # Write to netCDF
     write_pandas_to_netcdf(
         output_path, cdm_dataset.dataset.reset_index(), encoding=encoding, attrs=attrs
