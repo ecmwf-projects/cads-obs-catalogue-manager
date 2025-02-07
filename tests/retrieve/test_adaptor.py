@@ -13,9 +13,10 @@ def test_adaptor(tmp_path):
         "observation_type": ["vertical_profile"],
         "format": "netCDF",
         "variable": ["air_temperature", "geopotential_height"],
-        "year": ["1999"],
+        "year": ["1969"],
         "month": ["01", "02"],
         "day": [f"{i:02d}" for i in range(1, 32)],
+        "area": ["50", "-10", "20", "10"],
     }
     test_form = {}
     # + "/v1/AUTH_{public_user}" will be needed to work with S3 ceph public urls, but it
@@ -36,6 +37,7 @@ def test_adaptor(tmp_path):
         },
     }
     adaptor = ObservationsAdaptor(test_form, **test_adaptor_config)
+    adaptor.estimate_costs(test_request)
     result = adaptor.retrieve(test_request)
     tempfile = Path(tmp_path, "test_adaptor.nc")
     with tempfile.open("wb") as tmpf:
@@ -62,6 +64,7 @@ def test_adaptor_uscrn(tmp_path):
             "02",
             "03",
         ],
+        "area": ["50", "-10", "20", "10"],
     }
     test_form = {}
     # + "/v1/AUTH_{public_user}" will be needed to work with S3 ceph public urls, but it
@@ -130,6 +133,7 @@ def test_adaptor_gnss(tmp_path):
         "year": ["2000"],
         "month": ["10"],
         "day": [f"{i:02d}" for i in range(1, 32)],
+        "area": ["50", "-10", "20", "10"],
     }
     test_form = {}
     # + "/v1/AUTH_{public_user}" will be needed to work with S3 ceph public urls, but it

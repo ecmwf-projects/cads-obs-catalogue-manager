@@ -10,7 +10,7 @@ from cdsobs.observation_catalogue.repositories.catalogue import CatalogueReposit
 from cdsobs.retrieve.models import RetrieveArgs
 from cdsobs.retrieve.retrieve_services import (
     _get_catalogue_entries,
-    get_urls_and_check_size,
+    get_urls,
 )
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.utils.logutils import get_logger
@@ -52,9 +52,7 @@ def retrieve_observations(
     with get_database_session(config.catalogue_db.get_url()) as session:
         catalogue_repository = CatalogueRepository(session)
         entries = _get_catalogue_entries(catalogue_repository, retrieve_args)
-        object_urls = get_urls_and_check_size(
-            entries, retrieve_args, size_limit, storage_url
-        )
+        object_urls = get_urls(entries, storage_url)
         global_attributes = get_service_definition(
             config, retrieve_args.dataset
         ).global_attributes

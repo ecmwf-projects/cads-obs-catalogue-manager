@@ -17,27 +17,24 @@ def test_read_main(test_repository, test_config, tmp_path):
     app.dependency_overrides[session_gen] = test_session
 
     payload = {
-        "retrieve_args": {
-            "dataset": "insitu-observations-gnss",
-            "params": {
-                "dataset_source": "IGS_R3",
-                "stations": ["AREQ00PER"],
-                "latitude_coverage": (-90.0, 0.0),
-                "longitude_coverage": (-180.0, 0.0),
-                "format": "netCDF",
-                "variables": [
-                    "precipitable_water_column",
-                    "precipitable_water_column_total_uncertainty",
-                ],
-                "year": ["2000"],
-                "month": ["10"],
-                "day": [f"{i:02d}" for i in range(1, 32)],
-            },
+        "dataset": "insitu-observations-gnss",
+        "params": {
+            "dataset_source": "IGS_R3",
+            "stations": ["AREQ00PER"],
+            "latitude_coverage": (-90.0, 0.0),
+            "longitude_coverage": (-180.0, 0.0),
+            "format": "netCDF",
+            "variables": [
+                "precipitable_water_column",
+                "precipitable_water_column_total_uncertainty",
+            ],
+            "year": ["2000"],
+            "month": ["10"],
+            "day": [f"{i:02d}" for i in range(1, 32)],
         },
-        "config": {"size_limit": 1000000},
     }
 
-    response = client.post("/get_object_urls_and_check_size", json=payload)
+    response = client.post("/get_object_urls", json=payload)
     assert response.status_code == 200
     assert response.json() == [
         "http://127.0.0.1:9000/cds2-obs-dev-insitu-observations-gnss/"
