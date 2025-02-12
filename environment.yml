@@ -45,6 +45,7 @@ dependencies:
 - datetimerange
 - uvicorn
 - python=3.12
+- duckdb
 - pip:
   - sqlalchemy_json
   - "git+https://github.com/ecmwf-projects/cads-adaptors"
