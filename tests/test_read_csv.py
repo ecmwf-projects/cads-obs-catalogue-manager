@@ -12,7 +12,7 @@ def test_read_flat_csvs(test_config):
         service_definition,
         "CUON",
         time_space_batch=TimeSpaceBatch(TimeBatch(2001, 9), "global"),
-        input_dir="data/csv_data/*",
+        input_dir="tests/data/csv_data/*",
         separator="|",
     )
     print(df)
