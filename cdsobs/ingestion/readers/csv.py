@@ -19,17 +19,46 @@ def read_flat_csvs(
     service_definition: ServiceDefinition,
     source: str,
     time_space_batch: TimeSpaceBatch,
-    input_dir: str,
-    name_pattern: str | None = None,
+    input_path: str,
+    filename_pattern: str | None = None,
     separator: str = ",",
 ) -> pandas.DataFrame:
+    """
+    Read CSV (also TSV, etc) files.
+
+    Parameters
+    ----------
+    dataset_name: str
+      Name of the dataset.
+    config: CDSObsConfig
+      Main configuration object.
+    service_definition: ServiceDefinition
+      Service Definition object.
+    source: str
+      Dataset source
+    time_space_batch: TimeSpaceBatch
+      Time and space slice to read.
+    input_path: str
+      Directory where the input files are located. Expansion patterns can be used, for
+      example /data/*.csv.
+    filename_pattern: optional, str, default is None
+      If provided, it will be expanded replacing the following keys: dataset_name,
+      source, year and month. For example {dataset_name}_{source}_{year}_{month}.nc.
+    separator: str, optional, detafault is ','
+      Separator if the fields in the input text file.
+
+    Returns
+    -------
+    pandas.DataFrame
+
+    """
     if time_space_batch.space_batch != "global":
         logger.warning("This reader does not support subsetting in space.")
     time_batch = time_space_batch.time_batch
-    if name_pattern is not None:
+    if filename_pattern is not None:
         input_files_pattern = Path(
-            input_dir,
-            name_pattern.format(
+            input_path,
+            input_path.format(
                 dataset_name=dataset_name,
                 source=source,
                 year=time_batch.year,
@@ -37,7 +66,7 @@ def read_flat_csvs(
             ),
         )
     else:
-        input_files_pattern = Path(input_dir)
+        input_files_pattern = Path(input_path)
     start, end = time_batch.get_time_coverage()
     data = duckdb.sql(
         f"""
