@@ -15,7 +15,7 @@ dependencies:
 # DO NOT EDIT ABOVE THIS LINE, ADD DEPENDENCIES BELOW
 - connectorx
 - cruft
-- boto3
+- boto3<=1.34
 - httpx
 - hdf5
 - libnetcdf
@@ -46,6 +46,7 @@ dependencies:
 - uvicorn
 - python=3.12
 - duckdb
+- cryptography
 - pip:
   - sqlalchemy_json
   - "git+https://github.com/ecmwf-projects/cads-adaptors"
