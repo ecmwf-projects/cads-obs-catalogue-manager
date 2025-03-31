@@ -79,7 +79,6 @@ def main():
                     config,
                     start_year=year,
                     end_year=year,
-                    update=False,
                 )
                 end_time = time.perf_counter()
                 total_time = end_time - start_time

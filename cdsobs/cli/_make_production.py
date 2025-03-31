@@ -24,16 +24,6 @@ def make_production(
         help="Source to process. Sources are defined in the service definition file,"
         "in the sources mapping.",
     ),
-    update: bool = typer.Option(
-        False,
-        "--update",
-        "-u",
-        help=(
-            "If set, data overlapping in time (year and month) with existing partitions "
-            "will be read in order to check if it changed these need to be updated. "
-            "By default, these time intervals will be skipped."
-        ),
-    ),
     start_month: int = typer.Option(
         1,
         "--start-month",
@@ -56,6 +46,5 @@ def make_production(
             config,
             start_year,
             end_year,
-            update,
             start_month,
         )

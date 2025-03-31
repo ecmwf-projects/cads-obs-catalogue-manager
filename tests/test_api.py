@@ -26,7 +26,6 @@ def test_run_ingestion_pipeline(
         test_config,
         start_year=start_year,
         end_year=end_year,
-        update=False,
     )
     # assert insertions have been made
     counter = test_session.scalar(

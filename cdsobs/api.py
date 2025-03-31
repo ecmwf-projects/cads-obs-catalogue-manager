@@ -44,7 +44,6 @@ def run_ingestion_pipeline(
     config: CDSObsConfig,
     start_year: int,
     end_year: int,
-    update: bool = False,
     start_month: int = 1,
 ):
     """
@@ -70,10 +69,6 @@ def run_ingestion_pipeline(
       Year to start reading the data.
     end_year:
       Year to finish reading the data.
-    update:
-      If True, data overlapping in time (year and month) with existing partitions
-      will be read in order to check if it changed these need to be updated.
-      By default, these time intervals will be skipped.
     start_month:
       Month to start reading the data. It only applies to the first year of the interval.
       Default is 1.
@@ -92,7 +87,6 @@ def run_ingestion_pipeline(
                 session,
                 config,
                 time_space_batch,
-                update,
             )
         except EmptyBatchException:
             logger.warning(f"Data not found for {time_space_batch=}")
@@ -174,7 +168,6 @@ def _run_ingestion_pipeline_for_batch(
     session: Session,
     config: CDSObsConfig,
     time_space_batch: TimeSpaceBatch,
-    update: bool = False,
 ):
     """
     Ingest the data for a given year and month, specified by TimeBatch.
@@ -193,12 +186,8 @@ def _run_ingestion_pipeline_for_batch(
       Configuration of the CDSOBS catalogue manager
     time_space_batch:
       Optionally read data only for one year and month
-    update:
-      If True, data overlapping in time (year and month) with existing partitions
-      will be read in order to check if it changed these need to be updated.
-      By default, these time intervals will be skipped.
     """
-    if not update and _entry_exists(dataset_name, session, source, time_space_batch):
+    if _entry_exists(dataset_name, session, source, time_space_batch):
         logger.warning(
             "A partition with the chosen parameters already exists and update is set to False."
         )
