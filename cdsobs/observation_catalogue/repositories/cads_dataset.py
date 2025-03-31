@@ -16,7 +16,7 @@ class CadsDatasetRepository(BaseRepository):
             self.session.add(CadsDataset(name=dataset_name, version="1.0"))
             self.session.commit()
 
-    def bump_dataset_version(self, dataset_name: str):
+    def set_dataset_version(self, dataset_name: str, version: str):
         # Avoid supporting something like semver to keep thigs simple for the moment
         dataset_entry = self.session.scalars(
             sa.select(CadsDataset).filter(CadsDataset.name == dataset_name).limit(1)
@@ -24,7 +24,7 @@ class CadsDatasetRepository(BaseRepository):
         if dataset_entry is None:
             raise RuntimeError(f"Dataset {dataset_name} nor found in the catalogue.")
         else:
-            dataset_entry.version = "{:.1f}".format(float(dataset_entry.version) + 1.0)
+            dataset_entry.version = version
             self.session.add(dataset_entry)
             self.session.commit()
 

@@ -47,7 +47,7 @@ def test_cads_dataset(test_session_pertest):
     cads_dataset_repo.create_dataset(dataset_name)
     results = test_session.scalars(sa.select(CadsDataset)).all()
     assert len(results) == 1
-    cads_dataset_repo.bump_dataset_version(dataset_name)
+    cads_dataset_repo.set_dataset_version(dataset_name)
     assert results[0].version == "2.0"
 
 
