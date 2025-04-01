@@ -27,7 +27,7 @@ jobs:
     - uses: pre-commit/action@v3.0.0
 
   unit-tests:
-    name: unit-tests (3.10)
+    name: unit-tests
     runs-on: ubuntu-latest
 
     steps:
@@ -37,7 +37,7 @@ jobs:
       with:
         repository: ecmwf-projects/cdm-obs.git
         ref: 'new-variables'
-        path: cdm-obs
+        path: cdm-obsa
     - name: Download cads-forms-insitu
       env:
         BITBUCKET_TOKEN: ${{ secrets.BITBUCKET_TOKEN }}

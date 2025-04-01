@@ -47,6 +47,7 @@ dependencies:
 - python=3.12
 - duckdb
 - cryptography
+- pydantic-extra-types
 - pip:
   - sqlalchemy_json
   - "git+https://github.com/ecmwf-projects/cads-adaptors"
