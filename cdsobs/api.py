@@ -27,7 +27,10 @@ from cdsobs.ingestion.core import (
 from cdsobs.ingestion.partition import get_partitions, save_partitions
 from cdsobs.ingestion.serialize import serialize_partition
 from cdsobs.metadata import get_dataset_metadata
-from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
+from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
+from cdsobs.observation_catalogue.repositories.dataset_version import (
+    CadsDatasetVersionRepository,
+)
 from cdsobs.retrieve.filter_datasets import between
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
@@ -168,6 +171,7 @@ def _run_ingestion_pipeline_for_batch(
     session: Session,
     config: CDSObsConfig,
     time_space_batch: TimeSpaceBatch,
+    version: str = "1.0.0",
 ):
     """
     Ingest the data for a given year and month, specified by TimeBatch.
@@ -193,12 +197,14 @@ def _run_ingestion_pipeline_for_batch(
         )
     else:
         sorted_partitions = _read_homogenise_and_partition(
-            config, dataset_name, service_definition, source, time_space_batch
+            config, dataset_name, service_definition, source, time_space_batch, version
         )
-        # Persist in catalogue and storage
+        # Create dataset if it does not exist
         cads_dataset_repo = CadsDatasetRepository(session)
-        # Create dataset in the catalogue if it does not exist
-        cads_dataset_repo.create_dataset(dataset_name)
+        cads_dataset_repo.create_dataset(dataset_name=dataset_name)
+        # Create dataset version if it does not exist
+        cads_dataset_version_repo = CadsDatasetVersionRepository(session)
+        cads_dataset_version_repo.create_dataset_version(dataset_name, version=version)
         logger.info("Partitioning data and saving to storage")
         s3_client = S3Client.from_config(config.s3config)
         logger.debug(f"Getting client to S3 storage: {s3_client}")
@@ -268,10 +274,11 @@ def _read_homogenise_and_partition(
     service_definition: ServiceDefinition,
     source: str,
     time_space_batch: TimeSpaceBatch,
+    version: str,
 ) -> Iterator[DatasetPartition]:
     dataset_config = config.get_dataset(dataset_name)
     dataset_metadata = get_dataset_metadata(
-        config, dataset_config, service_definition, source
+        config, dataset_config, service_definition, source, version
     )
     # Get the data as a single big table with the names remmaped from
     # service_definition

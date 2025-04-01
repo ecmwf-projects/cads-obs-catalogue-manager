@@ -14,8 +14,8 @@ from cdsobs.cli._utils import config_yml_typer
 from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.models import Catalogue
-from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
+from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.schemas.catalogue import CatalogueSchema
 from cdsobs.storage import S3Client
 from cdsobs.utils.exceptions import CliException, ConfigError, ConfigNotFound
@@ -188,7 +188,7 @@ def catalogue_copy(
 ):
     # Create the dataset in the CadsDatasets table
     cads_dataset_repo = CadsDatasetRepository(catalogue_session)
-    cads_dataset_repo.create_dataset(dest_dataset)
+    cads_dataset_repo.create_dataset_version(dest_dataset)
     # copy dataset entries but with different dataset name and asset.
     catalogue_repo = CatalogueRepository(catalogue_session)
     for entry in entries:

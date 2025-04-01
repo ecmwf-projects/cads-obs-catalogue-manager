@@ -13,11 +13,11 @@ from cdsobs.observation_catalogue.models import (
     Catalogue,
     row_to_json,
 )
-from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.schemas.catalogue import CliCatalogueFilters
 from cdsobs.utils.logutils import get_logger
 
+from ..observation_catalogue.repositories.dataset import CadsDatasetRepository
 from ..utils.exceptions import CliException, ConfigError, ConfigNotFound
 from ._utils import (
     PAGE_SIZE,

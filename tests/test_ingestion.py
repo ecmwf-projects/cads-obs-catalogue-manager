@@ -14,7 +14,7 @@ def test_save_partitions(
     test_session_pertest, test_s3_client, test_partition, test_config
 ):
     cads_dataset_repo = CadsDatasetRepository(test_session_pertest)
-    cads_dataset_repo.create_dataset(test_partition.dataset_metadata.name)
+    cads_dataset_repo.create_dataset_version(test_partition.dataset_metadata.name)
     save_partitions(test_session_pertest, test_s3_client, [test_partition])
     result = CatalogueRepository(test_session_pertest).get_all()
     assert result[0].dataset == test_partition.dataset_metadata.name
@@ -51,7 +51,9 @@ def test_get_partition_status(
     assert status == "new"
     # Upload and check again
     cads_dataset_repo = CadsDatasetRepository(test_session_pertest)
-    cads_dataset_repo.create_dataset(test_serialized_partition.dataset_metadata.name)
+    cads_dataset_repo.create_dataset_version(
+        test_serialized_partition.dataset_metadata.name
+    )
     upload_partition(test_session_pertest, test_serialized_partition, test_s3_client)
     status = get_partition_status(
         test_session_pertest,
@@ -76,7 +78,9 @@ def test_upload_partition(
 ):
     test_s3_client = test_s3_client_pertest
     cads_dataset_repo = CadsDatasetRepository(test_session_pertest)
-    cads_dataset_repo.create_dataset(test_serialized_partition.dataset_metadata.name)
+    cads_dataset_repo.create_dataset_version(
+        test_serialized_partition.dataset_metadata.name
+    )
     upload_partition(test_session_pertest, test_serialized_partition, test_s3_client)
     dataset_name = test_serialized_partition.dataset_metadata.name
     bucket_name = test_s3_client.get_bucket_name(dataset_name)

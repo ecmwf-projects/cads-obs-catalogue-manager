@@ -250,7 +250,7 @@ def get_partition_filename(
     else:
         time_str = pp.time_coverage_start.strftime("%Y%m")
     filename = (
-        f"{dp.name}_{dp.dataset_source}_{time_str}_"
+        f"{dp.name}_{dp.version}_{dp.dataset_source}_{time_str}_"
         f"{pp.latitude_coverage_start}_{pp.longitude_coverage_start}.nc"
     )
     return filename

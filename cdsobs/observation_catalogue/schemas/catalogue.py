@@ -3,6 +3,7 @@ from operator import and_
 
 import pydantic
 import sqlalchemy
+from pydantic_extra_types.semantic_version import SemanticVersion
 from sqlalchemy.sql.elements import BinaryExpression, ColumnElement
 
 from cdsobs.observation_catalogue.models import Catalogue
@@ -14,6 +15,7 @@ class CatalogueSchema(pydantic.BaseModel):
     """Pydantic model that represents a catalogue record."""
 
     dataset: str
+    version: SemanticVersion
     dataset_source: str
     time_coverage_start: datetime
     time_coverage_end: datetime

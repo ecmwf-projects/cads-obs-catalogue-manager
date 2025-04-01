@@ -250,7 +250,11 @@ class EmptyBatchException(Exception):
 
 
 def _entry_exists(
-    dataset_name: str, session: Session, source: str, time_space_batch: TimeSpaceBatch
+    dataset_name: str,
+    session: Session,
+    source: str,
+    time_space_batch: TimeSpaceBatch,
+    version: str = "1.0.0",
 ) -> bool:
     """Return True if any data exists in the catalogue for a given time_batch."""
     entry_exists = CatalogueRepository(session).entry_exists(
@@ -258,6 +262,7 @@ def _entry_exists(
         source,
         *time_space_batch.get_time_coverage(),
         *time_space_batch.get_spatial_coverage(),
+        version,
     )
     return entry_exists
 

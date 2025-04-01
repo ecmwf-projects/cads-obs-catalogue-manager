@@ -82,6 +82,7 @@ class DatasetMetadata:
     cdm_tables: CDMTables
     cdm_code_tables: CDMCodeTables
     space_columns: SpaceColumns
+    version: str
 
 
 def get_variables_from_service_definition(
@@ -185,6 +186,7 @@ def to_catalogue_record(partition: SerializedPartition, asset: str) -> Catalogue
         data_size=file_params.data_size,
         file_checksum=file_params.file_checksum,
         constraints=partition.constraints,
+        version=dataset_params.version,
     )
     return catalogue_record
 
