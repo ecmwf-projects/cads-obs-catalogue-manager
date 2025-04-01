@@ -24,6 +24,8 @@ def test_cli_make_production(verbose):
         1970,
         "--source",
         "OzoneSonde",
+        "--version",
+        "2.0.0",
     ]
     if verbose:
         args += ["--verbose"]

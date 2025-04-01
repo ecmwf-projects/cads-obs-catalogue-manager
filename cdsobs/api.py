@@ -48,6 +48,7 @@ def run_ingestion_pipeline(
     start_year: int,
     end_year: int,
     start_month: int = 1,
+    version: str = "1.0.0",
 ):
     """
     Ingest the data to the CADS observation repository.
@@ -75,6 +76,8 @@ def run_ingestion_pipeline(
     start_month:
       Month to start reading the data. It only applies to the first year of the interval.
       Default is 1.
+    version:
+      Semantic version to use for the data being uploaded.
     """
     logger.info("----------------------------------------------------------------")
     logger.info("Running ingestion pipeline")
@@ -90,6 +93,7 @@ def run_ingestion_pipeline(
                 session,
                 config,
                 time_space_batch,
+                version=version,
             )
         except EmptyBatchException:
             logger.warning(f"Data not found for {time_space_batch=}")
@@ -111,6 +115,7 @@ def run_make_cdm(
     end_year: int,
     output_dir: Path,
     save_data: bool = False,
+    version: str = "1.0.0",
 ):
     """
     Run the first steps of the ingestion pileline.
@@ -136,7 +141,8 @@ def run_make_cdm(
     save_data:
       Whether to produce the netCDFs as they would be uploaded to the storage by
       make_production. If False, the data only will be loaded and checked for CDM
-      compliance in memory.
+    version:
+      Semantic version to use for the data. Is written in the file names.
     """
     logger.info("----------------------------------------------------------------")
     logger.info("Running make cdm")
@@ -153,6 +159,7 @@ def run_make_cdm(
                 service_definition,
                 source,
                 time_batch,
+                version=version,
             )
         except EmptyBatchException:
             logger.warning(f"No data found for {time_batch=}")

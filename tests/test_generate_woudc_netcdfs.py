@@ -14,10 +14,11 @@ def test_batch_to_netcdf(test_config, tmp_path):
     year = 1969
     month = 1
     output_dir = tmp_path
+    version = "1.0.0"
     service_definition = get_service_definition(test_config, dataset_name)
     dataset_config = test_config.get_dataset(dataset_name)
     dataset_metadata = get_dataset_metadata(
-        test_config, dataset_config, service_definition, source
+        test_config, dataset_config, service_definition, source, version
     )
     time_space_batch = TimeSpaceBatch(TimeBatch(year, month))
     netcdf_path = batch_to_netcdf(

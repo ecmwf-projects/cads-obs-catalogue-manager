@@ -32,7 +32,7 @@ def _get_homogenised_data(dataset_name, service_definition, source, test_config)
     dataset_config = test_config.get_dataset(dataset_name)
     time_batch = TimeSpaceBatch(TimeBatch(year=1969, month=2))
     dataset_metadata = get_dataset_metadata(
-        test_config, dataset_config, service_definition, source
+        test_config, dataset_config, service_definition, source, "1.0.0"
     )
     homogenised_data = read_batch_data(
         test_config, dataset_metadata, service_definition, time_batch
