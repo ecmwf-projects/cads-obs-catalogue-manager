@@ -1,4 +1,5 @@
 import sqlalchemy as sa
+from pydantic_extra_types.semantic_version import SemanticVersion
 from sqlalchemy.orm import Session
 
 from cdsobs.observation_catalogue.models import CadsDatasetVersion
@@ -22,7 +23,7 @@ class CadsDatasetVersionRepository(BaseRepository):
                 f" catalogue."
             )
             dataset_version = CadsDatasetVersionSchema(
-                dataset=dataset_name, name=version
+                dataset=dataset_name, name=SemanticVersion.parse(version)
             )
             self.create(dataset_version)
 

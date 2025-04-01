@@ -257,11 +257,17 @@ def _entry_exists(
     version: str = "1.0.0",
 ) -> bool:
     """Return True if any data exists in the catalogue for a given time_batch."""
+    time_start, time_end = time_space_batch.get_time_coverage()
+    lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
     entry_exists = CatalogueRepository(session).entry_exists(
         dataset_name,
         source,
-        *time_space_batch.get_time_coverage(),
-        *time_space_batch.get_spatial_coverage(),
+        time_start,
+        time_end,
+        lon_start,
+        lon_end,
+        lat_start,
+        lat_end,
         version,
     )
     return entry_exists

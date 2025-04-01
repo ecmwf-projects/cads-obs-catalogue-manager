@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 
 from cdsobs.observation_catalogue.models import CadsDataset
 from cdsobs.observation_catalogue.repositories.base import BaseRepository
-from cdsobs.observation_catalogue.schemas.version import CadsDatasetVersionSchema
 from cdsobs.utils.logutils import get_logger
 
 logger = get_logger(__name__)
@@ -34,13 +33,11 @@ class CadsDatasetRepository(BaseRepository):
             == 1
         )
 
-    def get_dataset(
-        self, dataset_name: str, version: str
-    ) -> CadsDatasetVersionSchema | None:
+    def get_dataset(self, dataset_name: str) -> CadsDataset | None:
         return self.session.scalar(
             sa.select(CadsDataset).filter(CadsDataset.name == dataset_name)
         )
 
-    def delete_dataset(self, dataset_name: str, version: str):
-        dataset = self.get_dataset(dataset_name, version)
+    def delete_dataset(self, dataset_name: str):
+        dataset = self.get_dataset(dataset_name)
         self.session.delete(dataset)

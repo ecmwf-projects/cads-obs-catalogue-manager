@@ -329,9 +329,10 @@ def _run_make_cdm_for_batch(
     service_definition: ServiceDefinition,
     source: str,
     time_space_batch: TimeSpaceBatch,
+    version: str = "1.0.0",
 ):
     sorted_partitions = _read_homogenise_and_partition(
-        config, dataset_name, service_definition, source, time_space_batch
+        config, dataset_name, service_definition, source, time_space_batch, version
     )
     if save_data:
         for partition in sorted_partitions:
