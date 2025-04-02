@@ -138,7 +138,7 @@ def get_widgets_json(
     widgets_json_content["year"] = _to_str_list(range(start_year, end_year + 1))
     widgets_json_content["month"] = _to_str_list(range(1, 13), 2)
     widgets_json_content["day"] = _to_str_list(range(1, 32), 2)
-    widgets_json_content["version"] = summary["versions"]
+    widgets_json_content["version"] = _to_str_list(summary["versions"])
     widgets_output_path = Path(output_path, "widgets.json")
     logger.info(f"Writing {widgets_output_path}")
     with widgets_output_path.open("w") as wof:

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from cdsobs.observation_catalogue.models import CadsDatasetVersion
 from cdsobs.observation_catalogue.repositories.base import BaseRepository
-from cdsobs.observation_catalogue.schemas.version import CadsDatasetVersionSchema
+from cdsobs.observation_catalogue.schemas.version_schema import CadsDatasetVersionSchema
 from cdsobs.utils.logutils import get_logger
 
 logger = get_logger(__name__)

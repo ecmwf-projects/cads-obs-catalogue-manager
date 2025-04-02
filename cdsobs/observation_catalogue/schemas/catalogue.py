@@ -1,12 +1,13 @@
 from datetime import datetime
 from operator import and_
+from typing import Literal
 
 import pydantic
 import sqlalchemy
 from pydantic_extra_types.semantic_version import SemanticVersion
 from sqlalchemy.sql.elements import BinaryExpression, ColumnElement
 
-from cdsobs.observation_catalogue.models import Catalogue
+from cdsobs.observation_catalogue.models import CadsDatasetVersion, Catalogue
 from cdsobs.observation_catalogue.schemas.constraints import ConstraintsSchema
 from cdsobs.utils.types import BoundedLat, BoundedLon, ByteSize
 
@@ -41,6 +42,9 @@ class CatalogueSchema(pydantic.BaseModel):
         return dataset
 
 
+DeprecatedFilter = Literal[True, False, "all"]
+
+
 class CliCatalogueFilters(pydantic.BaseModel):
     dataset: str
     dataset_source: str
@@ -50,6 +54,7 @@ class CliCatalogueFilters(pydantic.BaseModel):
     variables: list[str]
     stations: list[str]
     versions: list[str]
+    deprecated: DeprecatedFilter = False
 
     @property
     def empty(self) -> bool:
@@ -78,6 +83,12 @@ class CliCatalogueFilters(pydantic.BaseModel):
         if len(self.versions):
             conditions.append(Catalogue.version.in_(self.versions))
         conditions.extend(self.tuple_matches())
+        if self.deprecated != "all":
+            conditions.append(
+                Catalogue.dataset_version.has(
+                    CadsDatasetVersion.deprecated == self.deprecated
+                )
+            )
         return conditions
 
     def tuple_matches(self) -> list[BinaryExpression]:

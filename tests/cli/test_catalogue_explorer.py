@@ -65,10 +65,19 @@ def test_get_catalogue_list(test_repository):
     )
     results = list_catalogue_(test_repository.catalogue_repository.session, filters)
     assert len(results) == 1
-    # filled filters: time interval for two partitions (two months)
+    # time interval for two partitions (two months)
     filters.time = ["1968-12-31", "1969-3-3"]
     results = list_catalogue_(test_repository.catalogue_repository.session, filters)
     assert len(results) == 1
+    # list deprecated versions (there is none)
+    filters.deprecated = True
+    results = list_catalogue_(test_repository.catalogue_repository.session, filters)
+    assert len(results) == 0
+    # list all (deprecated or now) versions
+    filters.deprecated = "all"
+    results = list_catalogue_(test_repository.catalogue_repository.session, filters)
+    assert len(results) == 1
+    # list non existing version
     filters.versions = ["2.0.0"]
     results = list_catalogue_(test_repository.catalogue_repository.session, filters)
     assert len(results) == 0
