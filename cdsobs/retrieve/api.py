@@ -24,7 +24,6 @@ def retrieve_observations(
     storage_url: str,
     retrieve_args: RetrieveArgs,
     output_dir: Path,
-    size_limit: int,
 ) -> Path:
     """
     Retrieve data from the obs repository and save it to a netCDF file.
@@ -42,8 +41,6 @@ def retrieve_observations(
       Arguments defining how to filter the database.
     output_dir :
       Path to directory where to save the output netCDF file.
-    size_limit :
-      Maximum size allowed for the download
     """
     from cads_adaptors.adaptors import Context
 

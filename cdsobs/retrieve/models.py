@@ -3,9 +3,11 @@ from itertools import product
 from typing import Any, List, Literal
 
 import sqlalchemy
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, field_validator, model_validator
+from pydantic_extra_types.semantic_version import SemanticVersion
 from sqlalchemy import BinaryExpression, ColumnElement, any_
 
+from cdsobs.constants import DEFAULT_VERSION
 from cdsobs.observation_catalogue.models import Catalogue
 from cdsobs.utils.types import BoundedLat, BoundedLon
 
@@ -23,6 +25,7 @@ class RetrieveParams(BaseModel, extra="ignore"):
     month: None | List[int] = None
     day: None | List[int] = None
     format: RetrieveFormat = "netCDF"
+    version: str = DEFAULT_VERSION
 
     @classmethod
     @model_validator(mode="before")
@@ -36,6 +39,11 @@ class RetrieveParams(BaseModel, extra="ignore"):
         if values["time_coverage"] is not None:
             assert values["year"] is None
         return values
+
+    @classmethod
+    @field_validator("version", mode="before")
+    def validate_version(cls, value):
+        assert SemanticVersion.is_valid(value)
 
     def get_filter_arguments(
         self, dataset: str | None = None
@@ -71,6 +79,7 @@ class RetrieveParams(BaseModel, extra="ignore"):
                     # If is a single value check for equality
                     filter_arg = getattr(Catalogue, param) == value
             filter_arguments.append(filter_arg)
+
         # Add dataset name too
         if dataset is not None:
             filter_arguments.append(Catalogue.dataset == dataset)

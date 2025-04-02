@@ -12,6 +12,7 @@ from cdsobs.cdm.api import (
     define_units,
 )
 from cdsobs.config import CDSObsConfig, DatasetConfig
+from cdsobs.constants import DEFAULT_VERSION
 from cdsobs.ingestion.api import (
     EmptyBatchException,
     _entry_exists,
@@ -48,7 +49,7 @@ def run_ingestion_pipeline(
     start_year: int,
     end_year: int,
     start_month: int = 1,
-    version: str = "1.0.0",
+    version: str = DEFAULT_VERSION,
 ):
     """
     Ingest the data to the CADS observation repository.
@@ -115,7 +116,7 @@ def run_make_cdm(
     end_year: int,
     output_dir: Path,
     save_data: bool = False,
-    version: str = "1.0.0",
+    version: str = DEFAULT_VERSION,
 ):
     """
     Run the first steps of the ingestion pileline.
@@ -178,7 +179,7 @@ def _run_ingestion_pipeline_for_batch(
     session: Session,
     config: CDSObsConfig,
     time_space_batch: TimeSpaceBatch,
-    version: str = "1.0.0",
+    version: str = "DEFAULT_VERSION",
 ):
     """
     Ingest the data for a given year and month, specified by TimeBatch.
@@ -198,7 +199,7 @@ def _run_ingestion_pipeline_for_batch(
     time_space_batch:
       Optionally read data only for one year and month
     """
-    if _entry_exists(dataset_name, session, source, time_space_batch):
+    if _entry_exists(dataset_name, session, source, time_space_batch, version):
         logger.warning(
             "A partition with the chosen parameters already exists and update is set to False."
         )
@@ -336,7 +337,7 @@ def _run_make_cdm_for_batch(
     service_definition: ServiceDefinition,
     source: str,
     time_space_batch: TimeSpaceBatch,
-    version: str = "1.0.0",
+    version: str = "DEFAULT_VERSION",
 ):
     sorted_partitions = _read_homogenise_and_partition(
         config, dataset_name, service_definition, source, time_space_batch, version
