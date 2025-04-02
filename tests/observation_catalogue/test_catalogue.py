@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from pydantic_extra_types.semantic_version import SemanticVersion
 
+from cdsobs.constants import DEFAULT_VERSION
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.dataset_version import (
@@ -11,7 +12,7 @@ from cdsobs.observation_catalogue.schemas.catalogue import CatalogueSchema
 
 test_catalogue_record = CatalogueSchema(
     dataset="test_dataset",
-    version=SemanticVersion.parse("1.0.0"),
+    version=SemanticVersion.parse(DEFAULT_VERSION),
     dataset_source="test_dataset_source",
     time_coverage_start=datetime(2022, 1, 1),
     time_coverage_end=datetime(2022, 1, 31),

@@ -254,7 +254,7 @@ def _entry_exists(
     session: Session,
     source: str,
     time_space_batch: TimeSpaceBatch,
-    version: str = "1.0.0",
+    version: str,
 ) -> bool:
     """Return True if any data exists in the catalogue for a given time_batch."""
     time_start, time_end = time_space_batch.get_time_coverage()

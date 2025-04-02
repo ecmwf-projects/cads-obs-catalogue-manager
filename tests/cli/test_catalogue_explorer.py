@@ -3,6 +3,7 @@ from typer.testing import CliRunner
 
 from cdsobs.cli._catalogue_explorer import list_catalogue_
 from cdsobs.cli.app import app
+from cdsobs.constants import DEFAULT_VERSION
 from cdsobs.observation_catalogue.schemas.catalogue import CliCatalogueFilters
 from tests.conftest import CONFIG_YML, DS_TEST_NAME
 
@@ -61,7 +62,7 @@ def test_get_catalogue_list(test_repository):
         longitudes=[100],
         variables=["air_pressure", "air_temperature"],
         stations=["7"],
-        versions=["1.0.0"],
+        versions=[DEFAULT_VERSION],
     )
     results = list_catalogue_(test_repository.catalogue_repository.session, filters)
     assert len(results) == 1

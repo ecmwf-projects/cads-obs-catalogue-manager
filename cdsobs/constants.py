@@ -24,6 +24,8 @@ DS_TEST_NAME = "insitu-observations-woudc-ozone-total-column-and-profiles"
 
 SOURCE_TEST_NAME = "OzoneSonde"
 
+DEFAULT_VERSION = "1.0.0"
+
 CATALOGUE_ENTRY = Catalogue(
     dataset=CadsDatasetSchema(name=DS_TEST_NAME),
     dataset_source=SOURCE_TEST_NAME,
@@ -52,6 +54,7 @@ CATALOGUE_ENTRY = Catalogue(
         ],
         "variable_constraints": {"air_pressure": [0, 1]},
     },
+    version=DEFAULT_VERSION,
 )
 
 

@@ -1,3 +1,4 @@
+from cdsobs.constants import DEFAULT_VERSION
 from cdsobs.ingestion.core import (
     TimeBatch,
     TimeSpaceBatch,
@@ -14,7 +15,7 @@ def test_batch_to_netcdf(test_config, tmp_path):
     year = 1969
     month = 1
     output_dir = tmp_path
-    version = "1.0.0"
+    version = DEFAULT_VERSION
     service_definition = get_service_definition(test_config, dataset_name)
     dataset_config = test_config.get_dataset(dataset_name)
     dataset_metadata = get_dataset_metadata(
