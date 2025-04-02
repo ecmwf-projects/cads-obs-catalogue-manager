@@ -37,7 +37,7 @@ jobs:
       with:
         repository: ecmwf-projects/cdm-obs.git
         ref: 'new-variables'
-        path: cdm-obsa
+        path: cdm-obs
     - name: Download cads-forms-insitu
       env:
         BITBUCKET_TOKEN: ${{ secrets.BITBUCKET_TOKEN }}
