@@ -192,11 +192,17 @@ def catalogue_copy(
     # Create the dataset in the CadsDatasets table
     cads_dataset_repo = CadsDatasetRepository(catalogue_session)
     cads_dataset_repo.create_dataset(dest_dataset)
-    cads_dataset_version_repo = CadsDatasetVersionRepository(catalogue_session)
-    cads_dataset_version_repo.create_dataset_version(dest_dataset, version="1.0.0")
     # copy dataset entries but with different dataset name and asset.
+    cads_dataset_version_repo = CadsDatasetVersionRepository(catalogue_session)
     catalogue_repo = CatalogueRepository(catalogue_session)
     for entry in entries:
+        # Create the version if needed
+        if not cads_dataset_version_repo.dataset_version_exists(
+            dest_dataset, entry.version
+        ):
+            cads_dataset_version_repo.create_dataset_version(
+                dest_dataset, version=entry.version
+            )
         # This is needed to load the constraints as it is a deferred attribute.
         # However if we load them the other attributes will dissappear from __dict__
         # There is no way apparently of doing this better in sqlalchemy
