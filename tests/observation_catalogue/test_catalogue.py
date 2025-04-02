@@ -48,7 +48,7 @@ def test_repos(test_session_pertest):
     assert len(catalogue_repo.get_all()) == 1
     all_dataset_versions = cads_dataset_version_repo.get_all()
     assert len(all_dataset_versions) == 1
-    assert all_dataset_versions[0].name == str(test_catalogue_record.version)
+    assert all_dataset_versions[0].version == str(test_catalogue_record.version)
     assert all_dataset_versions[0].dataset == test_catalogue_record.dataset
     all_datasets = cads_dataset_repo.get_all()
     assert not all_dataset_versions[0].deprecated

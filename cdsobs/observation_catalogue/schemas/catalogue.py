@@ -49,6 +49,7 @@ class CliCatalogueFilters(pydantic.BaseModel):
     longitudes: list[float] = pydantic.Field(max_length=2)
     variables: list[str]
     stations: list[str]
+    versions: list[str]
 
     @property
     def empty(self) -> bool:
@@ -61,6 +62,7 @@ class CliCatalogueFilters(pydantic.BaseModel):
             and not len(self.longitudes)
             and not len(self.variables)
             and not len(self.stations)
+            and not len(self.versions)
         )
 
     def to_repository_filters(self) -> list[BinaryExpression | ColumnElement]:
@@ -73,6 +75,8 @@ class CliCatalogueFilters(pydantic.BaseModel):
             conditions.append(Catalogue.variables.op("&&")(self.variables))
         if len(self.stations):
             conditions.append(Catalogue.stations.op("&&")(self.stations))
+        if len(self.versions):
+            conditions.append(Catalogue.version.in_(self.versions))
         conditions.extend(self.tuple_matches())
         return conditions
 

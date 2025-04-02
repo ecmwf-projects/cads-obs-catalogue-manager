@@ -91,6 +91,7 @@ def delete_from_catalogue(
         latitudes=[],
         variables=[],
         stations=[],
+        versions=[],
     ).to_repository_filters()
     entries = catalogue_repo.get_by_filters(filters)
     if not len(entries):

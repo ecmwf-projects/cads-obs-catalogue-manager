@@ -23,7 +23,7 @@ class CadsDatasetVersionRepository(BaseRepository):
                 f" catalogue."
             )
             dataset_version = CadsDatasetVersionSchema(
-                dataset=dataset_name, name=SemanticVersion.parse(version)
+                dataset=dataset_name, version=SemanticVersion.parse(version)
             )
             self.create(dataset_version)
 
@@ -34,7 +34,7 @@ class CadsDatasetVersionRepository(BaseRepository):
                 .select_from(CadsDatasetVersion)
                 .filter(
                     CadsDatasetVersion.dataset == dataset_name,
-                    CadsDatasetVersion.name == version,
+                    CadsDatasetVersion.version == version,
                 )
             )
             == 1
@@ -46,7 +46,7 @@ class CadsDatasetVersionRepository(BaseRepository):
         return self.session.scalar(
             sa.select(CadsDatasetVersionSchema).filter(
                 CadsDatasetVersion.dataset == dataset_name,
-                CadsDatasetVersion.name == version,
+                CadsDatasetVersion.version == version,
             )
         )
 

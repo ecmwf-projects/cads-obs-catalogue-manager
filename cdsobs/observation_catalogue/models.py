@@ -53,14 +53,14 @@ class CadsDatasetVersion(Base):
     dataset_obj: Mapped["CadsDataset"] = relationship(
         back_populates="versions", cascade="all"
     )
-    name: Mapped[str] = mapped_column(String, default="1.0.0", nullable=False)
-    deprecated: Mapped[bool] = mapped_column(Boolean, default=False)
+    version: Mapped[str] = mapped_column(String, default="1.0.0", nullable=False)
+    deprecated: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     catalogue_entries: Mapped[List["Catalogue"]] = relationship(
         back_populates="dataset_version", cascade="all"
     )
     __table_args__ = (
-        PrimaryKeyConstraint("name", "dataset"),
-        UniqueConstraint("name", "dataset"),
+        PrimaryKeyConstraint("version", "dataset"),
+        UniqueConstraint("version", "dataset"),
     )
 
     def __str__(self):
@@ -99,7 +99,7 @@ class Catalogue(Base):
     __table_args__ = (
         ForeignKeyConstraint(
             ["dataset", "version"],
-            ["cads_dataset_version.dataset", "cads_dataset_version.name"],
+            ["cads_dataset_version.dataset", "cads_dataset_version.version"],
         ),
     )
 

@@ -29,7 +29,7 @@ def test_catalogue_dataset_info(test_session, test_repository):
 
 
 @pytest.mark.parametrize("print_format", ["table", "json"])
-def test_list_datasets(print_format):
+def test_list_datasets(test_repository, print_format):
     result = runner.invoke(
         app,
         ["list-datasets", "-c", CONFIG_YML, "--print-format", print_format],
@@ -48,6 +48,7 @@ def test_get_catalogue_list(test_repository):
         longitudes=[],
         variables=[],
         stations=[],
+        versions=[],
     )
     results = list_catalogue_(test_repository.catalogue_repository.session, filters)
     assert len(results)
@@ -60,6 +61,7 @@ def test_get_catalogue_list(test_repository):
         longitudes=[100],
         variables=["air_pressure", "air_temperature"],
         stations=["7"],
+        versions=["1.0.0"],
     )
     results = list_catalogue_(test_repository.catalogue_repository.session, filters)
     assert len(results) == 1
@@ -67,3 +69,6 @@ def test_get_catalogue_list(test_repository):
     filters.time = ["1968-12-31", "1969-3-3"]
     results = list_catalogue_(test_repository.catalogue_repository.session, filters)
     assert len(results) == 1
+    filters.versions = ["2.0.0"]
+    results = list_catalogue_(test_repository.catalogue_repository.session, filters)
+    assert len(results) == 0
