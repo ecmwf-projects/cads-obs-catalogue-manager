@@ -28,6 +28,8 @@ def deprecate_dataset_version(
         dataset_version = cads_dataset_version_repo.get_dataset(
             dataset_name=dataset, version=version
         )
+        if dataset_version is None:
+            raise RuntimeError(f"{dataset=} {version=} not found in the catalogue")
         dataset_version.deprecated = True
         session.commit()
         print(f"Deprecated {dataset=} {version=}")

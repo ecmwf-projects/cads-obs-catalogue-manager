@@ -206,7 +206,9 @@ def get_catalogue_entries_stream(
         sa.select(Catalogue)
         .filter(
             Catalogue.dataset == dataset,
-            Catalogue.dataset_version.has(CadsDatasetVersion.deprecated is False),
+            Catalogue.dataset_version.has(
+                CadsDatasetVersion.deprecated == False  # noqa
+            ),
         )
         .execution_options(yield_per=50)
     )

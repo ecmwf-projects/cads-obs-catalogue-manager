@@ -40,9 +40,7 @@ class CadsDatasetVersionRepository(BaseRepository):
             == 1
         )
 
-    def get_dataset(
-        self, dataset_name: str, version: str
-    ) -> CadsDatasetVersionSchema | None:
+    def get_dataset(self, dataset_name: str, version: str) -> CadsDatasetVersion | None:
         return self.session.scalar(
             sa.select(CadsDatasetVersion).filter(
                 CadsDatasetVersion.dataset == dataset_name,
