@@ -45,12 +45,13 @@ def merged_constraints_table(entries: sa.engine.result.ScalarResult) -> pd.DataF
 
     def _get_entry_constraints(e):
         logger.debug(f"Reading constraints for entry {e.id}")
-        return (
+        entry_constraints = (
             ConstraintsSchema(**e.constraints)
             .to_table(e.stations)
             .set_index(["stations", "time"])
-            .assign(source=e.dataset_source)
+            .assign(source=e.dataset_source, version=e.version)
         )
+        return entry_constraints
 
     table_constraints = [_get_entry_constraints(e) for e in entries]
     if len(table_constraints) > 1:
@@ -59,7 +60,9 @@ def merged_constraints_table(entries: sa.engine.result.ScalarResult) -> pd.DataF
         df_total = table_constraints[0]
     # Some combinations can be repeated, they must be combined with any()
     # as there may be datasets with more parameters in the constraints.
-    df_total = df_total.reset_index().groupby(["stations", "time", "source"]).any()
+    df_total = (
+        df_total.reset_index().groupby(["stations", "time", "source", "version"]).any()
+    )
     # replace NaNs (new cells created by combining data, no value in original data)
     # with False:
     df_total = df_total.fillna(False)
@@ -146,6 +149,8 @@ def _get_catalogue_entries(
                 CadsDatasetVersion.deprecated is False,
             )
         )
+        if last_version is None:
+            raise RuntimeError("Failure determining the last version.")
         retrieve_args.params.version = last_version
     entries = catalogue_repository.get_by_filters(
         retrieve_args.params.get_filter_arguments(dataset=retrieve_args.dataset),

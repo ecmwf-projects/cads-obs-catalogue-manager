@@ -7,10 +7,11 @@ from cdsobs.retrieve.retrieve_services import (
 
 def test_merged_constraints_table(mock_entries):
     result = merged_constraints_table(mock_entries)
-    assert all(result[result["stations"] == "7"]["air_pressure"].values == [True, True])
-    assert all(
-        result[result["stations"] == "7"]["column_burden"].values == [True, False]
-    )
+    expected = """  stations                  time      source version  air_pressure  column_burden
+0        7  1998-01-02, 00:00:00  OzoneSonde   1.0.0          True           True
+1        7  1998-01-04, 00:00:00  OzoneSonde   1.0.0          True          False
+2        8  1998-01-02, 00:00:00  OzoneSonde   1.0.0          True          False"""
+    assert result.to_string() == expected
 
 
 def test_estimate_data_size(mock_entries, mock_retrieve_args):

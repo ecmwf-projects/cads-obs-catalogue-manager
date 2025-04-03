@@ -13,7 +13,7 @@ from fsspec.implementations.http import HTTPFileSystem
 from cdsobs.cli._catalogue_explorer import stats_summary
 from cdsobs.config import CDSObsConfig
 from cdsobs.constraints import iterative_ordering
-from cdsobs.observation_catalogue.models import Catalogue
+from cdsobs.observation_catalogue.models import CadsDatasetVersion, Catalogue
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.retrieve.retrieve_services import merged_constraints_table
 from cdsobs.service_definition.api import get_service_definition
@@ -79,7 +79,7 @@ def get_constraints_json(session, output_path: Path, dataset) -> Path:
     # Remove the stations here to avoid using too much memory, set to true the constraints
     # if there is data for any of the stations
     merged_constraints = merged_constraints.drop("stations", axis=1)
-    merged_constraints = merged_constraints.groupby(["time", "source"]).any()
+    merged_constraints = merged_constraints.groupby(["time", "source", "version"]).any()
     logger.info("Computing flat constraints.")
     # This returns a bool series where True are available combinations
     flat_constraints = merged_constraints.stack()
@@ -88,7 +88,7 @@ def get_constraints_json(session, output_path: Path, dataset) -> Path:
     # Turn into a dataframe and remove the bools column (named 0 by default)
     flat_constraints = (
         flat_constraints.reset_index()
-        .rename(dict(level_2="variables"), axis=1)
+        .rename(dict(level_3="variables"), axis=1)
         .drop(0, axis=1)
         .rename(dict(source="dataset_source"), axis=1)
     )
@@ -204,7 +204,10 @@ def get_catalogue_entries_stream(
 ) -> sa.engine.result.ScalarResult:
     catalogue_entries = session.scalars(
         sa.select(Catalogue)
-        .filter(Catalogue.dataset == dataset)
+        .filter(
+            Catalogue.dataset == dataset,
+            Catalogue.dataset_version.has(CadsDatasetVersion.deprecated is False),
+        )
         .execution_options(yield_per=50)
     )
     return catalogue_entries
