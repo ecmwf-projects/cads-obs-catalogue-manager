@@ -5,6 +5,9 @@ from typer.testing import CliRunner
 
 from cdsobs.cli.app import app
 from cdsobs.constants import CONFIG_YML
+from cdsobs.observation_catalogue.repositories.dataset_version import (
+    CadsDatasetVersionRepository,
+)
 
 runner = CliRunner()
 
@@ -107,3 +110,30 @@ def test_cli_get_forms_jsons(tmp_path, test_repository):
     ]
     result = runner.invoke(app, args, catch_exceptions=False)
     assert result.exit_code == 0
+
+
+# @pytest.mark.skip(reason="this test does not reset db after running")
+def test_cli_deprecate_version(test_repository):
+    session = test_repository.catalogue_repository.session
+    dataset = "insitu-observations-gruan-reference-network"
+    version = "1.0.0"
+    args = [
+        "deprecate_dataset_version",
+        "--dataset",
+        dataset,
+        "--version",
+        version,
+        "--config",
+        CONFIG_YML,
+    ]
+    dataset_version_repo = CadsDatasetVersionRepository(session)
+    dataset_version = dataset_version_repo.get_dataset(
+        dataset_name=dataset, version=version
+    )
+    assert not dataset_version.deprecated
+    result = runner.invoke(app, args, catch_exceptions=False)
+    assert result.exit_code == 0
+    new_dataset_version = dataset_version_repo.get_dataset(
+        dataset_name=dataset, version=version
+    )
+    assert new_dataset_version.deprecated

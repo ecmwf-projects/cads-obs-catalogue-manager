@@ -44,7 +44,7 @@ class CadsDatasetVersionRepository(BaseRepository):
         self, dataset_name: str, version: str
     ) -> CadsDatasetVersionSchema | None:
         return self.session.scalar(
-            sa.select(CadsDatasetVersionSchema).filter(
+            sa.select(CadsDatasetVersion).filter(
                 CadsDatasetVersion.dataset == dataset_name,
                 CadsDatasetVersion.version == version,
             )
