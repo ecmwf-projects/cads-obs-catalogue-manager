@@ -20,7 +20,6 @@ from cdsobs.ingestion.serialize import serialize_partition
 from cdsobs.observation_catalogue.database import Base, get_session
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.retrieve.models import RetrieveArgs
-from cdsobs.service_definition.api import get_service_definition
 from cdsobs.storage import S3Client, StorageClient
 from tests.utils import get_test_years
 
@@ -169,7 +168,6 @@ class TestRepository:
 def test_repository(test_session, test_s3_client, test_config):
     """The whole thing, session to the catalogue DB and storage client."""
     for dataset_name, dataset_source in TEST_API_PARAMETERS:
-        get_service_definition(test_config, dataset_name)
         start_year, end_year = get_test_years(dataset_source)
         run_ingestion_pipeline(
             dataset_name,
@@ -179,6 +177,20 @@ def test_repository(test_session, test_s3_client, test_config):
             start_year,
             end_year,
         )
+
+    # Gruan version 2.0.0
+    dataset_name = "insitu-observations-gruan-reference-network"
+    dataset_source = "GRUAN"
+    start_year, end_year = get_test_years(dataset_source)
+    run_ingestion_pipeline(
+        dataset_name,
+        dataset_source,
+        test_session,
+        test_config,
+        start_year,
+        end_year,
+        version="2.0.0",
+    )
 
     catalogue_repository = CatalogueRepository(test_session)
     test_repository = TestRepository(catalogue_repository, test_s3_client, test_config)

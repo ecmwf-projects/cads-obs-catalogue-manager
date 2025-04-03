@@ -31,6 +31,7 @@ def test_read_main(test_repository, test_config, tmp_path):
             "year": ["2000"],
             "month": ["10"],
             "day": [f"{i:02d}" for i in range(1, 32)],
+            "version": "last",
         },
     }
 
