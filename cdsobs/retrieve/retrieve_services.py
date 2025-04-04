@@ -146,7 +146,7 @@ def _get_catalogue_entries(
         last_version = catalogue_repository.session.scalar(
             sa.select(sa.func.max(CadsDatasetVersion.version)).filter(
                 CadsDatasetVersion.dataset == retrieve_args.dataset,
-                CadsDatasetVersion.deprecated is False,
+                CadsDatasetVersion.deprecated == False,  # noqa
             )
         )
         if last_version is None:
