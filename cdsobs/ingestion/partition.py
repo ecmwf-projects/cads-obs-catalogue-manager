@@ -16,10 +16,8 @@ from cdsobs.ingestion.core import (
     TimeBatch,
     to_catalogue_record,
 )
-from cdsobs.ingestion.merge import merge_with_existing_partition
 from cdsobs.ingestion.serialize import serialize_partition, to_storage
 from cdsobs.observation_catalogue.models import Catalogue
-from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.schemas.constraints import get_partition_constraints
 from cdsobs.storage import StorageClient
@@ -153,15 +151,7 @@ def _save_partition(
         case "new":
             partition_to_upload = serialized_partition
         case "exists_different":
-            partition_to_upload, has_conflicts = merge_with_existing_partition(
-                serialized_partition, storage_client
-            )
-            if has_conflicts:
-                # This means that we are updating already stored data records.
-                # This is a new version of the dataset
-                cads_dataset_repository = CadsDatasetRepository(db_session)
-                dataset_name = partition.dataset_metadata.name
-                cads_dataset_repository.bump_dataset_version(dataset_name)
+            raise RuntimeError("Partition exists but it is different")
         case _:
             raise RuntimeError(f"{partition_status} is an invalid status for partition")
     # Upload

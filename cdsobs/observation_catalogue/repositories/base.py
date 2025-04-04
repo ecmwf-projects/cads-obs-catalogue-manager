@@ -5,7 +5,6 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from cdsobs.observation_catalogue.database import Base
-from cdsobs.utils.utils import jsonable_encoder
 
 
 class BaseRepository:
@@ -26,15 +25,14 @@ class BaseRepository:
         ).all()
 
     def create(self, obj_in: BaseModel) -> Base:
-        obj_in_data = jsonable_encoder(obj_in)
-        db_obj = self.model(**obj_in_data)  # type: ignore
+        db_obj = self.model(**obj_in.model_dump(mode="json"))  # type: ignore
         self.session.add(db_obj)
         self.session.commit()
         self.session.refresh(db_obj)
         return db_obj
 
     def create_many(self, objs_in: list[Any]):
-        objs_in_data = [jsonable_encoder(oi) for oi in objs_in]
+        objs_in_data = [oi.model_dump(mode="json") for oi in objs_in]
         db_objs = [self.model(**oid) for oid in objs_in_data]
         self.session.bulk_save_objects(db_objs)
         self.session.commit()

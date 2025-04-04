@@ -11,6 +11,6 @@ def test_to_storage(tmp_path, test_partition, test_s3_client, test_config):
     actual = to_storage(test_s3_client, dataset_name, temp_ofile)
     expected = (
         "cds2-obs-dev-insitu-observations-woudc-ozone-total-column-and-p/"
-        "insitu-observations-woudc-ozone-total-column-and-profiles_OzoneSonde_1969_0.0_0.0.nc"
+        "insitu-observations-woudc-ozone-total-column-and-profiles_1.0.0_OzoneSonde_1969_0.0_0.0.nc"
     )
     assert actual == expected

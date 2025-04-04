@@ -29,13 +29,6 @@ def retrieve(
         help="Directory where to write the output file.",
         show_default=False,
     ),
-    size_limit: int = typer.Option(
-        100000000000000000,
-        "--size-limit",
-        "-sl",
-        help="Specify a size limit for the data size retrieved in bytes.",
-        show_default=False,
-    ),
 ):
     """Retrieve datasets from the CADS observation repository."""
     if not retrieve_params_json.exists():
@@ -66,7 +59,6 @@ def retrieve(
         s3_client.public_url_base,
         retrieve_args,
         output_dir,
-        size_limit,
     )
     console = Console()
     console.print(f"[green] Successfully downloaded {output_file} [/green]")

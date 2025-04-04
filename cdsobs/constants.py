@@ -3,7 +3,8 @@ import typing
 from datetime import datetime
 from pathlib import Path
 
-from cdsobs.observation_catalogue.models import CadsDataset, Catalogue
+from cdsobs.observation_catalogue.models import Catalogue
+from cdsobs.observation_catalogue.schemas.cads_dataset import CadsDatasetSchema
 
 # Time units for all
 # Note that the data type must be always int64, smaller ints will overflow.
@@ -23,8 +24,10 @@ DS_TEST_NAME = "insitu-observations-woudc-ozone-total-column-and-profiles"
 
 SOURCE_TEST_NAME = "OzoneSonde"
 
+DEFAULT_VERSION = "1.0.0"
+
 CATALOGUE_ENTRY = Catalogue(
-    dataset=CadsDataset(name=DS_TEST_NAME, version=1),
+    dataset=CadsDatasetSchema(name=DS_TEST_NAME),
     dataset_source=SOURCE_TEST_NAME,
     time_coverage_start=datetime(1998, 1, 1),
     time_coverage_end=datetime(1998, 2, 1),
@@ -51,6 +54,7 @@ CATALOGUE_ENTRY = Catalogue(
         ],
         "variable_constraints": {"air_pressure": [0, 1]},
     },
+    version=DEFAULT_VERSION,
 )
 
 
