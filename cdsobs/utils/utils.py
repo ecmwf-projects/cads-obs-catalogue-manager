@@ -1,5 +1,4 @@
 import hashlib
-import json
 from pathlib import Path
 from typing import Sequence, cast
 
@@ -7,7 +6,6 @@ import h5netcdf
 import numpy
 import pandas
 import xarray
-from pydantic import BaseModel
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -35,16 +33,6 @@ def get_file_size(path: Path) -> ByteSize:
     """Get sie of a file in bytes."""
     result = cast(ByteSize, path.stat().st_size)
     return result
-
-
-def jsonable_encoder(obj_in: BaseModel):
-    """
-    Convert pydantic object to a python object serializable to JSON.
-
-    Replaces fastapi jsonable_encoder. Serializing to string and back to python is a
-    workaround until pydantic 2.0 is out.
-    """
-    return json.loads(obj_in.model_dump_json())
 
 
 def unique(sequence: Sequence) -> list:

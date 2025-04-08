@@ -10,6 +10,7 @@ from cdsobs.cli._catalogue_explorer import (
 )
 from cdsobs.cli._copy_dataset import copy_dataset
 from cdsobs.cli._delete_dataset import delete_dataset
+from cdsobs.cli._deprecate_version import deprecate_dataset_version
 from cdsobs.cli._get_forms_jsons import get_forms_jsons_command
 from cdsobs.cli._make_cdm import make_cdm
 from cdsobs.cli._make_production import make_production
@@ -34,6 +35,7 @@ copy_dataset = app.command()(copy_dataset)
 delete_dataset = app.command()(delete_dataset)
 make_cdm = app.command()(make_cdm)
 get_forms_jsons = app.command("get_forms_jsons")(get_forms_jsons_command)
+deprecate_version = app.command()(deprecate_dataset_version)
 
 
 def main():
