@@ -91,9 +91,7 @@ def check_table_cdm_compliance(
     fields_found = (
         table_field_mapping.fields_found + table_field_mapping.fields_with_suffix
     )
-    logger.info(
-        f"Found the following fields for {table_name}: " f"{pformat(fields_found)}"
-    )
+    logger.info(f"Found the following fields for {table_name}: {pformat(fields_found)}")
     foreign_fields = [f.name for f in table_field_mapping.foreign_fields]
     if len(foreign_fields) > 0:
         logger.info(
