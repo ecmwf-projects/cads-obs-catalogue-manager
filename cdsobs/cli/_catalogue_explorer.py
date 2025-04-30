@@ -155,6 +155,7 @@ def list_datasets(
         results = CadsDatasetVersionRepository(session).get_all(
             skip=page * PAGE_SIZE, limit=PAGE_SIZE
         )
+        results = sorted(results, key=lambda x: (x.dataset, x.version))
         print_db_results(results, print_format, CadsDatasetVersion)
 
 

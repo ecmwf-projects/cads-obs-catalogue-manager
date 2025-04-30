@@ -13,6 +13,7 @@ import requests
 import uvicorn
 
 from cdsobs.api import run_ingestion_pipeline
+from cdsobs.cli._deprecate_version import deprecate_dataset_version
 from cdsobs.config import CDSObsConfig
 from cdsobs.constants import CATALOGUE_ENTRY, CONFIG_YML, DATE_FORMAT, DS_TEST_NAME
 from cdsobs.ingestion.core import DatasetPartition, SerializedPartition
@@ -191,7 +192,11 @@ def test_repository(test_session, test_s3_client, test_config):
         end_year,
         version="2.0.0",
     )
-
+    deprecate_dataset_version(
+        CONFIG_YML,
+        "insitu-observations-gruan-reference-network",
+        version="1.0.0",
+    )
     catalogue_repository = CatalogueRepository(test_session)
     test_repository = TestRepository(catalogue_repository, test_s3_client, test_config)
     yield test_repository
