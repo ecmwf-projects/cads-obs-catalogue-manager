@@ -165,7 +165,7 @@ def cast_to_descriptions(
                         data_renamed[colname] = data_renamed[colname].astype(
                             final_dtype
                         )
-                    except ValueError:
+                    except (ValueError, TypeError):
                         logger.error(f"Cannot cast {colname} to {final_dtype}")
                         raise
     return data_renamed

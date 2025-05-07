@@ -76,6 +76,8 @@ AvailableReaders = Literal[
     "cdsobs.ingestion.readers.cuon.read_cuon_netcdfs",
     "cdsobs.ingestion.readers.cuon_np.read_cuon_netcdfs",
     "cdsobs.ingestion.readers.netcdf.read_flat_netcdfs",
+    "cdsobs.ingestion.readers.csv.read_flat_csvs",
+    "cdsobs.ingestion.readers.parquet.read_flat_parquet",
 ]
 
 

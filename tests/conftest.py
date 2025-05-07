@@ -25,6 +25,7 @@ from cdsobs.storage import S3Client, StorageClient
 from tests.utils import get_test_years
 
 TEST_API_PARAMETERS = [
+    ("insitu-observations-surface-land", "sub_daily"),
     ("insitu-observations-woudc-ozone-total-column-and-profiles", "OzoneSonde"),
     ("insitu-observations-woudc-ozone-total-column-and-profiles", "TotalOzone"),
     (
@@ -108,6 +109,9 @@ def test_config():
         tests_path, f"data/woudc_netcdfs/{example_filename}"
     ).parent.absolute()
     woudc_netcdfs_config.reader_extra_args["input_dir"] = str(input_dir)
+    surface_config = config.get_dataset("insitu-observations-surface-land")
+    input_dir = Path(Path(tests_path, "data/csv_data/").absolute(), "*.psv")
+    surface_config.reader_extra_args["input_path"] = str(input_dir)
     return config
 
 
