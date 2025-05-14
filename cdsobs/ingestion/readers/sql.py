@@ -141,7 +141,7 @@ dataset2sqlreader_function: dict[str, SQLReaderFunctionCallable] = {
     "insitu-observations-gruan-reference-network": read_time_partitioned_tables,
     "insitu-observations-near-surface-temperature-us-climate-reference-network": read_time_partitioned_tables,
     "insitu-observations-gnss": read_time_partitioned_tables,
-    "insitu-observations-woudc-ozone-total-column-and-profiles": read_sql_tables,
+    "insitu-observations-woudc-ozone-total-column-and-profiles": read_time_partitioned_tables,
     "insitu-observations-ndacc": read_time_partitioned_tables,
 }
 
