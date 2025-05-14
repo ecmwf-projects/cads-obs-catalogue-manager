@@ -8,8 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from cdsobs.cdm.lite import cdm_lite_variables
 from cdsobs.config import CDSObsConfig, validate_config
-from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
+from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
 from cdsobs.retrieve.models import RetrieveArgs
 from cdsobs.retrieve.retrieve_services import _get_catalogue_entries, get_urls
 from cdsobs.service_definition.api import get_service_definition

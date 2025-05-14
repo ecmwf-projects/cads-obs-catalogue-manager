@@ -79,7 +79,6 @@ def main():
                     config,
                     start_year=year,
                     end_year=year,
-                    update=False,
                 )
                 end_time = time.perf_counter()
                 total_time = end_time - start_time
@@ -100,7 +99,6 @@ def main():
                     s3_client.public_url_base,
                     retrieve_args,
                     tmpdir,
-                    size_limit=1000000000000,
                 )
                 end_time = time.perf_counter()
                 total_time = end_time - start_time
@@ -131,7 +129,6 @@ def main():
                     s3_client.public_url_base,
                     retrieve_args,
                     tmpdir,
-                    size_limit=1000000000000,
                 )
                 end_time = time.perf_counter()
                 total_time = end_time - start_time
@@ -155,7 +152,6 @@ def main():
                     s3_client.public_url_base,
                     retrieve_args,
                     tmpdir,
-                    size_limit=1000000000000,
                 )
                 end_time = time.perf_counter()
                 total_time = end_time - start_time

@@ -6,6 +6,7 @@ from cdsobs.cdm.api import (
     read_cdm_code_tables,
 )
 from cdsobs.cdm.tables import read_cdm_tables
+from cdsobs.constants import DEFAULT_VERSION
 from cdsobs.ingestion.api import read_batch_data
 from cdsobs.ingestion.core import (
     TimeBatch,
@@ -32,7 +33,7 @@ def _get_homogenised_data(dataset_name, service_definition, source, test_config)
     dataset_config = test_config.get_dataset(dataset_name)
     time_batch = TimeSpaceBatch(TimeBatch(year=1969, month=2))
     dataset_metadata = get_dataset_metadata(
-        test_config, dataset_config, service_definition, source
+        test_config, dataset_config, service_definition, source, DEFAULT_VERSION
     )
     homogenised_data = read_batch_data(
         test_config, dataset_metadata, service_definition, time_batch

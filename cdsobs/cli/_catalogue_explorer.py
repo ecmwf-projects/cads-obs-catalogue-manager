@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Sequence
 
 import sqlalchemy
 import typer
@@ -9,15 +9,17 @@ from rich.table import Table
 from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import Base, get_session
 from cdsobs.observation_catalogue.models import (
-    CadsDataset,
+    CadsDatasetVersion,
     Catalogue,
     row_to_json,
 )
-from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.schemas.catalogue import CliCatalogueFilters
 from cdsobs.utils.logutils import get_logger
 
+from ..observation_catalogue.repositories.dataset_version import (
+    CadsDatasetVersionRepository,
+)
 from ..utils.exceptions import CliException, ConfigError, ConfigNotFound
 from ._utils import (
     PAGE_SIZE,
@@ -30,7 +32,11 @@ logger = get_logger(__name__)
 console = Console()
 
 
-def print_db_results(results: Sequence[Base], print_format: str, clazz=Catalogue):
+def print_db_results(
+    results: Sequence[Base],
+    print_format: str,
+    clazz: Any = Catalogue,
+):
     match print_format:
         case "table":
             fields = [c.key for c in clazz.__table__.columns]
@@ -72,6 +78,7 @@ def list_catalogue(
         " air_temperature: air_pressure,air_temperature",
     ),
     stations: str = typer.Option("", help="Filter by a station or a list of stations"),
+    versions: str = typer.Option("", help="Filter by a version or a list of versions"),
     print_format: str = typer.Option("table", help=print_format_msg),
 ):
     """List entries in the catalogue. Accepts arguments to filter the output."""
@@ -83,6 +90,7 @@ def list_catalogue(
         longitudes=[float(lon) for lon in list_parser(longitudes)],
         variables=list_parser(variables),
         stations=list_parser(stations),
+        versions=list_parser(versions),
     )
     try:
         config = CDSObsConfig.from_yaml(cdsobs_config_yml)
@@ -144,10 +152,11 @@ def list_datasets(
     except ConfigError:
         raise ConfigNotFound()
     with get_session(config.catalogue_db) as session:
-        results = CadsDatasetRepository(session).get_all(
+        results = CadsDatasetVersionRepository(session).get_all(
             skip=page * PAGE_SIZE, limit=PAGE_SIZE
         )
-        print_db_results(results, print_format, CadsDataset)
+        results = sorted(results, key=lambda x: (x.dataset, x.version))
+        print_db_results(results, print_format, CadsDatasetVersion)
 
 
 def print_catalogue_info(session, source, dataset):
@@ -172,6 +181,7 @@ def stats_summary(entries: sqlalchemy.engine.result.ScalarResult) -> dict:
     stations, variables, time_coverages = set(), set(), set()
     longitudes, latitudes = list(), list()
     dataset_sources = set()
+    versions = set()
     for entry in entries:
         logger.debug(f"Reading entry {entry.id}")
         num_of_partitions += 1
@@ -184,6 +194,8 @@ def stats_summary(entries: sqlalchemy.engine.result.ScalarResult) -> dict:
             [entry.longitude_coverage_start, entry.longitude_coverage_end]
         )
         latitudes.extend([entry.latitude_coverage_start, entry.latitude_coverage_end])
+        versions.add(entry.version)
+
     station_num = len(stations)
     return {
         "number of partitions": num_of_partitions,
@@ -198,4 +210,5 @@ def stats_summary(entries: sqlalchemy.engine.result.ScalarResult) -> dict:
         "total longitude coverage": (min(longitudes), max(longitudes)),
         "available stations": list(stations),
         "available dataset sources": list(dataset_sources),
+        "versions": versions,
     }

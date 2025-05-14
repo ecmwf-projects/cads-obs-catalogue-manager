@@ -26,7 +26,6 @@ def test_run_ingestion_pipeline(
         test_config,
         start_year=start_year,
         end_year=end_year,
-        update=False,
     )
     # assert insertions have been made
     counter = test_session.scalar(
@@ -57,7 +56,7 @@ def test_make_cdm(test_config, tmp_path, caplog):
     )
     output_file = Path(
         tmp_path,
-        "insitu-observations-woudc-ozone-total-column-and-profiles_OzoneSonde_1969_0.0_0.0.nc",
+        "insitu-observations-woudc-ozone-total-column-and-profiles_1.0.0_OzoneSonde_1969_0.0_0.0.nc",
     )
     assert output_file.exists()
     assert any([f"Saved partition to {output_file}" in r.msg for r in caplog.records])
