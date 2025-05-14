@@ -67,7 +67,11 @@ class S3Config(pydantic_settings.BaseSettings):
     def __eq__(self, other):
         if not isinstance(other, S3Config):
             return NotImplemented
-        return self.host == other.host and self.port == other.port
+        return (
+            self.host == other.host
+            and self.port == other.port
+            and self.access_key == other.access_key
+        )
 
 
 AvailableReaders = Literal[
