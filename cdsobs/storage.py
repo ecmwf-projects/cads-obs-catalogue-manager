@@ -109,6 +109,11 @@ class S3Client(StorageClient):
         else:
             self.public_url_base = f"{self.base}/{self.public_url_endpoint}"
         self.namespace = namespace
+        self.transfer_config = TransferConfig(
+            multipart_threshold=100 * 1024 * 1024,  # Force multipart if file > 100 MB
+            multipart_chunksize=50 * 1024 * 1024,  # Each part will be 50 MB
+            max_concurrency=1,
+        )
 
     @property
     def base(self) -> str:
@@ -144,18 +149,15 @@ class S3Client(StorageClient):
     def upload_file(
         self, destination_bucket: str, object_name: str, file_to_upload: Path
     ) -> str:
-        transfer_config = TransferConfig(
-            multipart_threshold=100 * 1024 * 1024,  # Force multipart if file > 100 MB
-            multipart_chunksize=50 * 1024 * 1024,  # Each part will be 50 MB
-            max_concurrency=1,
-        )
         self.s3.Bucket(destination_bucket).upload_file(
-            str(file_to_upload), object_name, Config=transfer_config
+            str(file_to_upload), object_name, Config=self.transfer_config
         )
         return self.get_asset(destination_bucket, object_name)
 
     def download_file(self, bucket_name, object_name, ofile):
-        self.s3.Object(bucket_name, object_name).download_file(ofile)
+        self.s3.Object(bucket_name, object_name).download_file(
+            ofile, Config=self.transfer_config
+        )
 
     def delete_file(self, destination_bucket: str, object_name: str):
         self.s3.Object(destination_bucket, object_name).delete()
