@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 
 from cdsobs.config import S3Config
@@ -94,6 +95,12 @@ class S3Client(StorageClient):
             aws_access_key_id=access_key,
             aws_secret_access_key=secret_key,
             use_ssl=secure,
+            config=Config(
+                read_timeout=120,  # Increase if you're reading large files
+                connect_timeout=30,
+                retries={"max_attempts": 5, "mode": "standard"},
+                max_pool_connections=32,
+            ),
         )
         self.public_url_endpoint = public_url_endpoint
         if self.public_url_endpoint is None:
