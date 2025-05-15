@@ -8,6 +8,11 @@ import dask
 import requests
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_random_exponential,
+)
 from typer import Option
 
 from cdsobs.cli._utils import config_yml_typer
@@ -217,16 +222,25 @@ def s3_copy(s3client: S3Client, entries, dest_dataset):
     new_assets = []
     try:
         for entry in entries:
-            source_asset = entry.asset
-            source_bucket, name = source_asset.split("/")
-            dest_bucket = s3client.get_bucket_name(dest_dataset)
-            s3client.create_directory(dest_bucket)
-            s3client.copy_file(source_bucket, name, dest_bucket, name)
-            new_assets.append(s3client.get_asset(dest_bucket, name))
+            new_asset = copy_asset(dest_dataset, entry, s3client)
+            new_assets.append(new_asset)
     except (Exception, KeyboardInterrupt):
         s3_rollback(s3client, new_assets)
         raise
     return new_assets
+
+
+@retry(
+    wait=wait_random_exponential(multiplier=0.5, max=60), stop=stop_after_attempt(10)
+)
+def copy_asset(dest_dataset, entry, s3client):
+    source_asset = entry.asset
+    source_bucket, name = source_asset.split("/")
+    dest_bucket = s3client.get_bucket_name(dest_dataset)
+    s3client.create_directory(dest_bucket)
+    s3client.copy_file(source_bucket, name, dest_bucket, name)
+    new_asset = s3client.get_asset(dest_bucket, name)
+    return new_asset
 
 
 def s3_rollback(s3_client, assets):
