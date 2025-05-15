@@ -1,11 +1,9 @@
 import os
-from io import BytesIO
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Optional, Sequence
 
 import dask
-import requests
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from tenacity import (
@@ -260,16 +258,10 @@ def s3_export(init_s3client: S3Client, dest_s3client: S3Client, entries, dest_da
         # Use dask to speed up the process
         def copy_object(object_url):
             logger.info(f"Copying {object_url} to new storage.")
-            name = object_url.split("/")[-1]
-            response = requests.get(object_url, stream=True)
-            response.raise_for_status()
+            bucket, name = object_url.split("/")
             tmp_base = "/tmp" if os.getenv("GITHUB_ACTIONS") else "/dev/shm"
-            with (
-                NamedTemporaryFile(dir=tmp_base) as ntf,
-                BytesIO(response.content) as bc,
-            ):
-                ntf.write(bc.read())
-                ntf.flush()
+            with (NamedTemporaryFile(dir=tmp_base) as ntf,):
+                init_s3client.download_file(bucket, name, ntf.name)
                 new_asset = dest_s3client.upload_file(dest_bucket, name, Path(ntf.name))
             return new_asset
 
