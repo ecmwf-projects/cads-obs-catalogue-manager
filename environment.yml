@@ -47,6 +47,7 @@ dependencies:
 - python=3.12
 - duckdb
 - cryptography
+- tenacity
 - pydantic-extra-types
 - semver
 - pip:

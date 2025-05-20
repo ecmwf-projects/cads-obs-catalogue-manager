@@ -1,13 +1,16 @@
 import os
-from io import BytesIO
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Optional, Sequence
 
 import dask
-import requests
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_random_exponential,
+)
 from typer import Option
 
 from cdsobs.cli._utils import config_yml_typer
@@ -228,16 +231,25 @@ def s3_copy(s3client: S3Client, entries, dest_dataset):
     new_assets = []
     try:
         for entry in entries:
-            source_asset = entry.asset
-            source_bucket, name = source_asset.split("/")
-            dest_bucket = s3client.get_bucket_name(dest_dataset)
-            s3client.create_directory(dest_bucket)
-            s3client.copy_file(source_bucket, name, dest_bucket, name)
-            new_assets.append(s3client.get_asset(dest_bucket, name))
+            new_asset = copy_asset(dest_dataset, entry, s3client)
+            new_assets.append(new_asset)
     except (Exception, KeyboardInterrupt):
         s3_rollback(s3client, new_assets)
         raise
     return new_assets
+
+
+@retry(
+    wait=wait_random_exponential(multiplier=0.5, max=60), stop=stop_after_attempt(10)
+)
+def copy_asset(dest_dataset, entry, s3client):
+    source_asset = entry.asset
+    source_bucket, name = source_asset.split("/")
+    dest_bucket = s3client.get_bucket_name(dest_dataset)
+    s3client.create_directory(dest_bucket)
+    s3client.copy_file(source_bucket, name, dest_bucket, name)
+    new_asset = s3client.get_asset(dest_bucket, name)
+    return new_asset
 
 
 def s3_rollback(s3_client, assets):
@@ -257,16 +269,10 @@ def s3_export(init_s3client: S3Client, dest_s3client: S3Client, entries, dest_da
         # Use dask to speed up the process
         def copy_object(object_url):
             logger.info(f"Copying {object_url} to new storage.")
-            name = object_url.split("/")[-1]
-            response = requests.get(object_url, stream=True)
-            response.raise_for_status()
+            bucket, name = object_url.split("/")
             tmp_base = "/tmp" if os.getenv("GITHUB_ACTIONS") else "/dev/shm"
-            with (
-                NamedTemporaryFile(dir=tmp_base) as ntf,
-                BytesIO(response.content) as bc,
-            ):
-                ntf.write(bc.read())
-                ntf.flush()
+            with (NamedTemporaryFile(dir=tmp_base) as ntf,):
+                init_s3client.download_file(bucket, name, ntf.name)
                 new_asset = dest_s3client.upload_file(dest_bucket, name, Path(ntf.name))
             return new_asset
 

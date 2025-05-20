@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import boto3
+from boto3.s3.transfer import TransferConfig
+from botocore.config import Config
 from botocore.exceptions import ClientError
 
 from cdsobs.config import S3Config
@@ -94,6 +96,12 @@ class S3Client(StorageClient):
             aws_access_key_id=access_key,
             aws_secret_access_key=secret_key,
             use_ssl=secure,
+            config=Config(
+                read_timeout=120,  # Increase if you're reading large files
+                connect_timeout=30,
+                retries={"max_attempts": 5, "mode": "standard"},
+                max_pool_connections=32,
+            ),
         )
         self.public_url_endpoint = public_url_endpoint
         if self.public_url_endpoint is None:
@@ -101,6 +109,11 @@ class S3Client(StorageClient):
         else:
             self.public_url_base = f"{self.base}/{self.public_url_endpoint}"
         self.namespace = namespace
+        self.transfer_config = TransferConfig(
+            multipart_threshold=100 * 1024 * 1024,  # Force multipart if file > 100 MB
+            multipart_chunksize=50 * 1024 * 1024,  # Each part will be 50 MB
+            max_concurrency=1,
+        )
 
     @property
     def base(self) -> str:
@@ -136,11 +149,15 @@ class S3Client(StorageClient):
     def upload_file(
         self, destination_bucket: str, object_name: str, file_to_upload: Path
     ) -> str:
-        self.s3.Bucket(destination_bucket).upload_file(str(file_to_upload), object_name)
+        self.s3.Bucket(destination_bucket).upload_file(
+            str(file_to_upload), object_name, Config=self.transfer_config
+        )
         return self.get_asset(destination_bucket, object_name)
 
     def download_file(self, bucket_name, object_name, ofile):
-        self.s3.Object(bucket_name, object_name).download_file(ofile)
+        self.s3.Object(bucket_name, object_name).download_file(
+            ofile, Config=self.transfer_config
+        )
 
     def delete_file(self, destination_bucket: str, object_name: str):
         self.s3.Object(destination_bucket, object_name).delete()
