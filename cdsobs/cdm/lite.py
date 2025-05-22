@@ -31,7 +31,7 @@ variable_names = [
     "quality_flag",
     "report_id",
     "report_timestamp",
-    "report_meaning_of_time_stamp",
+    "report_meaning_of_timestamp",
     "report_duration",
     "report_type",
     "sensor_id",
