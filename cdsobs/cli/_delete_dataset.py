@@ -15,8 +15,8 @@ from cdsobs.cli._utils import (
 from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.models import Catalogue
-from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
+from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.schemas.catalogue import (
     CatalogueSchema,
     CliCatalogueFilters,
@@ -91,6 +91,7 @@ def delete_from_catalogue(
         latitudes=[],
         variables=[],
         stations=[],
+        versions=[],
     ).to_repository_filters()
     entries = catalogue_repo.get_by_filters(filters)
     if not len(entries):

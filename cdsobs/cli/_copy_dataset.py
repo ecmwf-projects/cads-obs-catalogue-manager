@@ -17,8 +17,11 @@ from cdsobs.cli._utils import config_yml_typer
 from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.models import Catalogue
-from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
+from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
+from cdsobs.observation_catalogue.repositories.dataset_version import (
+    CadsDatasetVersionRepository,
+)
 from cdsobs.observation_catalogue.schemas.catalogue import CatalogueSchema
 from cdsobs.storage import S3Client
 from cdsobs.utils.exceptions import CliException, ConfigError, ConfigNotFound
@@ -193,8 +196,16 @@ def catalogue_copy(
     cads_dataset_repo = CadsDatasetRepository(catalogue_session)
     cads_dataset_repo.create_dataset(dest_dataset)
     # copy dataset entries but with different dataset name and asset.
+    cads_dataset_version_repo = CadsDatasetVersionRepository(catalogue_session)
     catalogue_repo = CatalogueRepository(catalogue_session)
     for entry in entries:
+        # Create the version if needed
+        if not cads_dataset_version_repo.dataset_version_exists(
+            dest_dataset, entry.version
+        ):
+            cads_dataset_version_repo.create_dataset_version(
+                dest_dataset, version=entry.version
+            )
         # This is needed to load the constraints as it is a deferred attribute.
         # However if we load them the other attributes will dissappear from __dict__
         # There is no way apparently of doing this better in sqlalchemy

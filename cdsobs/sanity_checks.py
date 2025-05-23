@@ -83,7 +83,6 @@ def _sanity_check_dataset(
             s3_client.public_url_base,
             retrieve_args,
             Path(tmpdir),
-            size_limit=1000000000000,
         )
         # Check the file is not empty
         if output_path.stat().st_size == 0:

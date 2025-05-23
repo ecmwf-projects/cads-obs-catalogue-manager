@@ -12,6 +12,7 @@ from cdsobs.cdm.api import (
     define_units,
 )
 from cdsobs.config import CDSObsConfig, DatasetConfig
+from cdsobs.constants import DEFAULT_VERSION
 from cdsobs.ingestion.api import (
     EmptyBatchException,
     _entry_exists,
@@ -27,7 +28,10 @@ from cdsobs.ingestion.core import (
 from cdsobs.ingestion.partition import get_partitions, save_partitions
 from cdsobs.ingestion.serialize import serialize_partition
 from cdsobs.metadata import get_dataset_metadata
-from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
+from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
+from cdsobs.observation_catalogue.repositories.dataset_version import (
+    CadsDatasetVersionRepository,
+)
 from cdsobs.retrieve.filter_datasets import between
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
@@ -44,8 +48,8 @@ def run_ingestion_pipeline(
     config: CDSObsConfig,
     start_year: int,
     end_year: int,
-    update: bool = False,
     start_month: int = 1,
+    version: str = DEFAULT_VERSION,
 ):
     """
     Ingest the data to the CADS observation repository.
@@ -70,13 +74,11 @@ def run_ingestion_pipeline(
       Year to start reading the data.
     end_year:
       Year to finish reading the data.
-    update:
-      If True, data overlapping in time (year and month) with existing partitions
-      will be read in order to check if it changed these need to be updated.
-      By default, these time intervals will be skipped.
     start_month:
       Month to start reading the data. It only applies to the first year of the interval.
       Default is 1.
+    version:
+      Semantic version to use for the data being uploaded.
     """
     logger.info("----------------------------------------------------------------")
     logger.info("Running ingestion pipeline")
@@ -92,7 +94,7 @@ def run_ingestion_pipeline(
                 session,
                 config,
                 time_space_batch,
-                update,
+                version=version,
             )
         except EmptyBatchException:
             logger.warning(f"Data not found for {time_space_batch=}")
@@ -114,6 +116,7 @@ def run_make_cdm(
     end_year: int,
     output_dir: Path,
     save_data: bool = False,
+    version: str = DEFAULT_VERSION,
 ):
     """
     Run the first steps of the ingestion pileline.
@@ -139,7 +142,8 @@ def run_make_cdm(
     save_data:
       Whether to produce the netCDFs as they would be uploaded to the storage by
       make_production. If False, the data only will be loaded and checked for CDM
-      compliance in memory.
+    version:
+      Semantic version to use for the data. Is written in the file names.
     """
     logger.info("----------------------------------------------------------------")
     logger.info("Running make cdm")
@@ -156,6 +160,7 @@ def run_make_cdm(
                 service_definition,
                 source,
                 time_batch,
+                version=version,
             )
         except EmptyBatchException:
             logger.warning(f"No data found for {time_batch=}")
@@ -174,7 +179,7 @@ def _run_ingestion_pipeline_for_batch(
     session: Session,
     config: CDSObsConfig,
     time_space_batch: TimeSpaceBatch,
-    update: bool = False,
+    version: str = "DEFAULT_VERSION",
 ):
     """
     Ingest the data for a given year and month, specified by TimeBatch.
@@ -193,23 +198,21 @@ def _run_ingestion_pipeline_for_batch(
       Configuration of the CDSOBS catalogue manager
     time_space_batch:
       Optionally read data only for one year and month
-    update:
-      If True, data overlapping in time (year and month) with existing partitions
-      will be read in order to check if it changed these need to be updated.
-      By default, these time intervals will be skipped.
     """
-    if not update and _entry_exists(dataset_name, session, source, time_space_batch):
+    if _entry_exists(dataset_name, session, source, time_space_batch, version):
         logger.warning(
             "A partition with the chosen parameters already exists and update is set to False."
         )
     else:
         sorted_partitions = _read_homogenise_and_partition(
-            config, dataset_name, service_definition, source, time_space_batch
+            config, dataset_name, service_definition, source, time_space_batch, version
         )
-        # Persist in catalogue and storage
+        # Create dataset if it does not exist
         cads_dataset_repo = CadsDatasetRepository(session)
-        # Create dataset in the catalogue if it does not exist
-        cads_dataset_repo.create_dataset(dataset_name)
+        cads_dataset_repo.create_dataset(dataset_name=dataset_name)
+        # Create dataset version if it does not exist
+        cads_dataset_version_repo = CadsDatasetVersionRepository(session)
+        cads_dataset_version_repo.create_dataset_version(dataset_name, version=version)
         logger.info("Partitioning data and saving to storage")
         s3_client = S3Client.from_config(config.s3config)
         logger.debug(f"Getting client to S3 storage: {s3_client}")
@@ -279,10 +282,11 @@ def _read_homogenise_and_partition(
     service_definition: ServiceDefinition,
     source: str,
     time_space_batch: TimeSpaceBatch,
+    version: str,
 ) -> Iterator[DatasetPartition]:
     dataset_config = config.get_dataset(dataset_name)
     dataset_metadata = get_dataset_metadata(
-        config, dataset_config, service_definition, source
+        config, dataset_config, service_definition, source, version
     )
     # Get the data as a single big table with the names remmaped from
     # service_definition
@@ -333,9 +337,10 @@ def _run_make_cdm_for_batch(
     service_definition: ServiceDefinition,
     source: str,
     time_space_batch: TimeSpaceBatch,
+    version: str = "DEFAULT_VERSION",
 ):
     sorted_partitions = _read_homogenise_and_partition(
-        config, dataset_name, service_definition, source, time_space_batch
+        config, dataset_name, service_definition, source, time_space_batch, version
     )
     if save_data:
         for partition in sorted_partitions:

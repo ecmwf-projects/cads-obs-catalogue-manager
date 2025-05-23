@@ -12,6 +12,7 @@ def get_dataset_metadata(
     dataset_config: DatasetConfig,
     service_definition: ServiceDefinition,
     source: str,
+    version: str,
 ) -> DatasetMetadata:
     # Handle the main variables
     variables = service_definition.sources[source].main_variables
@@ -33,5 +34,6 @@ def get_dataset_metadata(
         cdm_tables,
         cdm_code_tables,
         space_columns,
+        version,
     )
     return dataset_metadata

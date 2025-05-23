@@ -1,14 +1,18 @@
 from datetime import datetime, timezone
 
-import sqlalchemy as sa
+from pydantic_extra_types.semantic_version import SemanticVersion
 
-from cdsobs.observation_catalogue.models import CadsDataset, Catalogue
-from cdsobs.observation_catalogue.repositories.cads_dataset import CadsDatasetRepository
+from cdsobs.constants import DEFAULT_VERSION
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
+from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
+from cdsobs.observation_catalogue.repositories.dataset_version import (
+    CadsDatasetVersionRepository,
+)
 from cdsobs.observation_catalogue.schemas.catalogue import CatalogueSchema
 
 test_catalogue_record = CatalogueSchema(
     dataset="test_dataset",
+    version=SemanticVersion.parse(DEFAULT_VERSION),
     dataset_source="test_dataset_source",
     time_coverage_start=datetime(2022, 1, 1),
     time_coverage_end=datetime(2022, 1, 31),
@@ -31,33 +35,27 @@ test_catalogue_record = CatalogueSchema(
 )
 
 
-def test_raw_insert(test_session_pertest):
+def test_repos(test_session_pertest):
+    # Test the repository objects that we use to interact with the catalogue
     test_session = test_session_pertest
     cads_dataset_repo = CadsDatasetRepository(test_session)
     cads_dataset_repo.create_dataset(test_catalogue_record.dataset)
+    cads_dataset_version_repo = CadsDatasetVersionRepository(test_session)
+    cads_dataset_version_repo.create_dataset_version(
+        test_catalogue_record.dataset, version=str(test_catalogue_record.version)
+    )
     catalogue_repo = CatalogueRepository(session=test_session)
     catalogue_repo.create(test_catalogue_record)
-    assert test_session.scalar(sa.select(sa.func.count(Catalogue.id))) == 1
-
-
-def test_cads_dataset(test_session_pertest):
-    test_session = test_session_pertest
-    cads_dataset_repo = CadsDatasetRepository(test_session)
-    dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
-    cads_dataset_repo.create_dataset(dataset_name)
-    results = test_session.scalars(sa.select(CadsDataset)).all()
-    assert len(results) == 1
-    cads_dataset_repo.bump_dataset_version(dataset_name)
-    assert results[0].version == "2.0"
-
-
-def test_entry_exists(test_session_pertest):
-    test_session = test_session_pertest
-    cads_dataset_repo = CadsDatasetRepository(test_session)
-    cads_dataset_repo.create_dataset(test_catalogue_record.dataset)
-    catalogue_repo = CatalogueRepository(session=test_session)
-    catalogue_repo.create(test_catalogue_record)
-    exists = catalogue_repo.entry_exists(
+    assert len(catalogue_repo.get_all()) == 1
+    all_dataset_versions = cads_dataset_version_repo.get_all()
+    assert len(all_dataset_versions) == 1
+    assert all_dataset_versions[0].version == str(test_catalogue_record.version)
+    assert all_dataset_versions[0].dataset == test_catalogue_record.dataset
+    all_datasets = cads_dataset_repo.get_all()
+    assert not all_dataset_versions[0].deprecated
+    assert len(all_datasets) == 1
+    assert all_datasets[0].name == test_catalogue_record.dataset
+    entry_exists = catalogue_repo.entry_exists(
         test_catalogue_record.dataset,
         test_catalogue_record.dataset_source,
         test_catalogue_record.time_coverage_start,
@@ -66,13 +64,20 @@ def test_entry_exists(test_session_pertest):
         test_catalogue_record.longitude_coverage_end,
         test_catalogue_record.latitude_coverage_start,
         test_catalogue_record.latitude_coverage_end,
+        str(test_catalogue_record.version),
     )
-    assert exists
+    assert entry_exists
+    dataset_exists = cads_dataset_repo.dataset_exists(
+        dataset_name=test_catalogue_record.dataset
+    )
+    assert dataset_exists
+    dataset_version_exists = cads_dataset_version_repo.dataset_version_exists(
+        dataset_name=test_catalogue_record.dataset,
+        version=str(test_catalogue_record.version),
+    )
+    assert dataset_version_exists
 
-
-def test_entry_exists_ko(test_session_pertest):
-    test_session = test_session_pertest
-    exists = CatalogueRepository(test_session).entry_exists(
+    entry_not_exists = catalogue_repo.entry_exists(
         test_catalogue_record.dataset,
         test_catalogue_record.dataset_source,
         test_catalogue_record.time_coverage_start,
@@ -81,5 +86,6 @@ def test_entry_exists_ko(test_session_pertest):
         test_catalogue_record.longitude_coverage_end,
         test_catalogue_record.latitude_coverage_start,
         test_catalogue_record.latitude_coverage_end,
+        "3.0.0",
     )
-    assert not exists
+    assert not entry_not_exists

@@ -4,7 +4,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
 from cdsobs.observation_catalogue.models import Catalogue
-from cdsobs.observation_catalogue.repositories.base_repository import BaseRepository
+from cdsobs.observation_catalogue.repositories.base import BaseRepository
 from cdsobs.utils.exceptions import CatalogueException
 
 
@@ -90,6 +90,7 @@ class CatalogueRepository(BaseRepository):
         longitude_coverage_end,
         latitude_coverage_start,
         latitude_coverage_end,
+        version,
     ):
         result = self.session.scalars(
             sa.select(Catalogue.id)
@@ -102,6 +103,7 @@ class CatalogueRepository(BaseRepository):
                 Catalogue.longitude_coverage_end <= longitude_coverage_end,
                 Catalogue.latitude_coverage_start >= latitude_coverage_start,
                 Catalogue.latitude_coverage_end <= latitude_coverage_end,
+                Catalogue.version == version,
             )
             .limit(1)
         ).first()

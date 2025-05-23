@@ -6,6 +6,7 @@ from typing import Literal, Optional, Protocol, Tuple, cast
 
 import pandas
 from dateutil.relativedelta import relativedelta
+from pydantic_extra_types.semantic_version import SemanticVersion
 
 from cdsobs.cdm.code_tables import CDMCodeTables
 from cdsobs.cdm.tables import CDMTables
@@ -82,6 +83,7 @@ class DatasetMetadata:
     cdm_tables: CDMTables
     cdm_code_tables: CDMCodeTables
     space_columns: SpaceColumns
+    version: str
 
 
 def get_variables_from_service_definition(
@@ -185,6 +187,7 @@ def to_catalogue_record(partition: SerializedPartition, asset: str) -> Catalogue
         data_size=file_params.data_size,
         file_checksum=file_params.file_checksum,
         constraints=partition.constraints,
+        version=SemanticVersion.parse(dataset_params.version),
     )
     return catalogue_record
 

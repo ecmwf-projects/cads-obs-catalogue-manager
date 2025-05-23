@@ -13,6 +13,7 @@ import requests
 import uvicorn
 
 from cdsobs.api import run_ingestion_pipeline
+from cdsobs.cli._deprecate_version import deprecate_dataset_version
 from cdsobs.config import CDSObsConfig
 from cdsobs.constants import CATALOGUE_ENTRY, CONFIG_YML, DATE_FORMAT, DS_TEST_NAME
 from cdsobs.ingestion.core import DatasetPartition, SerializedPartition
@@ -20,11 +21,11 @@ from cdsobs.ingestion.serialize import serialize_partition
 from cdsobs.observation_catalogue.database import Base, get_session
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.retrieve.models import RetrieveArgs
-from cdsobs.service_definition.api import get_service_definition
 from cdsobs.storage import S3Client, StorageClient
 from tests.utils import get_test_years
 
 TEST_API_PARAMETERS = [
+    ("insitu-observations-surface-land", "sub_daily"),
     ("insitu-observations-woudc-ozone-total-column-and-profiles", "OzoneSonde"),
     ("insitu-observations-woudc-ozone-total-column-and-profiles", "TotalOzone"),
     (
@@ -108,6 +109,9 @@ def test_config():
         tests_path, f"data/woudc_netcdfs/{example_filename}"
     ).parent.absolute()
     woudc_netcdfs_config.reader_extra_args["input_dir"] = str(input_dir)
+    surface_config = config.get_dataset("insitu-observations-surface-land")
+    input_dir = Path(Path(tests_path, "data/csv_data/").absolute(), "*.psv")
+    surface_config.reader_extra_args["input_path"] = str(input_dir)
     return config
 
 
@@ -169,7 +173,6 @@ class TestRepository:
 def test_repository(test_session, test_s3_client, test_config):
     """The whole thing, session to the catalogue DB and storage client."""
     for dataset_name, dataset_source in TEST_API_PARAMETERS:
-        get_service_definition(test_config, dataset_name)
         start_year, end_year = get_test_years(dataset_source)
         run_ingestion_pipeline(
             dataset_name,
@@ -180,6 +183,24 @@ def test_repository(test_session, test_s3_client, test_config):
             end_year,
         )
 
+    # Gruan version 2.0.0
+    dataset_name = "insitu-observations-gruan-reference-network"
+    dataset_source = "GRUAN"
+    start_year, end_year = get_test_years(dataset_source)
+    run_ingestion_pipeline(
+        dataset_name,
+        dataset_source,
+        test_session,
+        test_config,
+        start_year,
+        end_year,
+        version="2.0.0",
+    )
+    deprecate_dataset_version(
+        CONFIG_YML,
+        "insitu-observations-gruan-reference-network",
+        version="1.0.0",
+    )
     catalogue_repository = CatalogueRepository(test_session)
     test_repository = TestRepository(catalogue_repository, test_s3_client, test_config)
     yield test_repository

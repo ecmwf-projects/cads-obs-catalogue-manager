@@ -5,6 +5,7 @@ import pandas
 import pytest
 import xarray
 
+from cdsobs.constants import DEFAULT_VERSION
 from cdsobs.retrieve.api import retrieve_observations
 from cdsobs.retrieve.models import RetrieveArgs
 from cdsobs.storage import S3Client
@@ -49,6 +50,7 @@ def test_retrieve(
         longitude_coverage=(0.0, 180.0),
         format=oformat,
         stations=stations,
+        version=DEFAULT_VERSION,
     )
     if time_coverage:
         params["time_coverage"] = (datetime(start_year, 2, 1), datetime(end_year, 3, 1))
@@ -63,7 +65,6 @@ def test_retrieve(
         test_repository.s3_client.base,
         retrieve_args,
         tmp_path,
-        size_limit=1000000000000,
     )
     end = datetime.now()
     print(f"Retrieve took {(end - start).total_seconds()}")
@@ -98,7 +99,6 @@ def test_retrieve_cuon(test_repository, test_config):
         s3_client.base,
         retrieve_args,
         Path("/tmp"),
-        size_limit=1000000000000,
     )
     (print(output_file) @ pytest.mark.skip("Too slow"))
 
@@ -134,7 +134,6 @@ def test_retrieve_gruan(test_repository, test_config):
         s3_client.base,
         retrieve_args,
         Path("/tmp"),
-        size_limit=1000000000000,
     )
     print(output_file)
 

@@ -2,13 +2,23 @@ from datetime import datetime
 from pprint import pformat
 from typing import List
 
-from sqlalchemy import BigInteger, Float, ForeignKey, String
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Float,
+    ForeignKey,
+    ForeignKeyConstraint,
+    PrimaryKeyConstraint,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TIMESTAMP
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
     deferred,
     mapped_column,
+    relationship,
 )
 from sqlalchemy_json import mutable_json_type
 
@@ -27,8 +37,34 @@ class CadsDataset(Base):
     """
 
     __tablename__ = "cads_dataset"
-    name: Mapped[str] = mapped_column(String, primary_key=True)
-    version: Mapped[str] = mapped_column(String)
+    name: Mapped[str] = mapped_column(
+        String, primary_key=True, unique=True, nullable=False
+    )
+    versions: Mapped[List["CadsDatasetVersion"]] = relationship(
+        back_populates="dataset_obj", cascade="all"
+    )
+
+
+class CadsDatasetVersion(Base):
+    __tablename__ = "cads_dataset_version"
+    dataset: Mapped["CadsDataset"] = mapped_column(
+        String, ForeignKey("cads_dataset.name"), nullable=False
+    )
+    dataset_obj: Mapped["CadsDataset"] = relationship(
+        back_populates="versions", cascade="all"
+    )
+    version: Mapped[str] = mapped_column(String, default="1.0.0", nullable=False)
+    deprecated: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    catalogue_entries: Mapped[List["Catalogue"]] = relationship(
+        back_populates="dataset_version", cascade="all"
+    )
+    __table_args__ = (
+        PrimaryKeyConstraint("version", "dataset"),
+        UniqueConstraint("version", "dataset"),
+    )
+
+    def __str__(self):
+        return pformat({k: v for k, v in self.__dict__.items() if k[0] != "_"})
 
 
 class Catalogue(Base):
@@ -39,7 +75,11 @@ class Catalogue(Base):
 
     __tablename__ = "catalogue"
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    dataset: Mapped[int] = mapped_column(ForeignKey("cads_dataset.name"), index=True)
+    dataset: Mapped[str] = mapped_column(String, index=True)
+    version: Mapped[str] = mapped_column(String, index=True)
+    dataset_version: Mapped["CadsDatasetVersion"] = relationship(
+        back_populates="catalogue_entries", cascade="all"
+    )
     dataset_source: Mapped[str] = mapped_column(String)
     time_coverage_start: Mapped[datetime] = mapped_column(TIMESTAMP)
     time_coverage_end: Mapped[datetime] = mapped_column(TIMESTAMP)
@@ -55,6 +95,13 @@ class Catalogue(Base):
     data_size: Mapped[int] = mapped_column(BigInteger)
     file_checksum: Mapped[str] = mapped_column(String)
     constraints: Mapped[JSONType] = deferred(mapped_column(JSONType))  # type: ignore
+    # Ensuring foreign keys reference both parts of the composite key
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["dataset", "version"],
+            ["cads_dataset_version.dataset", "cads_dataset_version.version"],
+        ),
+    )
 
     def __str__(self):
         return pformat({k: v for k, v in self.__dict__.items() if k[0] != "_"})

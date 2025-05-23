@@ -31,6 +31,7 @@ def test_read_main(test_repository, test_config, tmp_path):
             "year": ["2000"],
             "month": ["10"],
             "day": [f"{i:02d}" for i in range(1, 32)],
+            "version": "last",
         },
     }
 
@@ -38,7 +39,7 @@ def test_read_main(test_repository, test_config, tmp_path):
     assert response.status_code == 200
     assert response.json() == [
         "http://127.0.0.1:9000/cds2-obs-dev-insitu-observations-gnss/"
-        "insitu-observations-gnss_IGS_R3_200010_-30.0_-80.0.nc"
+        "insitu-observations-gnss_1.0.0_IGS_R3_200010_-30.0_-80.0.nc"
     ]
 
 
@@ -58,6 +59,7 @@ def test_capabilities_datasets(test_config, test_repository):
     app.dependency_overrides[session_gen] = test_session
     actual = client.get("/capabilities/datasets").json()
     expected = [
+        "insitu-observations-surface-land",
         "insitu-observations-woudc-ozone-total-column-and-profiles",
         "insitu-observations-igra-baseline-network",
         "insitu-comprehensive-upper-air-observation-network",
