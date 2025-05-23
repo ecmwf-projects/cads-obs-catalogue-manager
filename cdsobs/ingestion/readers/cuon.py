@@ -421,6 +421,15 @@ def get_denormalized_table_file(
     denormalized_table_file["observed_variable"] = denormalized_table_file[
         "observed_variable"
     ].map(code_dict)
+    # Fixes for CUON V29 files
+    logger.warning("Applying fixes for CUON V29 files, remove in further iterations")
+    denormalized_table_file = denormalized_table_file.rename(
+        dict(RISE_bias_estimate="homogenisation_adjustment"), axis=1
+    )
+    denormalized_table_file["profile_id"] = denormalized_table_file.report_id.copy()
+    denormalized_table_file["quality_flag"] = 2
+    denormalized_table_file["homogenisation_method"] = 14
+    denormalized_table_file["report_meaning_of_timestamp"] = 1
     return denormalized_table_file
 
 

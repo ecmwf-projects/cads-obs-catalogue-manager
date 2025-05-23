@@ -2,6 +2,7 @@ import tempfile
 from pathlib import Path
 
 import netCDF4
+import pytest
 
 from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import get_session
@@ -85,6 +86,9 @@ def main(config):
     asset_test_path = Path("/tmp", asset_name)
     s3client.download_file(bucket, asset_name, asset_test_path)
     print(asset_test_path)
+
+
+pytest.mark.skip("Don't needed anymore")
 
 
 def test_fix_cuon(test_config, test_repository):
