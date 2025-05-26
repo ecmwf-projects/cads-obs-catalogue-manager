@@ -2,6 +2,7 @@ import tempfile
 from pathlib import Path
 
 import netCDF4
+import pytest
 
 from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import get_session
@@ -90,6 +91,9 @@ def main(config):
             Path(asset_local_path).unlink()
     
     logger.info("Finished!")
+
+pytest.mark.skip("Don't needed anymore")
+
 
 def test_fix_cuon(test_config, test_repository):
     main(test_config)
