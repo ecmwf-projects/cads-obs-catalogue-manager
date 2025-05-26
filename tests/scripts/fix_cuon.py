@@ -22,6 +22,7 @@ def main(config):
     ) as init_session, tempfile.TemporaryDirectory() as tempdir:
         entries = CatalogueRepository(init_session).get_by_dataset(dataset)
         for entry in entries:
+            logger.info(f"Fixing {entry.asset}")
             bucket, asset_name = entry.asset.split("/")
             asset_local_path = Path(tempdir, asset_name)
             s3client.download_file(bucket, asset_name, asset_local_path)
@@ -35,9 +36,14 @@ def main(config):
                     and "homogenisation_method" in ncdataset.variables
                 ):
                     logger.info(f"{entry.asset} is already fixed, skipping")
-                ncdataset.renameVariable(
-                    "RISE_bias_estimate", "homogenisation_adjustment"
-                )
+                    Path(asset_local_path).unlink()
+                    continue
+                if "RISE_bias_estimate" in ncdataset.variables:
+                    ncdataset.renameVariable(
+                        "RISE_bias_estimate", "homogenisation_adjustment"
+                    )
+                else:
+                    logger.info("RISE_bias_estimate not present in this file, so no homogenisation_adjustment will be written")
                 report_id_var = ncdataset.variables["report_id"]
                 profile_id = ncdataset.createVariable(
                     "profile_id",
@@ -81,17 +87,15 @@ def main(config):
             entry.file_size = new_file_size
             s3client.upload_file(bucket, asset_name, asset_local_path)
             init_session.commit()
-    # Download again the last asset to see if it is right
-    asset_test_path = Path("/tmp", asset_name)
-    s3client.download_file(bucket, asset_name, asset_test_path)
-    print(asset_test_path)
-
+            Path(asset_local_path).unlink()
+    
+    logger.info("Finished!")
 
 def test_fix_cuon(test_config, test_repository):
     main(test_config)
 
 
 if __name__ == "__main__":
-    config_yml = Path("")
+    config_yml = Path("~/.cdsobs/cdsobs_config.yml").expanduser()
     config = CDSObsConfig.from_yaml(config_yml)
     main(config)
