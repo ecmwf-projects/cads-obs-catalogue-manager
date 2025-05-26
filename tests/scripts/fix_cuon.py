@@ -44,7 +44,10 @@ def main(config):
                         "RISE_bias_estimate", "homogenisation_adjustment"
                     )
                 else:
-                    logger.info("RISE_bias_estimate not present in this file, so no homogenisation_adjustment will be written")
+                    logger.info(
+                        "RISE_bias_estimate not present in this file, "
+                        "so no homogenisation_adjustment will be written"
+                    )
                 report_id_var = ncdataset.variables["report_id"]
                 profile_id = ncdataset.createVariable(
                     "profile_id",
@@ -89,8 +92,9 @@ def main(config):
             s3client.upload_file(bucket, asset_name, asset_local_path)
             init_session.commit()
             Path(asset_local_path).unlink()
-    
+
     logger.info("Finished!")
+
 
 pytest.mark.skip("Don't needed anymore")
 
