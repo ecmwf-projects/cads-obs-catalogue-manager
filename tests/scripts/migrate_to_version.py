@@ -2,9 +2,9 @@ import json
 
 import psycopg2
 from sqlalchemy import create_engine, text
-
+from pathlib import Path
 from cdsobs.config import CDSObsConfig, DBConfig
-from cdsobs.constants import CONFIG_YML, DEFAULT_VERSION
+from cdsobs.constants import DEFAULT_VERSION
 from cdsobs.observation_catalogue.models import Base
 from cdsobs.storage import S3Client
 from cdsobs.utils.logutils import get_logger
@@ -173,4 +173,5 @@ def test_migrate_to_new_schema(test_config, test_repository):
 
 
 if __name__ == "__main__":
-    migrate_to_new_schema(CDSObsConfig.from_yaml(CONFIG_YML))
+    config_yaml = Path("/path/to/.cdsobs/cdsobs_config.yml")
+    migrate_to_new_schema(CDSObsConfig.from_yaml(config_yaml))
