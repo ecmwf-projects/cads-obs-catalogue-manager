@@ -60,9 +60,16 @@ def read_sql_tables(
         # We need sortby to the result to be deterministic
         header_querystr += f" ORDER BY {join_ids.header}"
         # This is to use only one thread in order to no overwhelm the database
-        header_data = cx.read_sql(
-            db_url, header_querystr, return_type="pandas", partition_num=1
-        )
+        try:
+            header_data = cx.read_sql(
+                db_url, header_querystr, return_type="pandas", partition_num=1
+            )
+        except Exception:
+            logger.warning(
+                "connectorx failed with exception {e}, falling back to "
+                "pandas. This usually happend because out of bounds dates."
+            )
+            header_data = pandas.read_sql(header_querystr, db_url)
 
         # Get the data data
         data_table = source_definition.data_table
