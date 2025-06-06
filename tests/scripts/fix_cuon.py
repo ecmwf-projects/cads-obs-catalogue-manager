@@ -29,20 +29,18 @@ def main(config):
             s3client.download_file(bucket, asset_name, asset_local_path)
             # Fix file and reupload
             with netCDF4.Dataset(asset_local_path, mode="a") as ncdataset:
-                # Check if it was already fixed
-                if (
-                    "humidity_bias_estimate" not in ncdataset.variables
-                    or "wind_bias_estimate" not in ncdataset.variables
-                ):
-                    logger.info(f"{entry.asset} is already fixed, skipping")
-                    Path(asset_local_path).unlink()
-                    continue
                 if "homogenisation_adjustment" not in ncdataset.variables:
                     logger.info(
                         "homogenisation_adjustment not present in this file, skipping"
                     )
                     continue
-                homogenisation_adjustment = ncdataset["homogenisation_adjustment"][:]
+                homogenisation_adjustment_ncvar = ncdataset["homogenisation_adjustment"]
+                # Check if it was already fixed
+                if hasattr(homogenisation_adjustment_ncvar, "status"):
+                    logger.info(f"{entry.asset} is already fixed, skipping")
+                    Path(asset_local_path).unlink()
+                    continue
+                homogenisation_adjustment = homogenisation_adjustment_ncvar[:]
                 observed_variable = ncdataset["observed_variable"][:]
                 humidity_adjustment = ncdataset["humidity_bias_estimate"][:]
 
@@ -53,7 +51,12 @@ def main(config):
 
                 mask = numpy.isin(observed_variable, (106, 107, 139, 140))
                 homogenisation_adjustment[mask] = wind_adjustment[mask]
-                ncdataset["homogenisation_adjustment"][:] = homogenisation_adjustment
+                homogenisation_adjustment_ncvar[:] = homogenisation_adjustment
+                setattr(
+                    ncdataset["homogenisation_adjustment"],
+                    "status",
+                    "Temperature adjusted with RISE bias estimate, merged with humidity and wind adjustments",
+                )
                 ncdataset.sync()
 
             new_checksum = compute_hash(Path(asset_local_path))
