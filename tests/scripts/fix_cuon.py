@@ -2,7 +2,7 @@ import tempfile
 from pathlib import Path
 
 import netCDF4
-import pytest
+import numpy
 
 from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import get_session
@@ -31,58 +31,29 @@ def main(config):
             with netCDF4.Dataset(asset_local_path, mode="a") as ncdataset:
                 # Check if it was already fixed
                 if (
-                    "RISE_bias_estimate" not in ncdataset.variables
-                    and "profile_id" in ncdataset.variables
-                    and "quality_flag" in ncdataset.variables
-                    and "homogenisation_method" in ncdataset.variables
+                    "humidity_bias_estimate" not in ncdataset.variables
+                    or "wind_bias_estimate" not in ncdataset.variables
                 ):
                     logger.info(f"{entry.asset} is already fixed, skipping")
                     Path(asset_local_path).unlink()
                     continue
-                if "RISE_bias_estimate" in ncdataset.variables:
-                    ncdataset.renameVariable(
-                        "RISE_bias_estimate", "homogenisation_adjustment"
-                    )
-                else:
+                if "homogenisation_adjustment" not in ncdataset.variables:
                     logger.info(
-                        "RISE_bias_estimate not present in this file, "
-                        "so no homogenisation_adjustment will be written"
+                        "homogenisation_adjustment not present in this file, skipping"
                     )
-                report_id_var = ncdataset.variables["report_id"]
-                profile_id = ncdataset.createVariable(
-                    "profile_id",
-                    datatype=report_id_var.dtype,
-                    compression="zlib",
-                    chunksizes=report_id_var.chunking(),
-                    complevel=1,
-                    shuffle=True,
-                    dimensions=report_id_var.dimensions,
-                )
-                profile_id[:] = report_id_var[:]
-                quality_flag = ncdataset.createVariable(
-                    "quality_flag",
-                    datatype="int16",
-                    compression="zlib",
-                    chunksizes=(report_id_var.chunking()[0],),
-                    complevel=1,
-                    shuffle=True,
-                    dimensions=("observation_id",),
-                )
-                quality_flag[:] = 2
-                homogenisation_method = ncdataset.createVariable(
-                    "homogenisation_method",
-                    datatype="int16",
-                    compression="zlib",
-                    chunksizes=(report_id_var.chunking()[0],),
-                    complevel=1,
-                    shuffle=True,
-                    dimensions=("observation_id",),
-                )
-                homogenisation_method[:] = 14
-                report_meaning_of_timestamp = ncdataset.variables[
-                    "report_meaning_of_timestamp"
-                ]
-                report_meaning_of_timestamp[:] = 1
+                    continue
+                homogenisation_adjustment = ncdataset["homogenisation_adjustment"][:]
+                observed_variable = ncdataset["observed_variable"][:]
+                humidity_adjustment = ncdataset["humidity_bias_estimate"][:]
+
+                mask = numpy.isin(observed_variable, (34, 137, 138, 39))
+                homogenisation_adjustment[mask] = humidity_adjustment[mask]
+
+                wind_adjustment = ncdataset["wind_bias_estimate"][:]
+
+                mask = numpy.isin(observed_variable, (106, 107, 139, 140))
+                homogenisation_adjustment[mask] = wind_adjustment[mask]
+                ncdataset["homogenisation_adjustment"][:] = homogenisation_adjustment
                 ncdataset.sync()
 
             new_checksum = compute_hash(Path(asset_local_path))
@@ -96,9 +67,7 @@ def main(config):
     logger.info("Finished!")
 
 
-pytest.mark.skip("Don't needed anymore")
-
-
+# pytest.mark.skip("Don't needed anymore")
 def test_fix_cuon(test_config, test_repository):
     main(test_config)
 

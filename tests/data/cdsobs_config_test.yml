@@ -87,6 +87,7 @@ datasets:
   - advanced_homogenisation
   - advanced_uncertainty
   - uncertainty_table
+  - homogenisation_table
   reader: "cdsobs.ingestion.readers.cuon.read_cuon_netcdfs"
   reader_extra_args:
     input_dir: "test"
