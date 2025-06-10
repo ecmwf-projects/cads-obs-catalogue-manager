@@ -1,7 +1,6 @@
 import calendar
 import importlib
 import os
-import statistics
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, List
@@ -168,26 +167,6 @@ def _process_table(
         }
         var_data[table_name] = data
     return var_data
-
-
-def fix_variables_with_wrong_length(data, fields):
-    """Truncate or fill with the last value."""
-    lengths = [len(data[f]) for f in fields]
-    proper_len = statistics.mode(lengths)
-    for f in fields:
-        actual_len = len(data[f])
-        if actual_len != proper_len:
-            print(f"{f} length must be {proper_len} but is  {len(data[f])}, fixing")
-            if actual_len > proper_len:
-                data[f] = data[f][:proper_len]
-            else:
-                data[f] = numpy.pad(
-                    data[f],
-                    (0, proper_len - actual_len),
-                    "constant",
-                    constant_values=data[f][-1],
-                )
-    return data
 
 
 def _get_field_data(field, hfile, selector, table_name):
@@ -453,6 +432,10 @@ def get_denormalized_table_file(
     ]
     mask = numpy.isin(observed_variable, wind_variables)
     homogenisation_adjustment.loc[mask] = wind_adjustment[mask]
+    # Remove obs id zero
+    denormalized_table_file = denormalized_table_file.loc[
+        denormalized_table_file["observed_variable"] != 0
+    ]
     return denormalized_table_file
 
 
@@ -490,16 +473,9 @@ def _fix_table_data(
         if len(table_data) == 0:
             logger.warning(f"No data found in {file_path} for {time_space_batch}.")
             raise NoDataInFileException
-        # Remove obstype 0, as is unassigned data we don't need
-        table_data = table_data.loc[table_data["observed_variable"] != 0]
         # Check if observation ids are unique and replace them if not
         if not table_data.observation_id.is_unique:
-            logger.warning(f"observation_id is not unique in {file_path}, fixing")
-            table_data.loc[:, "observation_id"] = numpy.arange(
-                len(table_data), dtype="int"
-            ).astype("bytes")
-        # Remove missing values to save memory
-        table_data = table_data.loc[~table_data.observation_value.isnull()]
+            raise RuntimeError(f"observation_id is not unique in {file_path}, fixing")
         # Fix latitude and longitude adding lond and latd so they really represent the
         # measurement location
         table_data["latitude"] += table_data["latd"]
@@ -525,19 +501,11 @@ def _fix_table_data(
             f"Filling era5fb table index with observation_id from observations_table in {file_path}"
         )
         obs_id_name = "obs_id" if table_name == "era5fb_table" else "observation_id"
-        if table_data_len < obs_table_len:
-            logger.warning(
-                f"era5fb is shorter than observations_table in {file_path}"
-                "truncating observation_ids"
+        if table_data_len != obs_table_len:
+            raise RuntimeError(
+                f"{table_name} size is different to observations_table size "
+                f"{table_data_len} vs {obs_table_len}"
             )
-            observation_ids = dataset_cdm["observations_table"].observation_id.values[
-                0:table_data_len
-            ]
-            table_data[obs_id_name] = observation_ids
-        elif table_data_len > obs_table_len:
-            logger.warning("era5fb is longer than observations_table " "truncating")
-            table_data = table_data.iloc[0:obs_table_len]
-            observation_ids = dataset_cdm["observations_table"].observation_id.values
         else:
             observation_ids = dataset_cdm["observations_table"].observation_id.values
         table_data[obs_id_name] = observation_ids

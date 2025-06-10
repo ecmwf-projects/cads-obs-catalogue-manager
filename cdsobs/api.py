@@ -297,13 +297,20 @@ def _read_homogenise_and_partition(
     _validate_time_interval(homogenised_data, time_space_batch.time_batch)
     # Check CDM compliance
     check_cdm_compliance(homogenised_data, dataset_metadata.cdm_tables)
-    # Apply unit changes
+    # Define units id not present and apply unit changes
     if "units" not in homogenised_data.columns:
         homogenised_data = define_units(
             homogenised_data,
             service_definition.sources[source],
             dataset_metadata.cdm_code_tables["observed_variable"],
         )
+    # If units is present but encoded as integers, decode them
+    # Old datasets have all units as strings, so we shall keep it like this.
+    # if "units" in homogenised_data.columns and homogenised_data.units.dtype.kind == "i":
+    #     # Decode integers using CDM tables
+    #     unit_codes = dataset_metadata.cdm_code_tables["units"]
+    #     code2unit = unit_codes.table["abbreviation"].to_dict()
+    #     homogenised_data["units"] = homogenised_data.units.map(code2unit)
     year = time_space_batch.time_batch.year
     lon_tile_size = dataset_config.get_tile_size("lon", source, year)
     lat_tile_size = dataset_config.get_tile_size("lat", source, year)

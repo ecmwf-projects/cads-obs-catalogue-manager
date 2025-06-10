@@ -3,7 +3,9 @@ from pathlib import Path
 
 import netCDF4
 import numpy
+import pytest
 
+from cdsobs.cdm.api import read_cdm_code_tables
 from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
@@ -17,6 +19,11 @@ logger = get_logger(__name__)
 def main(config):
     dataset = "insitu-comprehensive-upper-air-observation-network"
     s3client = S3Client.from_config(config.s3config)
+    # Get units mapping
+    cdm_code_tables = read_cdm_code_tables(config.cdm_tables_location)
+    unit_codes = cdm_code_tables["units"]
+    code2unit = unit_codes.table["abbreviation"].to_dict()
+    code2unit_vec = numpy.vectorize(code2unit.get)
 
     with get_session(
         config.catalogue_db
@@ -29,34 +36,28 @@ def main(config):
             s3client.download_file(bucket, asset_name, asset_local_path)
             # Fix file and reupload
             with netCDF4.Dataset(asset_local_path, mode="a") as ncdataset:
-                if "homogenisation_adjustment" not in ncdataset.variables:
-                    logger.info(
-                        "homogenisation_adjustment not present in this file, skipping"
-                    )
-                    continue
-                homogenisation_adjustment_ncvar = ncdataset["homogenisation_adjustment"]
-                # Check if it was already fixed
-                if hasattr(homogenisation_adjustment_ncvar, "status"):
+                if "old_units" in ncdataset.variables:
                     logger.info(f"{entry.asset} is already fixed, skipping")
-                    Path(asset_local_path).unlink()
                     continue
-                homogenisation_adjustment = homogenisation_adjustment_ncvar[:]
-                observed_variable = ncdataset["observed_variable"][:]
-                humidity_adjustment = ncdataset["humidity_bias_estimate"][:]
-
-                mask = numpy.isin(observed_variable, (34, 137, 138, 39))
-                homogenisation_adjustment[mask] = humidity_adjustment[mask]
-
-                wind_adjustment = ncdataset["wind_bias_estimate"][:]
-
-                mask = numpy.isin(observed_variable, (106, 107, 139, 140))
-                homogenisation_adjustment[mask] = wind_adjustment[mask]
-                homogenisation_adjustment_ncvar[:] = homogenisation_adjustment
-                setattr(
-                    ncdataset["homogenisation_adjustment"],
-                    "status",
-                    "Temperature adjusted with RISE bias estimate, merged with humidity and wind adjustments",
+                units_ncvar = ncdataset.variables["units"]
+                units_int = netCDF4.chartostring(units_ncvar[:]).astype("int")
+                ncdataset.renameVariable("units", "old_units")
+                ncdataset.renameDimension("string_units", "old_string_units")
+                units_char = netCDF4.stringtochar(
+                    code2unit_vec(units_int).astype("bytes")
                 )
+                units_char_len = units_char.shape[1]
+                ncdataset.createDimension("string_units", units_char_len)
+                ncdataset.createVariable(
+                    "units",
+                    datatype="S1",
+                    compression="zlib",
+                    chunksizes=(units_ncvar.chunking()[0], units_char_len),
+                    complevel=1,
+                    shuffle=True,
+                    dimensions=(units_ncvar.dimensions[0], "string_units"),
+                )
+                ncdataset.variables["units"][:] = units_char
                 ncdataset.sync()
 
             new_checksum = compute_hash(Path(asset_local_path))
@@ -70,7 +71,9 @@ def main(config):
     logger.info("Finished!")
 
 
-# pytest.mark.skip("Don't needed anymore")
+pytest.mark.skip("Don't needed anymore")
+
+
 def test_fix_cuon(test_config, test_repository):
     main(test_config)
 
