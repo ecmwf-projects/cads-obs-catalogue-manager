@@ -306,11 +306,19 @@ def _read_homogenise_and_partition(
         )
     # If units is present but encoded as integers, decode them
     # Old datasets have all units as strings, so we shall keep it like this.
-    # if "units" in homogenised_data.columns and homogenised_data.units.dtype.kind == "i":
-    #     # Decode integers using CDM tables
-    #     unit_codes = dataset_metadata.cdm_code_tables["units"]
-    #     code2unit = unit_codes.table["abbreviation"].to_dict()
-    #     homogenised_data["units"] = homogenised_data.units.map(code2unit)
+    unit_codes = dataset_metadata.cdm_code_tables["units"]
+    code2unit = unit_codes.table["abbreviation"].to_dict()
+    code2unit[0] = "none"
+    unit_fields = [f for f in homogenised_data.columns if "units" in f]
+    for unit_field in unit_fields:
+        if homogenised_data[unit_field].dtype.kind == "i":
+            # Decode integers using CDM tables
+            decoded_units = homogenised_data[unit_field].map(code2unit)
+            # Check for nans
+            if decoded_units.isnull().any():
+                raise RuntimeError("Not all units were mapped")
+            homogenised_data[unit_field] = decoded_units
+
     year = time_space_batch.time_batch.year
     lon_tile_size = dataset_config.get_tile_size("lon", source, year)
     lat_tile_size = dataset_config.get_tile_size("lat", source, year)
