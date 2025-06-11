@@ -133,6 +133,7 @@ def _process_table(
             "location_method",
             "source_id",
             "crs",
+            "original_units",
         ]
         file_vars = [
             fv
@@ -395,47 +396,44 @@ def get_denormalized_table_file(
     denormalized_table_file["uncertainty_type1"] = denormalized_table_file[
         "uncertainty_type1"
     ].astype("int")
+    # Fixes for CUON V29 files
+    if "RISE_bias_estimate" in denormalized_table_file:
+        logger.warning("Applying fixes for CUON V29 files homogenisation")
+        denormalized_table_file = denormalized_table_file.rename(
+            dict(RISE_bias_estimate="homogenisation_adjustment"), axis=1
+        )
+        denormalized_table_file["profile_id"] = denormalized_table_file.report_id.copy()
+        denormalized_table_file["quality_flag"] = 2
+        denormalized_table_file["homogenisation_method"] = 14
+        denormalized_table_file["report_meaning_of_timestamp"] = 1
+        # Merge homogenisation adjustments
+        homogenisation_adjustment = denormalized_table_file["homogenisation_adjustment"]
+        observed_variable = denormalized_table_file["observed_variable"]
+        # Humidity
+        humidity_adjustment = denormalized_table_file["humidity_bias_estimate"]
+        humidity_variables = (34, 137, 138, 39)
+        mask = numpy.isin(observed_variable, humidity_variables)
+        homogenisation_adjustment.loc[mask] = humidity_adjustment[mask]
+        # Wind
+        wind_adjustment = denormalized_table_file["wind_bias_estimate"]
+        wind_variables = (106, 107, 139, 140)
+        mask = numpy.isin(observed_variable, wind_variables)
+        homogenisation_adjustment.loc[mask] = wind_adjustment[mask]
+        # Remove these, we don't need them, it is not all in homogenisation_adjustment
+        denormalized_table_file = denormalized_table_file.drop(
+            ["humidity_bias_estimate", "wind_bias_estimate"], axis=1
+        )
+    else:
+        logger.warning("Bias estimates not found for this partition")
+    # Remove obs id zero
+    denormalized_table_file = denormalized_table_file.loc[
+        denormalized_table_file["observed_variable"] != 0
+    ]
     # Decode variable names
     code_dict = get_var_code_dict(config.cdm_tables_location)
     denormalized_table_file["observed_variable"] = denormalized_table_file[
         "observed_variable"
     ].map(code_dict)
-    # Fixes for CUON V29 files
-    logger.warning("Applying fixes for CUON V29 files, remove in further iterations")
-    denormalized_table_file = denormalized_table_file.rename(
-        dict(RISE_bias_estimate="homogenisation_adjustment"), axis=1
-    )
-    denormalized_table_file["profile_id"] = denormalized_table_file.report_id.copy()
-    denormalized_table_file["quality_flag"] = 2
-    denormalized_table_file["homogenisation_method"] = 14
-    denormalized_table_file["report_meaning_of_timestamp"] = 1
-    # Merge homogenisation adjustments
-    homogenisation_adjustment = denormalized_table_file["homogenisation_adjustment"]
-    observed_variable = denormalized_table_file["observed_variable"]
-    # Humidity
-    humidity_adjustment = denormalized_table_file["humidity_bias_estimate"]
-    humidity_variables = [
-        "relative_humidity",
-        "specific_humidity",
-        "dew_point_depression",
-        "air_dewpoint",
-    ]
-    mask = numpy.isin(observed_variable, humidity_variables)
-    homogenisation_adjustment.loc[mask] = humidity_adjustment[mask]
-    # Wind
-    wind_adjustment = denormalized_table_file["wind_bias_estimate"]
-    wind_variables = [
-        "wind_speed",
-        "eastward_wind_speed",
-        "northward_wind_speed",
-        "wind_from_direction",
-    ]
-    mask = numpy.isin(observed_variable, wind_variables)
-    homogenisation_adjustment.loc[mask] = wind_adjustment[mask]
-    # Remove obs id zero
-    denormalized_table_file = denormalized_table_file.loc[
-        denormalized_table_file["observed_variable"] != 0
-    ]
     return denormalized_table_file
 
 
