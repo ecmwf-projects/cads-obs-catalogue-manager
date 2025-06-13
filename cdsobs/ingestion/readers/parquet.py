@@ -67,9 +67,10 @@ def read_flat_parquet(
     start, end = time_batch.get_time_coverage()
     data = duckdb.sql(
         f"""
-        select * from read_parquet('{input_files_pattern}')
-        where
-          report_timestamp between '{start}' and '{end}'
+        SET TimeZone = 'UTC';
+        SELECT * FROM read_parquet('{input_files_pattern}')
+        WHERE
+          report_timestamp BETWEEN '{start}' AND '{end}'
         """
     ).fetchdf()
 
