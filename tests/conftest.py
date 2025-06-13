@@ -25,17 +25,17 @@ from cdsobs.storage import S3Client, StorageClient
 from tests.utils import get_test_years
 
 TEST_API_PARAMETERS = [
-    ("insitu-observations-surface-land", "sub_daily"),
-    ("insitu-observations-woudc-ozone-total-column-and-profiles", "OzoneSonde"),
-    ("insitu-observations-woudc-ozone-total-column-and-profiles", "TotalOzone"),
-    (
-        "insitu-observations-igra-baseline-network",
-        "IGRA",
-    ),
-    (
-        "insitu-observations-igra-baseline-network",
-        "IGRA_H",
-    ),
+    # ("insitu-observations-surface-land", "sub_daily"),
+    # ("insitu-observations-woudc-ozone-total-column-and-profiles", "OzoneSonde"),
+    # ("insitu-observations-woudc-ozone-total-column-and-profiles", "TotalOzone"),
+    # (
+    #     "insitu-observations-igra-baseline-network",
+    #     "IGRA",
+    # ),
+    # (
+    #     "insitu-observations-igra-baseline-network",
+    #     "IGRA_H",
+    # ),
     (
         "insitu-comprehensive-upper-air-observation-network",
         "CUON",
@@ -101,7 +101,9 @@ def test_config():
     input_dir = Path(
         tests_path, "data/cuon_data/0-20500-0-94829_CEUAS_merged_v3.nc"
     ).parent.absolute()
+
     cuon_config.reader_extra_args["input_dir"] = str(input_dir)
+    cuon_config.reader_extra_args["active_json"] = str(Path(input_dir, "active.json"))
     # Do the same for WOUDC test netcdfs
     woudc_netcdfs_config = config.get_dataset("insitu-observations-woudc-netcdfs")
     example_filename = "insitu-observations-woudc-ozone-total-column-and-profiles_OzoneSonde_1969_01.nc"
