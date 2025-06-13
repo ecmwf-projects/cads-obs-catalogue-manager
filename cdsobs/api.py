@@ -28,6 +28,7 @@ from cdsobs.ingestion.core import (
 from cdsobs.ingestion.partition import get_partitions, save_partitions
 from cdsobs.ingestion.serialize import serialize_partition
 from cdsobs.metadata import get_dataset_metadata
+from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.dataset_version import (
     CadsDatasetVersionRepository,
@@ -364,3 +365,19 @@ def _run_make_cdm_for_batch(
                 f"Saved partition to "
                 f"{serialized_partition.file_params.local_temp_path}"
             )
+
+
+def set_version_status(
+    config: CDSObsConfig, dataset: str, version: str, deprecated: bool
+):
+    """Change the status of a version for a given dataset."""
+    with get_session(config.catalogue_db) as session:
+        cads_dataset_version_repo = CadsDatasetVersionRepository(session)
+        dataset_version = cads_dataset_version_repo.get_dataset(
+            dataset_name=dataset, version=version
+        )
+        if dataset_version is None:
+            raise RuntimeError(f"{dataset=} {version=} not found in the catalogue")
+        dataset_version.deprecated = deprecated
+        session.commit()
+        print(f"Deprecated {dataset=} {version=}")

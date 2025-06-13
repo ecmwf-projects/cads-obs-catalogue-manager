@@ -7,7 +7,7 @@ from cdsobs.cli._utils import config_yml_typer
 from cdsobs.config import CDSObsConfig
 
 
-def deprecate_dataset_version(
+def enable_dataset_version(
     cdsobs_config_yml: Path = config_yml_typer,
     dataset: str = typer.Option(..., help="Dataset to deprecate the version"),
     version: str = typer.Option(..., help="Version to deprecate."),
@@ -19,4 +19,4 @@ def deprecate_dataset_version(
     catalogue. Constraints need to be updated after runnin this command.
     """
     config = CDSObsConfig.from_yaml(cdsobs_config_yml)
-    set_version_status(config, dataset, version, True)
+    set_version_status(config, dataset, version, False)
