@@ -1,3 +1,1 @@
 include README.md
-include cdsobs/cdm/common_data_model/table_definitions/*.csv
-include cdsobs/cdm/common_data_model/tables/*.dat

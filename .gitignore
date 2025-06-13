@@ -4,7 +4,9 @@
 version.py
 tests/docker/data
 tests/docker/db-data
-tests/data/cuon_data/
+tests/data/cuon_data/*.nc
+tests/data/cuon_data/old
+tests/data/cuon_data/v1
 # Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,vim,visualstudiocode,pycharm
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,jupyternotebooks,vim,visualstudiocode,pycharm
 
