@@ -1,3 +1,5 @@
+import importlib
+import importlib.resources
 from pathlib import Path
 
 import cftime
@@ -14,7 +16,10 @@ logger = get_logger(__name__)
 
 
 def plot_station_number():
-    stations = get_cuon_stations()
+    active_json = str(
+        Path(importlib.resources.files("tests"), "data/cuon_data", "active.json")
+    )
+    stations = get_cuon_stations(active_json)
     stations["start of records"] = cftime.num2date(
         stations["start of records"], units=TIME_UNITS
     )
@@ -22,7 +27,7 @@ def plot_station_number():
         stations["end of records"], units=TIME_UNITS
     )
     print(stations.head().to_string())
-    months = pandas.date_range("1905-01-01", "2023-12-31", freq="MS")
+    months = pandas.date_range("1901-01-01", "2023-12-31", freq="MS")
     station_number = pandas.Series(index=months)
     for monthdate in months:
         station_record_has_started = stations["start of records"] <= monthdate
@@ -31,7 +36,7 @@ def plot_station_number():
             station_record_has_started, station_record_has_not_ended
         ).sum()
 
-    station_number.plot()
+    station_number.iloc[0:100].plot()
     pyplot.show()
 
 
@@ -76,4 +81,4 @@ def check_primary_keys_consistency_file(ipath):
 
 
 if __name__ == "__main__":
-    check_primary_keys_consistency()
+    plot_station_number()
