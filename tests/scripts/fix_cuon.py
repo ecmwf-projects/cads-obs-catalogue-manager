@@ -2,8 +2,10 @@ import tempfile
 from pathlib import Path
 
 import netCDF4
+import numpy
 import pytest
 
+from cdsobs.cdm.api import read_cdm_code_tables
 from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
@@ -17,6 +19,11 @@ logger = get_logger(__name__)
 def main(config):
     dataset = "insitu-comprehensive-upper-air-observation-network"
     s3client = S3Client.from_config(config.s3config)
+    # Get units mapping
+    cdm_code_tables = read_cdm_code_tables(config.cdm_tables_location)
+    unit_codes = cdm_code_tables["units"]
+    code2unit = unit_codes.table["abbreviation"].to_dict()
+    code2unit_vec = numpy.vectorize(code2unit.get)
 
     with get_session(
         config.catalogue_db
@@ -29,60 +36,28 @@ def main(config):
             s3client.download_file(bucket, asset_name, asset_local_path)
             # Fix file and reupload
             with netCDF4.Dataset(asset_local_path, mode="a") as ncdataset:
-                # Check if it was already fixed
-                if (
-                    "RISE_bias_estimate" not in ncdataset.variables
-                    and "profile_id" in ncdataset.variables
-                    and "quality_flag" in ncdataset.variables
-                    and "homogenisation_method" in ncdataset.variables
-                ):
+                if "old_units" in ncdataset.variables:
                     logger.info(f"{entry.asset} is already fixed, skipping")
-                    Path(asset_local_path).unlink()
                     continue
-                if "RISE_bias_estimate" in ncdataset.variables:
-                    ncdataset.renameVariable(
-                        "RISE_bias_estimate", "homogenisation_adjustment"
-                    )
-                else:
-                    logger.info(
-                        "RISE_bias_estimate not present in this file, "
-                        "so no homogenisation_adjustment will be written"
-                    )
-                report_id_var = ncdataset.variables["report_id"]
-                profile_id = ncdataset.createVariable(
-                    "profile_id",
-                    datatype=report_id_var.dtype,
+                units_ncvar = ncdataset.variables["units"]
+                units_int = netCDF4.chartostring(units_ncvar[:]).astype("int")
+                ncdataset.renameVariable("units", "old_units")
+                ncdataset.renameDimension("string_units", "old_string_units")
+                units_char = netCDF4.stringtochar(
+                    code2unit_vec(units_int).astype("bytes")
+                )
+                units_char_len = units_char.shape[1]
+                ncdataset.createDimension("string_units", units_char_len)
+                ncdataset.createVariable(
+                    "units",
+                    datatype="S1",
                     compression="zlib",
-                    chunksizes=report_id_var.chunking(),
+                    chunksizes=(units_ncvar.chunking()[0], units_char_len),
                     complevel=1,
                     shuffle=True,
-                    dimensions=report_id_var.dimensions,
+                    dimensions=(units_ncvar.dimensions[0], "string_units"),
                 )
-                profile_id[:] = report_id_var[:]
-                quality_flag = ncdataset.createVariable(
-                    "quality_flag",
-                    datatype="int16",
-                    compression="zlib",
-                    chunksizes=(report_id_var.chunking()[0],),
-                    complevel=1,
-                    shuffle=True,
-                    dimensions=("observation_id",),
-                )
-                quality_flag[:] = 2
-                homogenisation_method = ncdataset.createVariable(
-                    "homogenisation_method",
-                    datatype="int16",
-                    compression="zlib",
-                    chunksizes=(report_id_var.chunking()[0],),
-                    complevel=1,
-                    shuffle=True,
-                    dimensions=("observation_id",),
-                )
-                homogenisation_method[:] = 14
-                report_meaning_of_timestamp = ncdataset.variables[
-                    "report_meaning_of_timestamp"
-                ]
-                report_meaning_of_timestamp[:] = 1
+                ncdataset.variables["units"][:] = units_char
                 ncdataset.sync()
 
             new_checksum = compute_hash(Path(asset_local_path))

@@ -70,9 +70,10 @@ def read_flat_csvs(
     start, end = time_batch.get_time_coverage()
     data = duckdb.sql(
         f"""
-        select * from read_csv('{input_files_pattern}', header=True, sep='{separator}')
-        where
-          report_timestamp between '{start}' and '{end}'
+        SET TimeZone = 'UTC';
+        SELECT * from read_csv('{input_files_pattern}', header=True, sep='{separator}')
+        WHERE
+          report_timestamp BETWEEN '{start}' AND '{end}'
         """
     ).fetchdf()
 
@@ -81,4 +82,8 @@ def read_flat_csvs(
     # Decode variable names
     code_dict = get_var_code_dict(config.cdm_tables_location)
     data["observed_variable"] = data["observed_variable"].map(code_dict)
+    # Remove timezone information, that gives problems, all input must be in UTC
+    for col in data:
+        if data[col].dtype.kind == "M":
+            data[col] = data[col].dt.tz_localize(None)
     return data

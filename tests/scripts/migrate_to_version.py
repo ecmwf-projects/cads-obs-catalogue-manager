@@ -1,8 +1,9 @@
 import json
+from pathlib import Path
 
 import psycopg2
 from sqlalchemy import create_engine, text
-from pathlib import Path
+
 from cdsobs.config import CDSObsConfig, DBConfig
 from cdsobs.constants import DEFAULT_VERSION
 from cdsobs.observation_catalogue.models import Base
