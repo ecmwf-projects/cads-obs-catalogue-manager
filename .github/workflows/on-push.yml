@@ -65,7 +65,7 @@ jobs:
       run: |
         cd tests/data
         wget -nv -O test_netcdfs.tar.gz https://cloud.predictia.es/s/7QzpBEaYyiZ3o6C/download
-        mkdir cuon_data && tar xzf test_netcdfs.tar.gz -C cuon_data/
+        tar xzf test_netcdfs.tar.gz -C cuon_data/
         rm test_netcdfs.tar.gz
     - name: Install Conda environment with Micromamba
       uses: mamba-org/setup-micromamba@v1

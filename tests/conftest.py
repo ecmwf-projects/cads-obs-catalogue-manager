@@ -101,7 +101,9 @@ def test_config():
     input_dir = Path(
         tests_path, "data/cuon_data/0-20500-0-94829_CEUAS_merged_v3.nc"
     ).parent.absolute()
+
     cuon_config.reader_extra_args["input_dir"] = str(input_dir)
+    cuon_config.reader_extra_args["active_json"] = str(Path(input_dir, "active.json"))
     # Do the same for WOUDC test netcdfs
     woudc_netcdfs_config = config.get_dataset("insitu-observations-woudc-netcdfs")
     example_filename = "insitu-observations-woudc-ozone-total-column-and-profiles_OzoneSonde_1969_01.nc"

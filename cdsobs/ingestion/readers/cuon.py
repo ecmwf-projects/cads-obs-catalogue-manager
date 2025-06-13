@@ -1,5 +1,4 @@
 import calendar
-import importlib
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -228,9 +227,9 @@ def read_table_data(
 
 
 def filter_batch_stations(
-    files: Iterable[Path], time_space_batch: TimeSpaceBatch
+    files: Iterable[Path], time_space_batch: TimeSpaceBatch, active_json: str
 ) -> list[Path]:
-    station_metadata = get_cuon_stations()
+    station_metadata = get_cuon_stations(active_json)
     selected_end, selected_start = _get_times_in_seconds_from(
         time_space_batch.time_batch
     )
@@ -246,7 +245,7 @@ def filter_batch_stations(
     return [f for f in files if f.name.split("_")[0] in batch_stations]
 
 
-def get_cuon_stations():
+def get_cuon_stations(active_json: str):
     # Read file with CUON stations locations
     columns = [
         "start of records",
@@ -256,10 +255,12 @@ def get_cuon_stations():
         "country code",
         "file path",
     ]
-    cuon_stations_file = Path(
-        str(importlib.resources.files("cdsobs")),
-        "data/insitu-comprehensive-upper-air-observation-network/active.json",
-    )
+    cuon_stations_file = Path(active_json)
+    if not cuon_stations_file.exists():
+        raise RuntimeError(
+            "active.json file not found, please set the path in the"
+            "configuration file"
+        )
     station_metadata = pandas.read_json(cuon_stations_file, orient="index")
     station_metadata.columns = columns
     return station_metadata
@@ -272,11 +273,12 @@ def read_cuon_netcdfs(
     source: str,
     time_space_batch: TimeSpaceBatch,
     input_dir: str,
+    active_json: str,
 ) -> pandas.DataFrame:
     files = list(Path(input_dir).glob("*.nc"))
     if len(files) == 0:
         raise RuntimeError(f"CUON files not found in {Path(input_dir).absolute()}")
-    files = filter_batch_stations(files, time_space_batch)
+    files = filter_batch_stations(files, time_space_batch, active_json)
     if len(files) == 0:
         raise EmptyBatchException
     # Avoid for now: sensor_configuration, source_configuration
