@@ -13,10 +13,10 @@ def enable_dataset_version(
     version: str = typer.Option(..., help="Version to deprecate."),
 ):
     """
-    Deprecate a version for a given dataset.
+    Enable a version for a given dataset.
 
-    This version will not be available for retrieve or returned when inspecting the
-    catalogue. Constraints need to be updated after runnin this command.
+    This version will be now available for retrieve or returned when inspecting the
+    catalogue. Constraints need to be updated after running this command.
     """
     config = CDSObsConfig.from_yaml(cdsobs_config_yml)
     set_version_status(config, dataset, version, False)
