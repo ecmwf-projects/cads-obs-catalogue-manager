@@ -46,12 +46,15 @@ def delete_dataset(
     ),
 ):
     """Permanently delete the given dataset from the catalogue and the storage."""
-    confirm = prompt(
-        "This will delete the data permanently."
-        " This action cannot be undone. "
-        "Please type again the name of the dataset to confirm"
-    )
-    assert confirm == dataset, CliException("Error: The entered value do not match.")
+    if not dry_run:
+        confirm = prompt(
+            "This will delete the data permanently."
+            " This action cannot be undone. "
+            "Please type again the name of the dataset to confirm"
+        )
+        assert confirm == dataset, CliException(
+            "Error: The entered value do not match."
+        )
     try:
         init_config = CDSObsConfig.from_yaml(cdsobs_config_yml)
     except ConfigError:

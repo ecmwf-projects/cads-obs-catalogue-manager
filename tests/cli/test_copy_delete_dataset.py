@@ -47,7 +47,6 @@ def test_copy_delete_dataset_inside(test_repository, test_config):
     result = runner.invoke(
         app,
         invoke_params + ["--dry-run"],
-        input="test",
         catch_exceptions=False,
     )
     assert result.exit_code == 0

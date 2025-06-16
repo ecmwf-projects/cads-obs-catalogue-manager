@@ -46,6 +46,10 @@ def copy_dataset(
             " will be used."
         ),
     ),
+    version: str = Option(None, help="Version to copy"),
+    dry_run: bool = Option(
+        False, help="Do nothing but print the entries to be copied."
+    ),
 ):
     """
     Copy all catalogue datasets entries and its S3 assets.
@@ -53,10 +57,14 @@ def copy_dataset(
     Choose to copy inside the original databases with a new name (dest_dataset) or
     provide a different Catalogue DB and S3 credentials to insert copies.
     """
-    _copy_dataset_impl(cdsobs_config_yml, dataset, dest_config_yml, dest_dataset)
+    _copy_dataset_impl(
+        cdsobs_config_yml, dataset, dest_config_yml, dest_dataset, version, dry_run
+    )
 
 
-def _copy_dataset_impl(cdsobs_config_yml, dataset, dest_config_yml, dest_dataset):
+def _copy_dataset_impl(
+    cdsobs_config_yml, dataset, dest_config_yml, dest_dataset, version, dry_run
+):
     if dest_dataset is None:
         dest_dataset = dataset
     check_params(dest_config_yml, dataset, dest_dataset)
@@ -71,9 +79,9 @@ def _copy_dataset_impl(cdsobs_config_yml, dataset, dest_config_yml, dest_dataset
             dest_config = CDSObsConfig.from_yaml(dest_config_yml)
         except ConfigError:
             raise ConfigNotFound("Invalid destination configuration file")
-        copy_outside(init_config, dest_config, dataset, dest_dataset)
+        copy_outside(init_config, dest_config, dataset, dest_dataset, version, dry_run)
     else:
-        copy_inside(init_config, dataset, dest_dataset)
+        copy_inside(init_config, dataset, dest_dataset, version, dry_run)
 
 
 def check_params(dest_config_yml, dataset, dest_dataset):
@@ -113,7 +121,7 @@ def check_params(dest_config_yml, dataset, dest_dataset):
             )
 
 
-def copy_inside(init_config, dataset, dest_dataset):
+def copy_inside(init_config, dataset, dest_dataset, version, dry_run):
     """
     Copy inside.
 
@@ -128,21 +136,38 @@ def copy_inside(init_config, dataset, dest_dataset):
       old dataset name
     dest_dataset:
       new dataset name
+    version:
+      version to copy
+    dry_run:
+      Do nothing, just print what it would do.
     -------
 
     """
     init_s3client = S3Client.from_config(init_config.s3config)
     with get_session(init_config.catalogue_db) as init_session:
-        entries = CatalogueRepository(init_session).get_by_dataset(dataset)
-        new_assets = s3_copy(init_s3client, entries, dest_dataset)
-        try:
-            catalogue_copy(init_session, entries, init_s3client, dest_dataset)
-        except (Exception, KeyboardInterrupt):
-            s3_rollback(init_s3client, new_assets)
-            raise
+        entries = CatalogueRepository(init_session).get_by_dataset_and_version(
+            dataset, version
+        )
+        assets = [e.asset for e in entries]
+        if dry_run:
+            logger.info(f"Would copy {len(entries)} with assets: {assets}")
+        else:
+            new_assets = s3_copy(init_s3client, entries, dest_dataset)
+            try:
+                catalogue_copy(init_session, entries, init_s3client, dest_dataset)
+            except (Exception, KeyboardInterrupt):
+                s3_rollback(init_s3client, new_assets)
+                raise
 
 
-def copy_outside(init_config, dest_config, dataset, dest_dataset):
+def copy_outside(
+    init_config: CDSObsConfig,
+    dest_config: CDSObsConfig,
+    dataset: str,
+    dest_dataset,
+    version: str,
+    dry_run: bool,
+):
     """
     Copy outside.
 
@@ -160,30 +185,53 @@ def copy_outside(init_config, dest_config, dataset, dest_dataset):
       old dataset name
     dest_dataset:
       destination dataset name
+    version:
+      version to copy
+    dry_run:
+      Do nothing, just print what it would do.
     -------
 
     """
     init_s3client = S3Client.from_config(init_config.s3config)
     with get_session(init_config.catalogue_db) as init_session:
-        entries = CatalogueRepository(init_session).get_by_dataset(dataset)
-        if init_config.s3config == dest_config.s3config:
-            # namespace may be different, so we need another 3 client here
-            dest_s3client = S3Client.from_config(dest_config.s3config)
-            new_assets = s3_copy(dest_s3client, entries, dest_dataset)
+        entries = CatalogueRepository(init_session).get_by_dataset_and_version(
+            dataset, version
+        )
+        assets = [e.asset for e in entries]
+        if dry_run:
+            logger.info(f"Would copy {len(entries)} entries with assets {assets}")
         else:
-            # get new destination client as current client
-            dest_s3client = S3Client.from_config(dest_config.s3config)
-            new_assets = s3_export(init_s3client, dest_s3client, entries, dest_dataset)
-        try:
-            if init_config.catalogue_db == dest_config.catalogue_db:
-                catalogue_copy(init_session, entries, dest_s3client, dest_dataset)
-            else:
-                # open new destination session
-                with get_session(dest_config.catalogue_db) as dest_session:
-                    catalogue_copy(dest_session, entries, dest_s3client, dest_dataset)
-        except (Exception, KeyboardInterrupt):
-            s3_rollback(dest_s3client, new_assets)
-            raise
+            _copy_outside_logic(
+                dest_config,
+                dest_dataset,
+                entries,
+                init_config,
+                init_s3client,
+                init_session,
+            )
+
+
+def _copy_outside_logic(
+    dest_config, dest_dataset, entries, init_config, init_s3client, init_session
+):
+    if init_config.s3config == dest_config.s3config:
+        # namespace may be different, so we need another s3 client here
+        dest_s3client = S3Client.from_config(dest_config.s3config)
+        new_assets = s3_copy(dest_s3client, entries, dest_dataset)
+    else:
+        # get new destination client as current client
+        dest_s3client = S3Client.from_config(dest_config.s3config)
+        new_assets = s3_export(init_s3client, dest_s3client, entries, dest_dataset)
+    try:
+        if init_config.catalogue_db == dest_config.catalogue_db:
+            catalogue_copy(init_session, entries, dest_s3client, dest_dataset)
+        else:
+            # open new destination session
+            with get_session(dest_config.catalogue_db) as dest_session:
+                catalogue_copy(dest_session, entries, dest_s3client, dest_dataset)
+    except (Exception, KeyboardInterrupt):
+        s3_rollback(dest_s3client, new_assets)
+        raise
 
 
 def catalogue_copy(
