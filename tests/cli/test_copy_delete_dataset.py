@@ -1,6 +1,7 @@
 import pytest
 from typer.testing import CliRunner
 
+from build.lib.cdsobs.constants import DEFAULT_VERSION
 from cdsobs.cli._copy_dataset import s3_export
 from cdsobs.cli.app import app
 from cdsobs.constants import DS_TEST_NAME, SOURCE_TEST_NAME
@@ -42,6 +43,8 @@ def test_copy_delete_dataset_inside(test_repository, test_config):
             SOURCE_TEST_NAME,
             "--time",
             "1969-01-01,1970-12-31",
+            "--version",
+            DEFAULT_VERSION,
         ],
         input="test",
         catch_exceptions=False,

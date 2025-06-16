@@ -16,7 +16,9 @@ from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.models import Catalogue
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
-from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
+from cdsobs.observation_catalogue.repositories.dataset_version import (
+    CadsDatasetVersionRepository,
+)
 from cdsobs.observation_catalogue.schemas.catalogue import (
     CatalogueSchema,
     CliCatalogueFilters,
@@ -38,6 +40,7 @@ def delete_dataset(
         help="Filter by an exact date or by an interval of two dates. For example: "
         "to delete all partitions of year 1970: 1970-1-1,1970-12-31",
     ),
+    version: str = typer.Option(None, help="Version to delete"),
 ):
     """Permanently delete the given dataset from the catalogue and the storage."""
     confirm = prompt(
@@ -53,7 +56,7 @@ def delete_dataset(
 
     with get_session(init_config.catalogue_db) as catalogue_session:
         deleted_entries = delete_from_catalogue(
-            catalogue_session, dataset, dataset_source, time
+            catalogue_session, dataset, dataset_source, time, version=version
         )
         s3_client = S3Client.from_config(init_config.s3config)
         try:
@@ -66,13 +69,17 @@ def delete_dataset(
             f"[bold green] {nd} entries deleted from {dataset}. [/bold green]"
         )
         nremaining = catalogue_session.scalar(
-            select(func.count()).select_from(Catalogue)
+            select(func.count())
+            .select_from(Catalogue)
+            .where(Catalogue.dataset == dataset, Catalogue.version == version)
         )
         if nremaining == 0:
-            CadsDatasetRepository(catalogue_session).delete_dataset(dataset)
+            CadsDatasetVersionRepository(catalogue_session).delete_dataset(
+                dataset, version
+            )
             console.print(
-                f"[bold green] Deleted {dataset} from datasets table as it was left empty. "
-                f"[/bold green]"
+                f"[bold green] Deleted {dataset} {version} from datasets table as it was "
+                f"left empty. [/bold green]"
             )
 
 
@@ -81,16 +88,12 @@ def delete_from_catalogue(
     dataset: str,
     dataset_source: str,
     time: str,
-    version: str | None = None,
+    version: str,
 ):
     catalogue_repo = CatalogueRepository(catalogue_session)
-    versions = (
-        []
-        if version is None
-        else [
-            version,
-        ]
-    )
+    versions = [
+        version,
+    ]
     filters = CliCatalogueFilters(
         dataset=dataset,
         dataset_source=dataset_source,
