@@ -91,6 +91,7 @@ def list_catalogue(
         variables=list_parser(variables),
         stations=list_parser(stations),
         versions=list_parser(versions),
+        deprecated="all",
     )
     try:
         config = CDSObsConfig.from_yaml(cdsobs_config_yml)
