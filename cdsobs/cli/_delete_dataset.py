@@ -81,8 +81,16 @@ def delete_from_catalogue(
     dataset: str,
     dataset_source: str,
     time: str,
+    version: str | None = None,
 ):
     catalogue_repo = CatalogueRepository(catalogue_session)
+    versions = (
+        []
+        if version is None
+        else [
+            version,
+        ]
+    )
     filters = CliCatalogueFilters(
         dataset=dataset,
         dataset_source=dataset_source,
@@ -91,7 +99,7 @@ def delete_from_catalogue(
         latitudes=[],
         variables=[],
         stations=[],
-        versions=[],
+        versions=versions,
         deprecated="all",
     ).to_repository_filters()
     entries = catalogue_repo.get_by_filters(filters)

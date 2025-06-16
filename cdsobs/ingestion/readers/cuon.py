@@ -409,7 +409,9 @@ def get_denormalized_table_file(
             dict(RISE_bias_estimate="homogenisation_adjustment"), axis=1
         )
         # Merge homogenisation adjustments
-        homogenisation_adjustment = denormalized_table_file["homogenisation_adjustment"]
+        homogenisation_adjustment = denormalized_table_file[
+            "homogenisation_adjustment"
+        ].copy()
         observed_variable = denormalized_table_file["observed_variable"]
         # Humidity
         if "humidity_bias_estimate" in denormalized_table_file:
@@ -427,6 +429,7 @@ def get_denormalized_table_file(
             homogenisation_adjustment.loc[mask] = wind_adjustment[mask]
         else:
             logger.warning("wind_bias_estimate not found")
+        denormalized_table_file["homogenisation_adjustment"] = homogenisation_adjustment
         # Remove these, we don't need them, it is not all in homogenisation_adjustment
         denormalized_table_file = denormalized_table_file.drop(
             ["humidity_bias_estimate", "wind_bias_estimate"], axis=1, errors="ignore"
