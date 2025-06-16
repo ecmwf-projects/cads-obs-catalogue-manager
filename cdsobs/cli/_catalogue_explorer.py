@@ -130,6 +130,12 @@ def catalogue_dataset_info(
     source: str = typer.Argument(
         "", help="dataset source, if not provided all dataset sources will be displayed"
     ),
+    version: str = typer.Option(
+        "1.0.0",
+        "--version",
+        help="Semantic version corresponding to the data to be queried. Default is 1.0.0",
+        show_default=False,
+    ),
 ):
     """Get catalogue info for certain dataset."""
     try:
@@ -137,7 +143,7 @@ def catalogue_dataset_info(
     except ConfigError:
         raise ConfigNotFound()
     with get_session(config.catalogue_db) as session:
-        print_catalogue_info(session, source, dataset)
+        print_catalogue_info(session, source, dataset, version)
 
 
 def list_datasets(
@@ -160,13 +166,12 @@ def list_datasets(
         print_db_results(results, print_format, CadsDatasetVersion)
 
 
-def print_catalogue_info(session, source, dataset):
+def print_catalogue_info(session, source, dataset, version):
+    repo = CatalogueRepository(session)
     if len(source):
-        results = CatalogueRepository(session).get_by_dataset_and_source(
-            dataset=dataset, dataset_source=source
-        )
+        results = repo.get_by_dataset_and_source_and_version(dataset, source, version)
     else:
-        results = CatalogueRepository(session).get_by_dataset(dataset)
+        results = repo.get_by_dataset_and_version(dataset, version)
 
     if len(results) == 0:
         raise RuntimeError(

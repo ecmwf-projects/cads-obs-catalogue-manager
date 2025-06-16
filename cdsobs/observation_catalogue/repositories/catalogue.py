@@ -32,6 +32,28 @@ class CatalogueRepository(BaseRepository):
         ).all()
         return list(results)
 
+    def get_by_dataset_and_version(
+        self, dataset: str, version: str
+    ) -> Sequence[Catalogue]:
+        results = self.session.scalars(
+            sa.select(Catalogue).filter(
+                Catalogue.dataset == dataset, Catalogue.version == version
+            )
+        ).all()
+        return list(results)
+
+    def get_by_dataset_and_source_and_version(
+        self, dataset: str, source: str, version: str
+    ) -> Sequence[Catalogue]:
+        results = self.session.scalars(
+            sa.select(Catalogue).filter(
+                Catalogue.dataset == dataset,
+                Catalogue.dataset_source == source,
+                Catalogue.version == version,
+            )
+        ).all()
+        return list(results)
+
     def get_dataset_assets(self, dataset: str) -> Sequence[str]:
         results = self.session.scalars(
             sa.select(Catalogue.asset).filter(Catalogue.dataset == dataset)
