@@ -22,6 +22,8 @@ def test_copy_delete_dataset_inside(test_repository, test_config):
             DS_TEST_NAME,
             "--dest-dataset",
             "test",
+            "--version",
+            DEFAULT_VERSION,
         ],
         catch_exceptions=False,
     )
