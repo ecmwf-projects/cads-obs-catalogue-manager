@@ -121,7 +121,13 @@ def check_params(dest_config_yml, dataset, dest_dataset):
             )
 
 
-def copy_inside(init_config, dataset, dest_dataset, version, dry_run):
+def copy_inside(
+    init_config: CDSObsConfig,
+    dataset: str,
+    dest_dataset: str,
+    version: str,
+    dry_run: bool,
+):
     """
     Copy inside.
 
@@ -145,9 +151,10 @@ def copy_inside(init_config, dataset, dest_dataset, version, dry_run):
     """
     init_s3client = S3Client.from_config(init_config.s3config)
     with get_session(init_config.catalogue_db) as init_session:
-        entries = CatalogueRepository(init_session).get_by_dataset_and_version(
-            dataset, version
-        )
+        repo = CatalogueRepository(init_session)
+        entries = repo.get_by_dataset_and_version(dataset, version)
+        # Only copy entries that do not already exist in destination
+        entries = filter_existing_entries(dest_dataset, entries, repo)
         assets = [e.asset for e in entries]
         if dry_run:
             logger.info(f"Would copy {len(entries)} with assets: {assets}")
@@ -158,6 +165,28 @@ def copy_inside(init_config, dataset, dest_dataset, version, dry_run):
             except (Exception, KeyboardInterrupt):
                 s3_rollback(init_s3client, new_assets)
                 raise
+
+
+def filter_existing_entries(
+    dest_dataset: str, entries: Sequence[Catalogue], dest_repo: CatalogueRepository
+) -> list[Catalogue]:
+    """Remove from a list of catalogue entries the ones that already exist."""
+    entries = [
+        e
+        for e in entries
+        if not dest_repo.entry_exists(
+            dest_dataset,
+            e.dataset_source,
+            e.time_coverage_start,
+            e.time_coverage_end,
+            e.longitude_coverage_start,
+            e.longitude_coverage_end,
+            e.latitude_coverage_start,
+            e.latitude_coverage_end,
+            e.version,
+        )
+    ]
+    return entries
 
 
 def copy_outside(
@@ -197,7 +226,12 @@ def copy_outside(
         entries = CatalogueRepository(init_session).get_by_dataset_and_version(
             dataset, version
         )
+        # Do not copy entries already existing in the destination repository
+        dest_session = get_session(dest_config.catalogue_db)
+        dest_repo = CatalogueRepository(dest_session)
+        entries = filter_existing_entries(dest_dataset, entries, dest_repo)
         assets = [e.asset for e in entries]
+
         if dry_run:
             logger.info(f"Would copy {len(entries)} entries with assets {assets}")
         else:
