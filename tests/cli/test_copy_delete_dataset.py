@@ -3,26 +3,41 @@ from typer.testing import CliRunner
 
 from cdsobs.cli._copy_dataset import s3_export
 from cdsobs.cli.app import app
-from cdsobs.constants import DS_TEST_NAME, SOURCE_TEST_NAME
+from cdsobs.constants import DEFAULT_VERSION, DS_TEST_NAME, SOURCE_TEST_NAME
 from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
+from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
 from tests.conftest import CONFIG_YML
 
 runner = CliRunner()
 
 
 def test_copy_delete_dataset_inside(test_repository, test_config):
+    # Copy a dataset to a new one named test
+    copy_invoke_params = [
+        "copy-dataset",
+        "-c",
+        CONFIG_YML,
+        "--dataset",
+        DS_TEST_NAME,
+        "--dest-dataset",
+        "test",
+        "--version",
+        DEFAULT_VERSION,
+    ]
+    # Check dry run
     result = runner.invoke(
         app,
-        [
-            "copy-dataset",
-            "-c",
-            CONFIG_YML,
-            "--dataset",
-            DS_TEST_NAME,
-            "--dest-dataset",
-            "test",
-        ],
+        copy_invoke_params + ["--dry-run"],
+        catch_exceptions=False,
+    )
+    assert result.exit_code == 0
+    with get_session(test_config.catalogue_db) as test_session:
+        assert not CadsDatasetRepository(test_session).dataset_exists("test")
+    # Actual copy
+    result = runner.invoke(
+        app,
+        copy_invoke_params,
         catch_exceptions=False,
     )
     assert result.exit_code == 0
@@ -30,19 +45,44 @@ def test_copy_delete_dataset_inside(test_repository, test_config):
         assert len(CatalogueRepository(test_session).get_by_dataset("test")) == 2
     dest_bucket = test_repository.s3_client.get_bucket_name("test")
     assert len(list(test_repository.s3_client.list_directory_objects(dest_bucket))) == 2
+    # Copy again to check that existing entries are not copied
     result = runner.invoke(
         app,
-        [
-            "delete-dataset",
-            "-c",
-            CONFIG_YML,
-            "--dataset",
-            "test",
-            "--dataset-source",
-            SOURCE_TEST_NAME,
-            "--time",
-            "1969-01-01,1970-12-31",
-        ],
+        copy_invoke_params,
+        catch_exceptions=False,
+    )
+    assert result.exit_code == 0
+    with get_session(test_config.catalogue_db) as test_session:
+        assert len(CatalogueRepository(test_session).get_by_dataset("test")) == 2
+    dest_bucket = test_repository.s3_client.get_bucket_name("test")
+    assert len(list(test_repository.s3_client.list_directory_objects(dest_bucket))) == 2
+    # Test delete, with dry run and without
+    delete_invoke_params = [
+        "delete-dataset",
+        "-c",
+        CONFIG_YML,
+        "--dataset",
+        "test",
+        "--dataset-source",
+        SOURCE_TEST_NAME,
+        "--time",
+        "1969-01-01,1970-12-31",
+        "--version",
+        DEFAULT_VERSION,
+    ]
+    # Dry run
+    result = runner.invoke(
+        app,
+        delete_invoke_params + ["--dry-run"],
+        catch_exceptions=False,
+    )
+    assert result.exit_code == 0
+    with get_session(test_config.catalogue_db) as test_session:
+        assert len(CatalogueRepository(test_session).get_by_dataset("test")) == 2
+    # Actual delete
+    result = runner.invoke(
+        app,
+        delete_invoke_params,
         input="test",
         catch_exceptions=False,
     )
