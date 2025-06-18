@@ -155,7 +155,7 @@ def copy_inside(
         entries = repo.get_by_dataset_and_version(dataset, version)
         # Only copy entries that do not already exist in destination
         entries = filter_existing_entries(dest_dataset, entries, repo)
-        assets = [e.asset for e in entries]
+        assets = get_assets_to_copy(init_s3client, dataset, entries)
         if dry_run:
             logger.info(f"Would copy {len(entries)} with assets: {assets}")
         else:
@@ -165,6 +165,18 @@ def copy_inside(
             except (Exception, KeyboardInterrupt):
                 s3_rollback(init_s3client, new_assets)
                 raise
+
+
+def get_assets_to_copy(
+    s3_client: S3Client, dataset: str, entries: list[Catalogue]
+) -> list[str]:
+    assets = [e.asset for e in entries]
+    # Include the forms in the objsets to copy
+    bucket = s3_client.get_bucket_name(dataset)
+    for form_json in ["constraints.json", "variables.json", "widgets.json"]:
+        if s3_client.object_exists(bucket, form_json):
+            assets.append(bucket + "/" + form_json)
+    return assets
 
 
 def filter_existing_entries(
@@ -230,7 +242,7 @@ def copy_outside(
         dest_session = get_session(dest_config.catalogue_db)
         dest_repo = CatalogueRepository(dest_session)
         entries = filter_existing_entries(dest_dataset, entries, dest_repo)
-        assets = [e.asset for e in entries]
+        assets = get_assets_to_copy(init_s3client, dataset, entries)
 
         if dry_run:
             logger.info(f"Would copy {len(entries)} entries with assets {assets}")
