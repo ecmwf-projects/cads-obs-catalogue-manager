@@ -21,6 +21,7 @@ from cdsobs.constants import (
     DEFAULT_VERSION,
     DS_TEST_NAME,
 )
+from cdsobs.forms_jsons import get_forms_jsons
 from cdsobs.ingestion.core import DatasetPartition, SerializedPartition
 from cdsobs.ingestion.serialize import serialize_partition
 from cdsobs.observation_catalogue.database import Base, get_session
@@ -177,7 +178,7 @@ class TestRepository:
 
 
 @pytest.fixture(scope="module")
-def test_repository(test_session, test_s3_client, test_config):
+def test_repository(test_session, test_s3_client, test_config, tmp_path_factory):
     """The whole thing, session to the catalogue DB and storage client."""
     for dataset_name, dataset_source in TEST_API_PARAMETERS:
         start_year, end_year = get_test_years(dataset_source)
@@ -193,6 +194,16 @@ def test_repository(test_session, test_s3_client, test_config):
         set_version_status(
             test_config, dataset_name, version=DEFAULT_VERSION, deprecated=False
         )
+    # Create form jsons for WOUDC for the copy test
+    get_forms_jsons(
+        DS_TEST_NAME,
+        CatalogueRepository(test_session),
+        tmp_path_factory.mktemp("forms_jsons"),
+        config=test_config,
+        upload_to_storage=True,
+        storage_client=test_s3_client,
+        get_stations_file=False,
+    )
 
     # Gruan version 2.0.0
     dataset_name = "insitu-observations-gruan-reference-network"
@@ -213,6 +224,7 @@ def test_repository(test_session, test_s3_client, test_config):
         version="1.0.0",
         deprecated=False,
     )
+
     catalogue_repository = CatalogueRepository(test_session)
     test_repository = TestRepository(catalogue_repository, test_s3_client, test_config)
     yield test_repository
