@@ -9,8 +9,8 @@ from cdsobs.config import CDSObsConfig
 
 def enable_dataset_version(
     cdsobs_config_yml: Path = config_yml_typer,
-    dataset: str = typer.Option(..., help="Dataset to deprecate the version"),
-    version: str = typer.Option(..., help="Version to deprecate."),
+    dataset: str = typer.Option(..., help="Dataset to enable the version"),
+    version: str = typer.Option(..., help="Version to enable."),
 ):
     """
     Enable a version for a given dataset.

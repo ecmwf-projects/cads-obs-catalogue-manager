@@ -380,4 +380,5 @@ def set_version_status(
             raise RuntimeError(f"{dataset=} {version=} not found in the catalogue")
         dataset_version.deprecated = deprecated
         session.commit()
-        print(f"Deprecated {dataset=} {version=}")
+        verb = "Deprecated" if deprecated else "Enabled"
+        logger.info(f"{verb} {dataset=} {version=}")
