@@ -1,3 +1,4 @@
+import importlib
 from pathlib import Path
 
 import pytest
@@ -69,5 +70,7 @@ def test_cdm_is_tag(test_config):
     repo_path = Path(test_config.cdm_tables_location, "cdm-obs")
     tag = get_cdm_repo_current_tag(repo_path)
     assert isinstance(tag, str)
+    with pytest.raises(RuntimeError):
+        get_cdm_repo_current_tag(Path(importlib.resources.files("tests")).parent)
     with pytest.raises(RuntimeError):
         get_cdm_repo_current_tag(Path("/tmp"))

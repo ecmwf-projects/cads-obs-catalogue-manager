@@ -372,7 +372,7 @@ def get_cdm_repo_current_tag(path: Path) -> str:
         )
         return tag
     except subprocess.CalledProcessError:
-        raise RuntimeError(f"{path} needs to be a git repository and to be in a tag.")
+        raise RuntimeError(f"{path} is a git repository but the HEAD is not in a tag.")
 
 
 def _extract_variable_units_change(

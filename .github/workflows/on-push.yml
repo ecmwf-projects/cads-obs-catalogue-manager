@@ -7,6 +7,10 @@ on:
   pull_request:
     branches:
     - main
+  workflow_call:
+    secrets:
+      TOKEN:
+        required: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -36,7 +40,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: ecmwf-projects/cdm-obs.git
-        ref: 'new-variables'
+        ref: '0.0.2'
         path: cdm-obs
     - name: Download cads-forms-insitu
       env:
