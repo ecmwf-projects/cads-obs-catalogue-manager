@@ -1,8 +1,11 @@
+from pathlib import Path
+
 import pytest
 
 from cdsobs.cdm.api import (
     check_cdm_compliance,
     define_units,
+    get_cdm_repo_current_tag,
     read_cdm_code_tables,
 )
 from cdsobs.cdm.tables import read_cdm_tables
@@ -60,3 +63,11 @@ def test_apply_variable_unit_change(test_config):
         define_units(
             homogenised_data, source_definition, cdm_code_tables["observed_variable"]
         )
+
+
+def test_cdm_is_tag(test_config):
+    repo_path = Path(test_config.cdm_tables_location, "cdm-obs")
+    tag = get_cdm_repo_current_tag(repo_path)
+    assert isinstance(tag, str)
+    with pytest.raises(RuntimeError):
+        get_cdm_repo_current_tag(Path("/tmp"))

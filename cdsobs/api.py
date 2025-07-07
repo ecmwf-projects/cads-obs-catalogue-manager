@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from cdsobs.cdm.api import (
     check_cdm_compliance,
     define_units,
+    get_cdm_repo_current_tag,
 )
 from cdsobs.config import CDSObsConfig, DatasetConfig
 from cdsobs.constants import DEFAULT_VERSION
@@ -85,6 +86,9 @@ def run_ingestion_pipeline(
     logger.info("Running ingestion pipeline")
     logger.info("----------------------------------------------------------------")
     service_definition = get_service_definition(config, dataset_name)
+    cdm_repo_location = Path(config.cdm_tables_location, "cdm-obs")
+    cdm_tag = get_cdm_repo_current_tag(cdm_repo_location)
+    logger.info(f"Using CDM tables from {cdm_repo_location}, tag is {cdm_tag}")
 
     def _run_for_batch(time_space_batch):
         try:

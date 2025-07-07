@@ -125,6 +125,7 @@ def test_retrieve_gruan(test_repository, test_config):
             "wind_from_direction",
             "wind_speed",
         ],
+        "version": "1.0.0",
         "format": "netCDF",
     }
     retrieve_args = RetrieveArgs(dataset=dataset_name, params=params)
