@@ -36,6 +36,11 @@ def make_cdm(
         "-s",
         help="If set, will save netCDF files in --output-dir",
     ),
+    disable_cdm_tag_check: bool = typer.Option(
+        False,
+        help="Disable CDM tag check, only for testing purposes.",
+        show_default=True,
+    ),
 ):
     """Prepare the data to be uploaded without actually uploading it."""
     config = read_and_validate_config(cdsobs_config_yml)
@@ -47,4 +52,5 @@ def make_cdm(
         end_year=end_year,
         output_dir=output_dir,
         save_data=save_data,
+        disable_cdm_tag_check=disable_cdm_tag_check,
     )

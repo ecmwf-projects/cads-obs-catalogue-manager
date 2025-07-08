@@ -79,8 +79,6 @@ class RetrieveParams(BaseModel, extra="ignore"):
                     # If is a single value check for equality
                     filter_arg = getattr(Catalogue, param) == value
             filter_arguments.append(filter_arg)
-        # Add version
-        retrieve_params["version"]
         # Add dataset name too
         if dataset is not None:
             filter_arguments.append(Catalogue.dataset == dataset)

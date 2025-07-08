@@ -1,3 +1,4 @@
+import subprocess
 from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
@@ -349,6 +350,29 @@ def define_units(
         )
 
     return homogenised_data
+
+
+def is_git_repository(path: Path) -> bool:
+    return Path(path, ".git").is_dir()
+
+
+def get_cdm_repo_current_tag(path: Path) -> str:
+    if not is_git_repository(path):
+        raise RuntimeError(f"{path} needs to be a git repository and to be in a tag.")
+
+    try:
+        # Check if HEAD is exactly at a tag
+        tag = (
+            subprocess.check_output(
+                ["git", "-C", path, "describe", "--tags", "--exact-match"],
+                stderr=subprocess.DEVNULL,
+            )
+            .decode()
+            .strip()
+        )
+        return tag
+    except subprocess.CalledProcessError:
+        raise RuntimeError(f"{path} is a git repository but the HEAD is not in a tag.")
 
 
 def _extract_variable_units_change(

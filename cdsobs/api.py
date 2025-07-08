@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from cdsobs.cdm.api import (
     check_cdm_compliance,
     define_units,
+    get_cdm_repo_current_tag,
 )
 from cdsobs.config import CDSObsConfig, DatasetConfig
 from cdsobs.constants import DEFAULT_VERSION
@@ -51,6 +52,7 @@ def run_ingestion_pipeline(
     end_year: int,
     start_month: int = 1,
     version: str = DEFAULT_VERSION,
+    disable_cdm_tag_check: bool = False,
 ):
     """
     Ingest the data to the CADS observation repository.
@@ -80,11 +82,14 @@ def run_ingestion_pipeline(
       Default is 1.
     version:
       Semantic version to use for the data being uploaded.
+    disable_cdm_tag_check:
+      For testing purposes only. Do not check if the CDM repo is in a tag.
     """
     logger.info("----------------------------------------------------------------")
     logger.info("Running ingestion pipeline")
     logger.info("----------------------------------------------------------------")
     service_definition = get_service_definition(config, dataset_name)
+    _maybe_check_cdm_tag(config, disable_cdm_tag_check)
 
     def _run_for_batch(time_space_batch):
         try:
@@ -118,6 +123,7 @@ def run_make_cdm(
     output_dir: Path,
     save_data: bool = False,
     version: str = DEFAULT_VERSION,
+    disable_cdm_tag_check: bool = False,
 ):
     """
     Run the first steps of the ingestion pileline.
@@ -145,11 +151,14 @@ def run_make_cdm(
       make_production. If False, the data only will be loaded and checked for CDM
     version:
       Semantic version to use for the data. Is written in the file names.
+    disable_cdm_tag_check:
+      For testing purposes only. Do not check if the CDM repo is in a tag.
     """
     logger.info("----------------------------------------------------------------")
     logger.info("Running make cdm")
     logger.info("----------------------------------------------------------------")
     service_definition = get_service_definition(config, dataset_name)
+    _maybe_check_cdm_tag(config, disable_cdm_tag_check)
 
     def _run_for_batch(time_batch):
         try:
@@ -365,6 +374,18 @@ def _run_make_cdm_for_batch(
                 f"Saved partition to "
                 f"{serialized_partition.file_params.local_temp_path}"
             )
+
+
+def _maybe_check_cdm_tag(config: CDSObsConfig, disable_cdm_tag_check: bool):
+    cdm_repo_location = Path(config.cdm_tables_location, "cdm-obs")
+    if disable_cdm_tag_check:
+        logger.warning(
+            f"Using CDM tables from {cdm_repo_location}, which are not in a"
+            f"git tag. Tag checking is disabled."
+        )
+    else:
+        cdm_tag = get_cdm_repo_current_tag(cdm_repo_location)
+        logger.info(f"Using CDM tables from {cdm_repo_location}, tag is {cdm_tag}")
 
 
 def set_version_status(

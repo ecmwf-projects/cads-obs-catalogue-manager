@@ -37,6 +37,11 @@ def make_production(
         help="Semantic version corresponding to the data to be uploaded. Default is 1.0.0",
         show_default=False,
     ),
+    disable_cdm_tag_check: bool = typer.Option(
+        False,
+        help="Disable CDM tag check, only for testing purposes.",
+        show_default=True,
+    ),
 ):
     """
     Upload datasets to the CADS observation repository.
@@ -59,4 +64,5 @@ def make_production(
             end_year,
             start_month,
             version,
+            disable_cdm_tag_check,
         )
