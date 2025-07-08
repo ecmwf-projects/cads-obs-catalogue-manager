@@ -132,7 +132,7 @@ def get_disabled_fields(
     dataset: str, source: str, session: Annotated[HttpAPISession, Depends(session_gen)]
 ) -> list[str]:
     dataset_config = session.cdsobs_config.get_dataset(dataset)
-    if source in dataset_config.disabled_fields:
+    if isinstance(dataset_config.disabled_fields, dict):
         disabled_fields = dataset_config.disabled_fields[source]
     else:
         disabled_fields = dataset_config.disabled_fields

@@ -171,7 +171,7 @@ def test_adaptor_cuon(tmp_path):
 
     test_request = {
         "version": "1_1_0",
-        "variable": ["air_dewpoint", "geopotential_height"],
+        "variable": ["air_dewpoint", "air_temperature"],
         "year": ["1965"],
         "month": ["07"],
         "day": ["01", "02"],
@@ -182,6 +182,7 @@ def test_adaptor_cuon(tmp_path):
     # is not needed for this test as it works with MiniIO.
     test_adaptor_config = {
         "entry_point": "cads_adaptors:ObservationsAdaptor",
+        "intersect_constraints": True,
         "collection_id": "insitu-comprehensive-upper-air-observation-network",
         "obs_api_url": "http://localhost:8000",
         "mapping": {
