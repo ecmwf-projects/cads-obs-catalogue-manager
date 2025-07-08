@@ -170,17 +170,12 @@ def test_adaptor_cuon(tmp_path):
     from cads_adaptors import ObservationsAdaptor
 
     test_request = {
-        "format": "netCDF",
-        "variable": [
-            "air_temperature",
-            "geopotential_height",
-            "desroziers_30_uncertainty",
-            "RISE_bias_estimate",
-        ],
-        "year": ["1960"],
-        "month": ["01"],
-        "day": [f"{dd:02d}" for dd in range(32)],
-        "dataset_source": "CUON",
+        "version": "1_1_0",
+        "variable": ["air_dewpoint", "geopotential_height"],
+        "year": ["1965"],
+        "month": ["07"],
+        "day": ["01", "02"],
+        "data_format": "netcdf",
     }
     test_form = {}
     # + "/v1/AUTH_{public_user}" will be needed to work with S3 ceph public urls, but it
@@ -189,7 +184,14 @@ def test_adaptor_cuon(tmp_path):
         "entry_point": "cads_adaptors:ObservationsAdaptor",
         "collection_id": "insitu-comprehensive-upper-air-observation-network",
         "obs_api_url": "http://localhost:8000",
-        "mapping": {"rename": {"variable": "variables"}},
+        "mapping": {
+            "force": {"dataset_source": ["CUON"]},
+            "remap": {
+                "data_format": {"netcdf": "netCDF"},
+                "version": {"1_1_0": "1.1.0"},
+            },
+            "rename": {"data_format": "format", "variable": "variables"},
+        },
     }
     adaptor = ObservationsAdaptor(test_form, **test_adaptor_config)
     result = adaptor.retrieve(test_request)

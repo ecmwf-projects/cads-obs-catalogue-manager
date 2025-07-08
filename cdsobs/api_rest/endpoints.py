@@ -125,3 +125,15 @@ def get_dataset_service_definition(
 @router.get("/cdm/lite_variables")
 def get_cdm_lite_variables() -> dict[str, list[str] | dict]:
     return cdm_lite_variables
+
+
+@router.get("/{dataset}/{source}/disabled_variables")
+def get_disabled_fields(
+    dataset: str, source: str, session: Annotated[HttpAPISession, Depends(session_gen)]
+) -> list[str]:
+    dataset_config = session.cdsobs_config.get_dataset(dataset)
+    if source in dataset_config.disabled_fields:
+        disabled_fields = dataset_config.disabled_fields[source]
+    else:
+        disabled_fields = dataset_config.disabled_fields
+    return disabled_fields
