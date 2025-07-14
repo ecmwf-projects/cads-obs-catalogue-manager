@@ -181,6 +181,7 @@ def test_adaptor_cuon(tmp_path):
     # + "/v1/AUTH_{public_user}" will be needed to work with S3 ceph public urls, but it
     # is not needed for this test as it works with MiniIO.
     test_adaptor_config = {
+        "costing": {"max_costs": {"size": 1600}},
         "entry_point": "cads_adaptors:ObservationsAdaptor",
         "intersect_constraints": True,
         "collection_id": "insitu-comprehensive-upper-air-observation-network",
@@ -194,10 +195,18 @@ def test_adaptor_cuon(tmp_path):
             "rename": {"data_format": "format", "variable": "variables"},
         },
     }
+    disabled_fields = [
+        "report_type",
+        "report_duration",
+        "station_type",
+        "secondary_id",
+    ]
     adaptor = ObservationsAdaptor(test_form, **test_adaptor_config)
     result = adaptor.retrieve(test_request)
     tempfile = Path(tmp_path, "test_adaptor.nc")
     with tempfile.open("wb") as tmpf:
         tmpf.write(result.read())
     assert tempfile.stat().st_size > 0
-    assert xarray.open_dataset(tempfile).observation_id.size > 0
+    dataset = xarray.open_dataset(tempfile)
+    assert dataset.observation_id.size > 0
+    assert not any([f in dataset for f in disabled_fields])

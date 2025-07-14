@@ -127,7 +127,7 @@ def get_cdm_lite_variables() -> dict[str, list[str] | dict]:
     return cdm_lite_variables
 
 
-@router.get("/{dataset}/{source}/disabled_variables")
+@router.get("/{dataset}/{source}/disabled_fields")
 def get_disabled_fields(
     dataset: str, source: str, session: Annotated[HttpAPISession, Depends(session_gen)]
 ) -> list[str]:

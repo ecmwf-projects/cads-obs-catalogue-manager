@@ -94,6 +94,6 @@ def test_get_disabled_fields(test_config, test_repository):
     dataset = "insitu-comprehensive-upper-air-observation-network"
     source = "CUON"
 
-    actual = client.get(f"/{dataset}/{source}/disabled_variables").json()
+    actual = client.get(f"/{dataset}/{source}/disabled_fields").json()
     expected = ["report_type", "report_duration", "station_type", "secondary_id"]
     assert actual == expected
