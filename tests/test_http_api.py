@@ -83,3 +83,17 @@ def test_get_cdm_lite():
     actual = client.get("cdm/lite_variables").json()
     expected = cdm_lite_variables
     assert actual == expected
+
+
+def test_get_disabled_fields(test_config, test_repository):
+    def test_session() -> HttpAPISession:
+        return HttpAPISession(test_config, test_repository.catalogue_repository.session)
+
+    # Note that the  key here is the callable itself, not the callable name.
+    app.dependency_overrides[session_gen] = test_session
+    dataset = "insitu-comprehensive-upper-air-observation-network"
+    source = "CUON"
+
+    actual = client.get(f"/{dataset}/{source}/disabled_fields").json()
+    expected = ["report_type", "report_duration", "station_type", "secondary_id"]
+    assert actual == expected

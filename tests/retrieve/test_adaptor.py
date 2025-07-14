@@ -170,31 +170,43 @@ def test_adaptor_cuon(tmp_path):
     from cads_adaptors import ObservationsAdaptor
 
     test_request = {
-        "format": "netCDF",
-        "variable": [
-            "air_temperature",
-            "geopotential_height",
-            "desroziers_30_uncertainty",
-            "RISE_bias_estimate",
-        ],
-        "year": ["1960"],
-        "month": ["01"],
-        "day": [f"{dd:02d}" for dd in range(32)],
-        "dataset_source": "CUON",
+        "version": "1_1_0",
+        "variable": ["air_dewpoint", "air_temperature"],
+        "year": ["1965"],
+        "month": ["07"],
+        "day": ["01", "02"],
+        "data_format": "netcdf",
     }
     test_form = {}
     # + "/v1/AUTH_{public_user}" will be needed to work with S3 ceph public urls, but it
     # is not needed for this test as it works with MiniIO.
     test_adaptor_config = {
+        "costing": {"max_costs": {"size": 1600}},
         "entry_point": "cads_adaptors:ObservationsAdaptor",
+        "intersect_constraints": True,
         "collection_id": "insitu-comprehensive-upper-air-observation-network",
         "obs_api_url": "http://localhost:8000",
-        "mapping": {"rename": {"variable": "variables"}},
+        "mapping": {
+            "force": {"dataset_source": ["CUON"]},
+            "remap": {
+                "data_format": {"netcdf": "netCDF"},
+                "version": {"1_1_0": "1.1.0"},
+            },
+            "rename": {"data_format": "format", "variable": "variables"},
+        },
     }
+    disabled_fields = [
+        "report_type",
+        "report_duration",
+        "station_type",
+        "secondary_id",
+    ]
     adaptor = ObservationsAdaptor(test_form, **test_adaptor_config)
     result = adaptor.retrieve(test_request)
     tempfile = Path(tmp_path, "test_adaptor.nc")
     with tempfile.open("wb") as tmpf:
         tmpf.write(result.read())
     assert tempfile.stat().st_size > 0
-    assert xarray.open_dataset(tempfile).observation_id.size > 0
+    dataset = xarray.open_dataset(tempfile)
+    assert dataset.observation_id.size > 0
+    assert not any([f in dataset for f in disabled_fields])

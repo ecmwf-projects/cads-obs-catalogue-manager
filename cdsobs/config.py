@@ -128,7 +128,10 @@ class DatasetConfig(pydantic.BaseModel):
       Function to read the input data
     reader_extra_args:
       Optional. Args to pass to the read function (e.g. a directory). Default is None
-
+    disabled_fields:
+      Optional. This variable can be used to disable fields. The API rest will tell the
+      adaptor to not to include these fields in the ouput. It can be a list, to disable
+      fields dataset-wise, or a dictionary, to disable them only for a dataset_source.
     """
 
     name: str
@@ -142,6 +145,7 @@ class DatasetConfig(pydantic.BaseModel):
     reader_extra_args: Optional[dict[str, str]] = None
     ingestion_db: str = "main"
     read_with_spatial_batches: bool = False
+    disabled_fields: list[str] | dict[str, list[str]] = []
 
     def get_tile_size(
         self, kind: Literal["lat", "lon"], source: str, year: int

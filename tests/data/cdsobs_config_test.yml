@@ -91,6 +91,11 @@ datasets:
   reader: "cdsobs.ingestion.readers.cuon.read_cuon_netcdfs"
   reader_extra_args:
     input_dir: "test"
+  disabled_fields:
+  - report_type
+  - report_duration
+  - station_type
+  - secondary_id
 - name: insitu-observations-woudc-netcdfs
   lon_tile_size: 180
   lat_tile_size: 90
