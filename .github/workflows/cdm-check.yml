@@ -1,0 +1,97 @@
+name: Check CDM
+
+on:
+  workflow_call:
+    inputs:
+      cdm_ref:
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:
+  check-caller:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Reject unauthorized callers
+      if: ${{ github.repository != 'ecmwf-projects/cdm-obs' }}
+      run: |
+        echo "Unauthorized caller: ${{ github.repository }}"
+        exit 1
+  make-production-test:
+    name: make-production-test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download CDM tables
+      uses: actions/checkout@v3
+      with:
+        repository: ecmwf-projects/cdm-obs.git
+        ref: ${{ inputs.cdm_ref }}
+        path: cdm-obs
+    - name: Download cads-forms-insitu
+      env:
+        BITBUCKET_TOKEN: ${{ secrets.BITBUCKET_TOKEN }}
+      timeout-minutes: 2
+      run: |
+        git clone --depth 1 -b dev https://"$BITBUCKET_TOKEN"@git.ecmwf.int/scm/cds/cads-forms-insitu.git
+    - name: Deploy test ingestion database
+      env:
+        TEST_INGESTION_DB_PASS: ${{ secrets.TEST_INGESTION_DB_PASS }}
+        CATALOGUE_PASSWORD: ${{ secrets.CATALOGUE_PASSWORD}}
+        STORAGE_PASSWORD: ${{ secrets.STORAGE_PASSWORD}}
+        STORAGE_SECRET_KEY: ${{ secrets.STORAGE_SECRET_KEY}}
+      timeout-minutes: 2
+      run: |
+        cd tests/docker/
+        wget -nv -O docker-entrypoint-initdb.d/test_ingestiondb.sql https://cloud.predictia.es/s/R9a6z8fBZQcPrAQ/download
+        touch .env
+        echo TEST_INGESTION_DB_PASS=$TEST_INGESTION_DB_PASS >> .env
+        echo CATALOGUE_PASSWORD=$CATALOGUE_PASSWORD >> .env
+        echo STORAGE_PASSWORD=$STORAGE_PASSWORD >> .env
+        docker compose up -d
+        until pg_isready -U user -d baron -p 25432 -h localhost; do sleep 2; done
+    - name: Download test netCDFs
+      timeout-minutes: 2
+      run: |
+        cd tests/data
+        wget -nv -O test_netcdfs.tar.gz https://cloud.predictia.es/s/7QzpBEaYyiZ3o6C/download
+        tar xzf test_netcdfs.tar.gz -C cuon_data/
+        rm test_netcdfs.tar.gz
+    - name: Install Conda environment with Micromamba
+      uses: mamba-org/setup-micromamba@v1
+      with:
+        environment-file: environment.yml
+        environment-name: DEVELOP
+        channels: conda-forge
+        cache-env: true
+        extra-specs: |
+          python=3.10
+    - name: Install package
+      run: |
+        python -m pip install --no-deps -e .
+    - name: Run tests
+      env:
+        TEST_INGESTION_DB_PASS: ${{ secrets.TEST_INGESTION_DB_PASS }}
+        STORAGE_PASSWORD: ${{ secrets.STORAGE_PASSWORD}}
+        CATALOGUE_DB: ${{ secrets.CATALOGUE_DB}}
+        CATALOGUE_HOST: ${{ secrets.CATALOGUE_HOST}}
+        CATALOGUE_PASSWORD: ${{ secrets.CATALOGUE_PASSWORD}}
+        CATALOGUE_PORT: ${{ secrets.CATALOGUE_PORT}}
+        CATALOGUE_USER: ${{ secrets.CATALOGUE_USER}}
+        STORAGE_ACCESS_KEY: ${{ secrets.STORAGE_ACCESS_KEY}}
+        STORAGE_HOST: ${{ secrets.STORAGE_HOST}}
+        STORAGE_PORT: ${{ secrets.STORAGE_PORT}}
+        STORAGE_SECRET_KEY: ${{ secrets.STORAGE_SECRET_KEY}}
+        STORAGE_SECURE: ${{ secrets.STORAGE_SECURE}}
+        CDM_TABLES_LOCATION: ${{ github.workspace }}
+        CADS_OBS_INSITU_LOCATION: ${{ github.workspace }}
+      run: |
+        python -m pytest -vv tests/test_api.py
