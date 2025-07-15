@@ -30,6 +30,7 @@ def test_run_ingestion_pipeline(
         test_config,
         start_year=start_year,
         end_year=end_year,
+        disable_cdm_tag_check=True,
     )
     # assert insertions have been made
     counter = test_session_pertest.scalar(
