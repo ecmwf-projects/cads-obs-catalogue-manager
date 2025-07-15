@@ -156,6 +156,10 @@ def encode_observed_variables(cdm_code_tables, data):
     code_table = cdm_code_tables["observed_variable"].table
     # strip to remove extra spaces
     var2code = get_var2code(code_table)
+    variables = data["observed_variable"].unique().astype("S")
+    variables_not_in_cdm = [v for v in variables if v not in var2code]
+    if len(variables_not_in_cdm) > 0:
+        raise RuntimeError(f"Variables not found in CDM: {variables_not_in_cdm}")
     encoded_data = (
         data["observed_variable"].str.encode("UTF-8").map(var2code).astype("uint8")
     )
