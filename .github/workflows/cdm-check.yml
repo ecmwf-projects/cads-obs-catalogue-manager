@@ -6,7 +6,31 @@ on:
       cdm_ref:
         required: true
         type: string
-
+    secrets:
+      BITBUCKET_TOKEN:
+        required: true
+      CATALOGUE_DB:
+        required: true
+      CATALOGUE_HOST:
+        required: true
+      CATALOGUE_PASSWORD:
+        required: true
+      CATALOGUE_PORT:
+        required: true
+      CATALOGUE_USER:
+        required: true
+      STORAGE_ACCESS_KEY:
+        required: true
+      STORAGE_HOST:
+        required: true
+      STORAGE_PORT:
+        required: true
+      STORAGE_SECRET_KEY:
+        required: true
+      STORAGE_SECURE:
+        required: true
+      TEST_INGESTION_DB_PASS:
+        required: true
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
