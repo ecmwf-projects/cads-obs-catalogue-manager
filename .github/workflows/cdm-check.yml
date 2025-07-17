@@ -54,6 +54,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        repository: ecmwf-projects/cads-obs-catalogue-manager.git
+        ref: main
+        path: .
     - name: Download CDM tables
       uses: actions/checkout@v3
       with:
