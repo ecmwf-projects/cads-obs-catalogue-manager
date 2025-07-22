@@ -172,9 +172,10 @@ def test_adaptor_cuon(tmp_path):
     test_request = {
         "version": "1_1_0",
         "variable": ["air_dewpoint", "air_temperature"],
-        "year": ["1965"],
+        "year": ["1999"],
         "month": ["07"],
         "day": ["01", "02"],
+        # "station": ["0-20000-0-89664"],
         "data_format": "netcdf",
     }
     test_form = {}
@@ -210,3 +211,7 @@ def test_adaptor_cuon(tmp_path):
     dataset = xarray.open_dataset(tempfile)
     assert dataset.observation_id.size > 0
     assert not any([f in dataset for f in disabled_fields])
+
+
+if __name__ == "__main__":
+    test_adaptor_cuon(tmp_path=Path("/tmp"))

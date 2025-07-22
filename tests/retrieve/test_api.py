@@ -100,9 +100,10 @@ def test_retrieve_cuon(test_repository, test_config):
         retrieve_args,
         Path("/tmp"),
     )
-    (print(output_file) @ pytest.mark.skip("Too slow"))
+    print(output_file)
 
 
+@pytest.mark.skip("Too slow")
 def test_retrieve_gruan(test_repository, test_config):
     dataset_name = "insitu-observations-gruan-reference-network"
     params = {
