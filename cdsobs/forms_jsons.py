@@ -63,7 +63,17 @@ def get_variables_json(dataset: str, config: CDSObsConfig, output_path: Path) ->
     variables_json_content = {}
     for source_name, source in service_definition.sources.items():
         descriptions = {k: v.model_dump() for k, v in source.descriptions.items()}
+        # Delete disabled fields
+        disabled_fields = config.get_dataset(dataset).disabled_fields
+        if config.get_dataset(dataset).disabled_fields is not None:
+            logger.info(
+                "The following fields are disabled and won't be included in the"
+                f"variables.json file: \n {disabled_fields}"
+            )
+            for disabled_field in disabled_fields:
+                del descriptions[disabled_field]
         variables_json_content[source_name] = descriptions
+
     output_file_path = Path(output_path, "variables.json")
     logger.info(f"Writing {output_file_path}")
     with output_file_path.open("w") as vof:
