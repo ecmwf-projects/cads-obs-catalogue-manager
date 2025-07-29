@@ -79,4 +79,8 @@ def read_flat_parquet(
     # Decode variable names
     code_dict = get_var_code_dict(config.cdm_tables_location)
     data["observed_variable"] = data["observed_variable"].map(code_dict)
+    # Remove timezone information, that gives problems, all input must be in UTC
+    for col in data:
+        if data[col].dtype.kind == "M":
+            data[col] = data[col].dt.tz_localize(None)
     return data
