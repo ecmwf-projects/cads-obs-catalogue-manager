@@ -70,7 +70,7 @@ def read_flat_parquet(
         SET TimeZone = 'UTC';
         SELECT * FROM read_parquet('{input_files_pattern}')
         WHERE
-          report_timestamp BETWEEN '{start}' AND '{end}'
+          report_timestamp >= '{start}' AND report_timestamp < '{end}'
         """
     ).fetchdf()
 

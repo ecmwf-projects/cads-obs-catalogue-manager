@@ -73,7 +73,7 @@ def read_flat_csvs(
         SET TimeZone = 'UTC';
         SELECT * from read_csv('{input_files_pattern}', header=True, sep='{separator}')
         WHERE
-          report_timestamp BETWEEN '{start}' AND '{end}'
+          report_timestamp >= '{start}' AND report_timestamp < '{end}'
         """
     ).fetchdf()
 
