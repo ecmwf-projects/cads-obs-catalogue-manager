@@ -372,12 +372,49 @@ def get_denormalized_table_file(
     denormalized_table_file = decode_time(denormalized_table_file, file_and_slices)
     # Fixes for CUON V29 files
     denormalized_table_file = fixes_for_cuonv29(denormalized_table_file)
+    # Fix units
+    denormalized_table_file = fix_units(denormalized_table_file)
+
     # Decode variable names
     code_dict = get_var_code_dict(config.cdm_tables_location)
     denormalized_table_file["observed_variable"] = denormalized_table_file[
         "observed_variable"
     ].map(code_dict)
     return denormalized_table_file
+
+
+def fix_units(denormalized_table_file: pandas.DataFrame) -> pandas.DataFrame:
+    """Fix the wrong units in cuon v29, including the uncertainties and homogenisation."""
+    # Relative humidity, from 1 to 100 %
+    relative_humidity_code = 138
+    relative_humidity_units_code = 300  # %
+    relative_humidity_mask = (
+        denormalized_table_file["observed_variable"] == relative_humidity_code
+    )
+    denormalized_table_file["observation_value"].loc[relative_humidity_mask] *= 100
+    denormalized_table_file["uncertainty_value1"].loc[relative_humidity_mask] *= 100
+    denormalized_table_file["homogenisation_adjustment"].loc[
+        relative_humidity_mask
+    ] *= 100
+    denormalized_table_file["units"].loc[
+        relative_humidity_mask
+    ] = relative_humidity_units_code
+    denormalized_table_file["uncertainty_units1"].loc[
+        relative_humidity_mask
+    ] = relative_humidity_units_code
+    # Geopotential, from J/kg (m2s2) to m
+    geopotential_code = 117
+    geopotential_units_code = 631  # geopotential meters
+    g = 9.80665  # g in m s-2
+    geopotential_mask = (
+        denormalized_table_file["observed_variable"] == geopotential_code
+    )
+    denormalized_table_file["observation_value"].loc[geopotential_mask] /= g
+    denormalized_table_file["uncertainty_value1"].loc[geopotential_mask] /= g
+    denormalized_table_file["units"].loc[geopotential_mask] = geopotential_units_code
+    denormalized_table_file["uncertainty_units1"].loc[
+        geopotential_mask
+    ] = geopotential_units_code
 
 
 def fixes_for_cuonv29(denormalized_table_file: pandas.DataFrame) -> pandas.DataFrame:
