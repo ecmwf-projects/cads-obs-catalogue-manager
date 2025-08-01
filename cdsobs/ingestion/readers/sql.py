@@ -1,4 +1,3 @@
-import datetime
 import inspect
 from typing import Any, Callable, Protocol, Tuple
 
@@ -41,7 +40,7 @@ def read_sql_tables(
     db_url = config.get_url()
 
     # Define the time_batch specifics in case it exist
-    start, end = get_start_end_of_timebatch(time_batch)
+    start, end = time_batch.get_time_coverage()
     time_field, time_field_in_header = get_time_field(source_definition)
 
     if source_definition.is_multitable():
@@ -51,8 +50,9 @@ def read_sql_tables(
         header_table = source_definition.header_table
         header_querystr = f"SELECT * FROM {header_table}"
         # Time filter
+        # Closed left, open right
         header_time_filter_query_str = (
-            f" WHERE {time_field} between '{start}' and '{end}'"
+            f" WHERE {time_field} >= '{start}' AND {time_field} < '{end}'"
         )
         if time_field_in_header:
             # Append filters to the simple select query
@@ -74,7 +74,7 @@ def read_sql_tables(
             data_time_filter_query_str = (
                 f" INNER JOIN {header_table} h "
                 f"ON d.{join_ids.data}=h.{join_ids.header} "
-                f"where h.{time_field} between '{start}' and '{end}'"
+                f"where h.{time_field} >= '{start}' and h.{time_field} < '{end}'"
             )
 
         # Append filters to the simple select query
@@ -91,10 +91,11 @@ def read_sql_tables(
         data_querystr = f"SELECT * FROM {data_table}"
         # Time filter
         data_time_filter_query_str = (
-            f" WHERE {time_field} between '{start}' and '{end}'"
+            f" WHERE {time_field} >= '{start}' AND {time_field} < '{end}'"
         )
 
         # Append filters to the simple select query
+        # Closed left, open right
         data_querystr += data_time_filter_query_str
         # We need order by the result to be deterministic
         order_by_str = _get_order_by(data_table, db_url, source_definition)
@@ -116,14 +117,6 @@ def _get_order_by(data_table, db_url, source_definition):
         sort_cols = ", ".join(source_definition.order_by)
     order_by_str = f" ORDER BY {sort_cols}"
     return order_by_str
-
-
-def get_start_end_of_timebatch(time_batch: TimeBatch) -> Tuple[str, str]:
-    """Get the start and end values of TimeBatch object as string."""
-    start, end = time_batch.get_time_coverage()
-    start_str = start.strftime("%Y-%m-%dT%H:M:S")
-    end_str = (end - datetime.timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%S")
-    return start_str, end_str
 
 
 class SQLReaderFunctionCallable(Protocol):
