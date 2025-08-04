@@ -7,16 +7,18 @@ from typing import Iterator
 import pandas
 from sqlalchemy.orm import Session
 
+from cdsobs import warning_tracker
 from cdsobs.cdm.api import (
     check_cdm_compliance,
     define_units,
     get_cdm_repo_current_tag,
 )
+from cdsobs.cli._catalogue_explorer import stats_summary
 from cdsobs.config import CDSObsConfig, DatasetConfig
 from cdsobs.constants import DEFAULT_VERSION
 from cdsobs.ingestion.api import (
     EmptyBatchException,
-    _entry_exists,
+    entry_exists,
     read_batch_data,
     sort,
 )
@@ -30,6 +32,7 @@ from cdsobs.ingestion.partition import get_partitions, save_partitions
 from cdsobs.ingestion.serialize import serialize_partition
 from cdsobs.metadata import get_dataset_metadata
 from cdsobs.observation_catalogue.database import get_session
+from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.dataset_version import (
     CadsDatasetVersionRepository,
@@ -112,6 +115,24 @@ def run_ingestion_pipeline(
     for time_space_batch in main_iterator:
         logger.info(f"Running ingestion pipeline for {time_space_batch}")
         _run_for_batch(time_space_batch)
+
+    # Run sanity check
+    catalogue_repo = CatalogueRepository(session)
+    entries = catalogue_repo.get_by_dataset_and_source_and_version(
+        dataset_name, source, version
+    )
+    stats = stats_summary(entries)
+    print(stats)
+    assert stats["number of partitions"] >= 1
+    assert stats["number of stations"] >= 1
+    assert set(stats["available variables"]) == set(
+        service_definition.sources[source].main_variables
+    )
+    # Log successful, taking the warnings into account
+    if warning_tracker.warning_logged:
+        logger.info("Finished ingestion pipeline with warnings, please check the log.")
+    else:
+        logger.info("Finished ingestion pipeline successfully.")
 
 
 def run_make_cdm(
@@ -209,7 +230,7 @@ def _run_ingestion_pipeline_for_batch(
     time_space_batch:
       Optionally read data only for one year and month
     """
-    if _entry_exists(dataset_name, session, source, time_space_batch, version):
+    if entry_exists(dataset_name, session, source, time_space_batch, version):
         logger.warning(
             "A partition with the chosen parameters already exists and update is set to False."
         )

@@ -14,6 +14,17 @@ import structlog
 LogLevel = Literal["NOTSET", "DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"]
 
 
+# Simple handler that just sets a flag if a warning is logged
+class WarningFlagHandler(logging.Handler):
+    def __init__(self):
+        super().__init__()
+        self.warning_logged = False
+
+    def emit(self, record):
+        if record.levelno >= logging.WARNING:
+            self.warning_logged = True
+
+
 def sizeof_fmt(num, suffix="B"):
     for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):
         if abs(num) < 1024.0:
@@ -33,6 +44,10 @@ def configure_logger() -> None:
         format="%(message)s",
         stream=sys.stdout,
     )
+    # Add a warning tracker to the root logger
+    warning_tracker = WarningFlagHandler()
+    root_logger = logging.getLogger()
+    root_logger.addHandler(warning_tracker)
     logging_format = os.environ.get("CADSOBS_LOGGING_FORMAT", "CONSOLE")
     if logging_format == "CONSOLE":
         renderer = structlog.dev.ConsoleRenderer(colors=False)
@@ -57,6 +72,7 @@ def configure_logger() -> None:
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
     )
+    return warning_tracker
 
 
 def get_logger(name: str) -> Any:
