@@ -363,44 +363,72 @@ def get_denormalized_table_file(
             # this is for not losing the stations with no homogenisation_table
             tables_to_use = [t for t in tables_to_use if t != table_name]
     # Filter stations outside ofthe Batch
-    lats = dataset_cdm["header_table"]["latitude"]
-    lons = dataset_cdm["header_table"]["longitude"]
-    if (lats.dtype.kind == "S") or (lons.dtype.kind == "S"):
-        raise NoDataInFileException(
-            f"Skipping file {file_and_slices.path} with malformed latitudes"
-        )
-    lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
-    lon_mask = between(lons, lon_start, lon_end)
-    lat_mask = between(lats, lat_start, lat_end)
-    spatial_mask = lon_mask * lat_mask
-    if spatial_mask.sum() < len(spatial_mask):
-        logger.info(
-            f"Records have been found outside the SpatialBatch ranges for {file_and_slices.path}, "
-            "filtering out."
-        )
-        dataset_cdm["header_table"] = dataset_cdm["header_table"].loc[spatial_mask]
+    filter_stations_outside_batch(dataset_cdm, file_and_slices, time_space_batch)
     # Denormalize tables
     denormalized_table_file = denormalize_tables(
         cdm_tables, dataset_cdm, tables_to_use, ignore_errors=False
     )
     # Decode time
-    if len(denormalized_table_file) > 0:
-        for time_field in ["record_timestamp", "report_timestamp", "date_time"]:
-            denormalized_table_file.loc[:, time_field] = cftime.num2date(
-                denormalized_table_file.loc[:, time_field],
-                constants.TIME_UNITS,
-                only_use_cftime_datetimes=False,
-            )
-    else:
-        logger.warning(f"No data was found in file {file_and_slices.path}")
-    # Need this here to avoid nans in this variable that is an integer
+    denormalized_table_file = decode_time(denormalized_table_file, file_and_slices)
+    # Fixes for CUON V29 files
+    denormalized_table_file = fixes_for_cuonv29(denormalized_table_file)
+    # Fix units
+    denormalized_table_file = fix_units(denormalized_table_file)
+
+    # Decode variable names
+    code_dict = get_var_code_dict(config.cdm_tables_location)
+    denormalized_table_file["observed_variable"] = denormalized_table_file[
+        "observed_variable"
+    ].map(code_dict)
+    return denormalized_table_file
+
+
+def fix_units(denormalized_table_file: pandas.DataFrame) -> pandas.DataFrame:
+    """Fix the wrong units in cuon v29, including the uncertainties and homogenisation."""
+    # Relative humidity, from 1 to 100 %
+    relative_humidity_code = 138
+    relative_humidity_units_code = 300  # %
+    relative_humidity_mask = (
+        denormalized_table_file["observed_variable"] == relative_humidity_code
+    )
+    denormalized_table_file["observation_value"].loc[relative_humidity_mask] *= 100
+    denormalized_table_file["uncertainty_value1"].loc[relative_humidity_mask] *= 100
+    denormalized_table_file["homogenisation_adjustment"].loc[
+        relative_humidity_mask
+    ] *= 100
+    denormalized_table_file["units"].loc[
+        relative_humidity_mask
+    ] = relative_humidity_units_code
+    denormalized_table_file["uncertainty_units1"].loc[
+        relative_humidity_mask
+    ] = relative_humidity_units_code
+    # Geopotential, from J/kg (m2s2) to m
+    geopotential_code = 117
+    geopotential_units_code = 631  # geopotential meters
+    g = 9.80665  # g in m s-2
+    geopotential_mask = (
+        denormalized_table_file["observed_variable"] == geopotential_code
+    )
+    denormalized_table_file["observation_value"].loc[geopotential_mask] /= g
+    denormalized_table_file["uncertainty_value1"].loc[geopotential_mask] /= g
+    denormalized_table_file["units"].loc[geopotential_mask] = geopotential_units_code
+    denormalized_table_file["uncertainty_units1"].loc[
+        geopotential_mask
+    ] = geopotential_units_code
+    return denormalized_table_file
+
+
+def fixes_for_cuonv29(denormalized_table_file: pandas.DataFrame) -> pandas.DataFrame:
+    """Multiple fixed needed to correct issues found in the CUON files."""
+    # Need this change avoid nans in this variable that is an integer
     denormalized_table_file["uncertainty_type1"] = 1
     denormalized_table_file["uncertainty_type1"] = denormalized_table_file[
         "uncertainty_type1"
     ].astype("int")
-    # Fixes for CUON V29 files
+    # Fix profile id and quality flag
     denormalized_table_file["profile_id"] = denormalized_table_file.report_id.copy()
     denormalized_table_file["quality_flag"] = 2
+    # Fix homogenisation
     denormalized_table_file["homogenisation_method"] = 14
     denormalized_table_file["report_meaning_of_timestamp"] = 1
     if "RISE_bias_estimate" in denormalized_table_file:
@@ -440,12 +468,36 @@ def get_denormalized_table_file(
     denormalized_table_file = denormalized_table_file.loc[
         denormalized_table_file["observed_variable"] != 0
     ]
-    # Decode variable names
-    code_dict = get_var_code_dict(config.cdm_tables_location)
-    denormalized_table_file["observed_variable"] = denormalized_table_file[
-        "observed_variable"
-    ].map(code_dict)
     return denormalized_table_file
+
+
+def decode_time(denormalized_table_file, file_and_slices):
+    if len(denormalized_table_file) > 0:
+        for time_field in ["record_timestamp", "report_timestamp", "date_time"]:
+            denormalized_table_file.loc[:, time_field] = cftime.num2date(
+                denormalized_table_file.loc[:, time_field],
+                constants.TIME_UNITS,
+                only_use_cftime_datetimes=False,
+            )
+    else:
+        logger.warning(f"No data was found in file {file_and_slices.path}")
+    return denormalized_table_file
+
+
+def filter_stations_outside_batch(dataset_cdm, file_and_slices, time_space_batch):
+    lats = dataset_cdm["header_table"]["latitude"]
+    lons = dataset_cdm["header_table"]["longitude"]
+    lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()
+    lon_mask = between(lons, lon_start, lon_end)
+    lat_mask = between(lats, lat_start, lat_end)
+    spatial_mask = lon_mask * lat_mask
+    if spatial_mask.sum() < len(spatial_mask):
+        logger.info(
+            f"Records have been found outside the SpatialBatch ranges for {file_and_slices.path}, "
+            "filtering out."
+        )
+        dataset_cdm["header_table"] = dataset_cdm["header_table"].loc[spatial_mask]
+        raise RuntimeError("Stations found outside the ")
 
 
 class NoDataInFileException(RuntimeError):
