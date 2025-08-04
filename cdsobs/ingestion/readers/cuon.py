@@ -415,6 +415,7 @@ def fix_units(denormalized_table_file: pandas.DataFrame) -> pandas.DataFrame:
     denormalized_table_file["uncertainty_units1"].loc[
         geopotential_mask
     ] = geopotential_units_code
+    return denormalized_table_file
 
 
 def fixes_for_cuonv29(denormalized_table_file: pandas.DataFrame) -> pandas.DataFrame:
