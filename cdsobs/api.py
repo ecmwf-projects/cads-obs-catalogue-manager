@@ -1,9 +1,11 @@
 """Main python API."""
+import tempfile
 from datetime import datetime
 from itertools import product
 from pathlib import Path
 from typing import Iterator
 
+import h5netcdf
 import pandas
 from sqlalchemy.orm import Session
 
@@ -23,6 +25,7 @@ from cdsobs.ingestion.api import (
     sort,
 )
 from cdsobs.ingestion.core import (
+    DatasetMetadata,
     DatasetPartition,
     SpaceBatch,
     TimeBatch,
@@ -117,22 +120,59 @@ def run_ingestion_pipeline(
         _run_for_batch(time_space_batch)
 
     # Run sanity check
-    catalogue_repo = CatalogueRepository(session)
-    entries = catalogue_repo.get_by_dataset_and_source_and_version(
-        dataset_name, source, version
-    )
-    stats = stats_summary(entries)
-    print(stats)
-    assert stats["number of partitions"] >= 1
-    assert stats["number of stations"] >= 1
-    assert set(stats["available variables"]) == set(
-        service_definition.sources[source].main_variables
+    _run_sanity_check(
+        config, dataset_name, service_definition, session, source, version
     )
     # Log successful, taking the warnings into account
     if warning_tracker.warning_logged:
         logger.info("Finished ingestion pipeline with warnings, please check the log.")
     else:
         logger.info("Finished ingestion pipeline successfully.")
+
+
+def _run_sanity_check(
+    config, dataset_name, service_definition, session, source, version
+):
+    catalogue_repo = CatalogueRepository(session)
+    entries = catalogue_repo.get_by_dataset_and_source_and_version(
+        dataset_name, source, version
+    )
+    # Check summary
+    # The problem is that we don't know beforehand the number of stations or partitions
+    # So we cannot check it, just if there are any.
+    stats = stats_summary(entries)
+    print(stats)
+    assert stats["number of partitions"] >= 1
+    assert stats["number of stations"] >= 1
+    # This may fail is the make production is partial, and a variable is missing for
+    # the years that are being read.
+    assert set(stats["available variables"]) == set(
+        service_definition.sources[source].main_variables
+    )
+    # Now we will check the metadata in the largest partition uploaded
+    largest_entry = max(entries, key=lambda x: x.data_size)
+    s3_client = S3Client.from_config(config.s3config)
+    temp_file = tempfile.NamedTemporaryFile()
+    bucket_name, object_name = largest_entry.asset.split("/")
+    s3_client.download_file(
+        bucket_name=bucket_name, object_name=object_name, ofile=temp_file.name
+    )
+    dataset = h5netcdf.File(temp_file.name)
+    fields = set(dataset.variables)
+    expected_fields = set(service_definition.sources[source].descriptions)
+    expected_fields = expected_fields - set(
+        service_definition.sources[source].main_variables
+    )
+    expected_fields = expected_fields.union({"observation_value", "observed_variable"})
+    if not expected_fields.issubset(fields):
+        logger.warning(
+            f"{expected_fields - fields} are missing in the uploaded file but"
+            f" defined in the service definition."
+        )
+
+
+def compare_sets(a: set, b: set):
+    assert a == b, f"Sets are not equal:\n  Only in a: {a - b}\n  Only in b: {b - a}"
 
 
 def run_make_cdm(
@@ -328,6 +368,32 @@ def _read_homogenise_and_partition(
     _validate_time_interval(homogenised_data, time_space_batch.time_batch)
     # Check CDM compliance
     check_cdm_compliance(homogenised_data, dataset_metadata.cdm_tables)
+    # Map and check the units
+    homogenised_data = _handle_units(
+        homogenised_data, dataset_metadata, service_definition, source
+    )
+    # Get tile sizes
+    year = time_space_batch.time_batch.year
+    lon_tile_size = dataset_config.get_tile_size("lon", source, year)
+    lat_tile_size = dataset_config.get_tile_size("lat", source, year)
+    # Partition and sort the data.
+    data_partitions = get_partitions(
+        dataset_metadata,
+        homogenised_data,
+        time_space_batch.time_batch,
+        lon_tile_size=lon_tile_size,
+        lat_tile_size=lat_tile_size,
+    )
+    sorted_partitions = (sort(dp) for dp in data_partitions)
+    return sorted_partitions
+
+
+def _handle_units(
+    homogenised_data: pandas.DataFrame,
+    dataset_metadata: DatasetMetadata,
+    service_definition: ServiceDefinition,
+    source: str,
+) -> pandas.DataFrame:
     # Define units id not present and apply unit changes
     if "units" not in homogenised_data.columns:
         homogenised_data = define_units(
@@ -349,20 +415,7 @@ def _read_homogenise_and_partition(
             if decoded_units.isnull().any():
                 raise RuntimeError("Not all units were mapped")
             homogenised_data[unit_field] = decoded_units
-
-    year = time_space_batch.time_batch.year
-    lon_tile_size = dataset_config.get_tile_size("lon", source, year)
-    lat_tile_size = dataset_config.get_tile_size("lat", source, year)
-    # Here we use iterators to be memory efficient
-    data_partitions = get_partitions(
-        dataset_metadata,
-        homogenised_data,
-        time_space_batch.time_batch,
-        lon_tile_size=lon_tile_size,
-        lat_tile_size=lat_tile_size,
-    )
-    sorted_partitions = (sort(dp) for dp in data_partitions)
-    return sorted_partitions
+    return homogenised_data
 
 
 def _validate_time_interval(homogenised_data: pandas.DataFrame, time_batch: TimeBatch):

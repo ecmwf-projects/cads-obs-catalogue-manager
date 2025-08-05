@@ -33,7 +33,7 @@ def sizeof_fmt(num, suffix="B"):
     return f"{num:.1f} Yi{suffix}"
 
 
-def configure_logger() -> None:
+def configure_logger() -> WarningFlagHandler:
     """Configure the logging module.
 
     This function configures the logging module to log in rfc5424 format.
