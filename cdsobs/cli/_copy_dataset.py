@@ -1,6 +1,7 @@
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Optional, Sequence
+from urllib.parse import urlparse
 
 import dask
 from fastapi.encoders import jsonable_encoder
@@ -362,7 +363,8 @@ def s3_export(init_s3client: S3Client, dest_s3client: S3Client, entries, dest_da
         # Use dask to speed up the process
         def copy_object(object_url):
             logger.info(f"Copying {object_url} to new storage.")
-            baseurl, bucket, name = object_url.split("/")
+            parsed_url = urlparse(object_url)
+            bucket, name = parsed_url.path.split("/")[1:]
             with NamedTemporaryFile() as ntf:
                 init_s3client.download_file(bucket, name, ntf.name)
                 new_asset = dest_s3client.upload_file(dest_bucket, name, Path(ntf.name))
