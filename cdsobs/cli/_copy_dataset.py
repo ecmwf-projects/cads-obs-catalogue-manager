@@ -278,6 +278,7 @@ def _copy_outside_logic(
     except (Exception, KeyboardInterrupt):
         s3_rollback(dest_s3client, new_assets)
         raise
+    logger.info("Copy finished successfully")
 
 
 def catalogue_copy(
