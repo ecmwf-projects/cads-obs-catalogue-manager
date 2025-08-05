@@ -391,16 +391,16 @@ def fix_units(denormalized_table_file: pandas.DataFrame) -> pandas.DataFrame:
     relative_humidity_mask = (
         denormalized_table_file["observed_variable"] == relative_humidity_code
     )
-    denormalized_table_file["observation_value"].loc[relative_humidity_mask] *= 100
-    denormalized_table_file["uncertainty_value1"].loc[relative_humidity_mask] *= 100
-    denormalized_table_file["homogenisation_adjustment"].loc[
-        relative_humidity_mask
+    denormalized_table_file.loc[relative_humidity_mask, "observation_value"] *= 100
+    denormalized_table_file.loc[relative_humidity_mask, "uncertainty_value1"] *= 100
+    denormalized_table_file.loc[
+        relative_humidity_mask, "homogenisation_adjustment"
     ] *= 100
-    denormalized_table_file["units"].loc[
-        relative_humidity_mask
+    denormalized_table_file.loc[
+        relative_humidity_mask, "units"
     ] = relative_humidity_units_code
-    denormalized_table_file["uncertainty_units1"].loc[
-        relative_humidity_mask
+    denormalized_table_file.loc[
+        relative_humidity_mask, "uncertainty_units1"
     ] = relative_humidity_units_code
     # Geopotential, from J/kg (m2s2) to m
     geopotential_code = 117
@@ -409,11 +409,11 @@ def fix_units(denormalized_table_file: pandas.DataFrame) -> pandas.DataFrame:
     geopotential_mask = (
         denormalized_table_file["observed_variable"] == geopotential_code
     )
-    denormalized_table_file["observation_value"].loc[geopotential_mask] /= g
-    denormalized_table_file["uncertainty_value1"].loc[geopotential_mask] /= g
-    denormalized_table_file["units"].loc[geopotential_mask] = geopotential_units_code
-    denormalized_table_file["uncertainty_units1"].loc[
-        geopotential_mask
+    denormalized_table_file.loc[geopotential_mask, "observation_value"] /= g
+    denormalized_table_file.loc[geopotential_mask, "uncertainty_value1"] /= g
+    denormalized_table_file.loc[geopotential_mask, "units"] = geopotential_units_code
+    denormalized_table_file.loc[
+        geopotential_mask, "uncertainty_units1"
     ] = geopotential_units_code
     return denormalized_table_file
 
