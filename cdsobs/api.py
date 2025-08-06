@@ -27,6 +27,7 @@ from cdsobs.ingestion.api import (
 from cdsobs.ingestion.core import (
     DatasetMetadata,
     DatasetPartition,
+    IngestionRunParams,
     SpaceBatch,
     TimeBatch,
     TimeSpaceBatch,
@@ -96,17 +97,16 @@ def run_ingestion_pipeline(
     logger.info("----------------------------------------------------------------")
     service_definition = get_service_definition(config, dataset_name)
     _maybe_check_cdm_tag(config, disable_cdm_tag_check)
+    run_params = IngestionRunParams(
+        dataset_name, source, version, config, service_definition
+    )
 
     def _run_for_batch(time_space_batch):
         try:
             _run_ingestion_pipeline_for_batch(
-                dataset_name,
-                service_definition,
-                source,
+                run_params,
                 session,
-                config,
                 time_space_batch,
-                version=version,
             )
         except EmptyBatchException:
             logger.warning(f"Data not found for {time_space_batch=}")
@@ -131,7 +131,12 @@ def run_ingestion_pipeline(
 
 
 def _run_sanity_check(
-    config, dataset_name, service_definition, session, source, version
+    config: CDSObsConfig,
+    dataset_name: str,
+    service_definition: ServiceDefinition,
+    session: Session,
+    source: str,
+    version: str,
 ):
     catalogue_repo = CatalogueRepository(session)
     entries = catalogue_repo.get_by_dataset_and_source_and_version(
@@ -140,7 +145,7 @@ def _run_sanity_check(
     # Check summary
     # The problem is that we don't know beforehand the number of stations or partitions
     # So we cannot check it, just if there are any.
-    stats = stats_summary(entries)
+    stats = stats_summary(entries)  # type: ignore
     print(stats)
     assert stats["number of partitions"] >= 1
     assert stats["number of stations"] >= 1
@@ -220,18 +225,17 @@ def run_make_cdm(
     logger.info("----------------------------------------------------------------")
     service_definition = get_service_definition(config, dataset_name)
     _maybe_check_cdm_tag(config, disable_cdm_tag_check)
+    run_params = IngestionRunParams(
+        dataset_name, source, version, config, service_definition
+    )
 
     def _run_for_batch(time_batch):
         try:
             _run_make_cdm_for_batch(
-                config,
-                dataset_name,
+                run_params,
                 output_dir,
                 save_data,
-                service_definition,
-                source,
                 time_batch,
-                version=version,
             )
         except EmptyBatchException:
             logger.warning(f"No data found for {time_batch=}")
@@ -244,40 +248,34 @@ def run_make_cdm(
 
 
 def _run_ingestion_pipeline_for_batch(
-    dataset_name: str,
-    service_definition: ServiceDefinition,
-    source: str,
+    run_params: IngestionRunParams,
     session: Session,
-    config: CDSObsConfig,
     time_space_batch: TimeSpaceBatch,
-    version: str = "DEFAULT_VERSION",
 ):
     """
     Ingest the data for a given year and month, specified by TimeBatch.
 
     Parameters
     ----------
-    dataset_name :
-      Name of the dataset, for example insitu-observations-woudc-ozone-total-column-and-profiles
-    service_definition :
-      Object produced parsing the service_definition.json.
-    source :
-      Name of the data type to read from the dataset. For example "OzoneSonde".
+    run_params:
+      IngestionRunParams object containing the relevant parameters for the ingestion run:
+      dataset_name, source, version and the configuration (service definition and main
+      config).
     session :
       Session on the catalogue database
-    config :
-      Configuration of the CDSOBS catalogue manager
     time_space_batch:
       Optionally read data only for one year and month
     """
+    dataset_name = run_params.dataset_name
+    source = run_params.source
+    version = run_params.version
+    config = run_params.config
     if entry_exists(dataset_name, session, source, time_space_batch, version):
         logger.warning(
             "A partition with the chosen parameters already exists and update is set to False."
         )
     else:
-        sorted_partitions = _read_homogenise_and_partition(
-            config, dataset_name, service_definition, source, time_space_batch, version
-        )
+        sorted_partitions = _read_homogenise_and_partition(run_params, time_space_batch)
         # Create dataset if it does not exist
         cads_dataset_repo = CadsDatasetRepository(session)
         cads_dataset_repo.create_dataset(dataset_name=dataset_name)
@@ -348,17 +346,15 @@ def _get_space_iterator(
 
 
 def _read_homogenise_and_partition(
-    config: CDSObsConfig,
-    dataset_name: str,
-    service_definition: ServiceDefinition,
-    source: str,
+    run_params: IngestionRunParams,
     time_space_batch: TimeSpaceBatch,
-    version: str,
 ) -> Iterator[DatasetPartition]:
+    dataset_name = run_params.dataset_name
+    config = run_params.config
+    service_definition = run_params.service_definition
     dataset_config = config.get_dataset(dataset_name)
-    dataset_metadata = get_dataset_metadata(
-        config, dataset_config, service_definition, source, version
-    )
+    source = run_params.source
+    dataset_metadata = get_dataset_metadata(run_params)
     # Get the data as a single big table with the names remmaped from
     # service_definition
     homogenised_data = read_batch_data(
@@ -429,18 +425,12 @@ def _validate_time_interval(homogenised_data: pandas.DataFrame, time_batch: Time
 
 
 def _run_make_cdm_for_batch(
-    config: CDSObsConfig,
-    dataset_name: str,
+    run_params: IngestionRunParams,
     output_dir: Path,
     save_data: bool,
-    service_definition: ServiceDefinition,
-    source: str,
     time_space_batch: TimeSpaceBatch,
-    version: str = "DEFAULT_VERSION",
 ):
-    sorted_partitions = _read_homogenise_and_partition(
-        config, dataset_name, service_definition, source, time_space_batch, version
-    )
+    sorted_partitions = _read_homogenise_and_partition(run_params, time_space_batch)
     if save_data:
         for partition in sorted_partitions:
             serialized_partition = serialize_partition(partition, output_dir)
