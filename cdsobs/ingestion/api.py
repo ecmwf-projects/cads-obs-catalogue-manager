@@ -354,12 +354,17 @@ def _handle_aux_variables(
         )
     # Add quality flags
     if melt_columns.quality_flag is not None:
-        homogenised_data_melted["quality_flag"] = 3
+        na_quality_flag = 3
+        homogenised_data_melted["quality_flag"] = na_quality_flag
         for qf_col in melt_columns.quality_flag["quality_flag"]:
             var_mask = (
                 homogenised_data_melted["observed_variable"] == qf_col.main_variable
             )
-            var_quality_flag = homogenised_data_melted.loc[var_mask, qf_col.name]
+            var_quality_flag = (
+                homogenised_data_melted.loc[var_mask, qf_col.name]
+                .fillna(na_quality_flag)
+                .astype("int")
+            )
             homogenised_data_melted.loc[var_mask, "quality_flag"] = var_quality_flag
             homogenised_data_melted = homogenised_data_melted.drop(qf_col.name, axis=1)
             # Ensure is int and fill nans with 3 (missing according to the CDM)
@@ -368,12 +373,17 @@ def _handle_aux_variables(
         )
     # Add processing level
     if melt_columns.processing_level:
-        homogenised_data_melted["processing_level"] = 6
+        na_processing_level = 6
+        homogenised_data_melted["processing_level"] = na_processing_level
         for pl_col in melt_columns.processing_level["processing_level"]:
             var_mask = (
                 homogenised_data_melted["observed_variable"] == pl_col.main_variable
             )
-            var_processing_level = homogenised_data_melted.loc[var_mask, pl_col.name]
+            var_processing_level = (
+                homogenised_data_melted.loc[var_mask, pl_col.name]
+                .fillna(na_processing_level)
+                .astype("int")
+            )
             homogenised_data_melted.loc[
                 var_mask, "processing_level"
             ] = var_processing_level
