@@ -4,7 +4,7 @@ import pytest
 import xarray
 
 
-@pytest.mark.skip("API needs to be updated.")
+@pytest.mark.skip("Run by hand only.")
 def test_adaptor(tmp_path):
     """Full test with a local instance of the HTTP API."""
     from cads_adaptors import ObservationsAdaptor
