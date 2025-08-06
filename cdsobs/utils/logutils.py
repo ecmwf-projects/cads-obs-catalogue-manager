@@ -19,10 +19,18 @@ class WarningFlagHandler(logging.Handler):
     def __init__(self):
         super().__init__()
         self.warning_logged = False
+        self.records = set()
 
     def emit(self, record):
         if record.levelno >= logging.WARNING:
             self.warning_logged = True
+            # We remove the first part of the log record because it has the timestamp,
+            # and we do not want to record repeated warnings.
+            message = (
+                record.msg.split("[warning  ]")[1]
+                + f" in line {record.lineno} in {record.pathname}"
+            )
+            self.records.add(message)
 
 
 def sizeof_fmt(num, suffix="B"):
@@ -55,7 +63,7 @@ def configure_logger() -> WarningFlagHandler:
         renderer = structlog.processors.JSONRenderer()  # type: ignore
     else:
         raise KeyError(
-            f"Unkownk value for CADSOBS_LOGGING_FORMAT {logging_format}, use CONSOLE or JSON."
+            f"Unknown value for CADSOBS_LOGGING_FORMAT {logging_format}, use CONSOLE or JSON."
         )
     structlog.configure(
         processors=[

@@ -1,4 +1,5 @@
 """Main python API."""
+import pprint
 import tempfile
 from datetime import datetime
 from itertools import product
@@ -139,6 +140,9 @@ def run_ingestion_pipeline(
     logger.info(final_message)
     if slack_notify:
         notify_to_slack(final_message)
+    logger.info("-----------------------------------")
+    logger.info("Warnings recorded:")
+    logger.info(pprint.pformat(warning_tracker.records))
 
 
 def _run_sanity_check(
