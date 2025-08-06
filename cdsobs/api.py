@@ -32,6 +32,7 @@ from cdsobs.ingestion.core import (
     TimeBatch,
     TimeSpaceBatch,
 )
+from cdsobs.ingestion.notify import notify_to_slack
 from cdsobs.ingestion.partition import get_partitions, save_partitions
 from cdsobs.ingestion.serialize import serialize_partition
 from cdsobs.metadata import get_dataset_metadata
@@ -60,6 +61,7 @@ def run_ingestion_pipeline(
     start_month: int = 1,
     version: str = DEFAULT_VERSION,
     disable_cdm_tag_check: bool = False,
+    slack_notify: bool = False,
 ):
     """
     Ingest the data to the CADS observation repository.
@@ -91,6 +93,9 @@ def run_ingestion_pipeline(
       Semantic version to use for the data being uploaded.
     disable_cdm_tag_check:
       For testing purposes only. Do not check if the CDM repo is in a tag.
+    slack_notify:
+        Notify to slack channel defined by CADSOBS_SLACK_CHANNEL and CADSOBS_SLACK_HOOK
+        environment variables.
     """
     logger.info("----------------------------------------------------------------")
     logger.info("Running ingestion pipeline")
@@ -124,10 +129,16 @@ def run_ingestion_pipeline(
         config, dataset_name, service_definition, session, source, version
     )
     # Log successful, taking the warnings into account
+    final_message = (
+        f"Finished ingestion pipeline for {run_params} {start_year=} {end_year=} "
+    )
     if warning_tracker.warning_logged:
-        logger.info("Finished ingestion pipeline with warnings, please check the log.")
+        final_message += "with warnings, please check the log."
     else:
-        logger.info("Finished ingestion pipeline successfully.")
+        final_message += "successfully."
+    logger.info(final_message)
+    if slack_notify:
+        notify_to_slack(final_message)
 
 
 def _run_sanity_check(
