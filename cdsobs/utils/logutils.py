@@ -22,7 +22,7 @@ class WarningFlagHandler(logging.Handler):
         self.records = set()
 
     def emit(self, record):
-        if record.levelno >= logging.WARNING:
+        if record.levelno == logging.WARNING:
             self.warning_logged = True
             # We remove the first part of the log record because it has the timestamp,
             # and we do not want to record repeated warnings.
