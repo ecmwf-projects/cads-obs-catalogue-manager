@@ -1,5 +1,6 @@
 """Main python API."""
 import pprint
+import socket
 import tempfile
 from datetime import datetime
 from itertools import product
@@ -98,8 +99,9 @@ def run_ingestion_pipeline(
         Notify to slack channel defined by CADSOBS_SLACK_CHANNEL and CADSOBS_SLACK_HOOK
         environment variables.
     """
+    hostname = socket.gethostname()
     logger.info("----------------------------------------------------------------")
-    logger.info("Running ingestion pipeline")
+    logger.info(f"Running ingestion pipeline in {hostname}")
     logger.info("----------------------------------------------------------------")
     service_definition = get_service_definition(config, dataset_name)
     _maybe_check_cdm_tag(config, disable_cdm_tag_check)
@@ -116,6 +118,25 @@ def run_ingestion_pipeline(
             )
         except EmptyBatchException:
             logger.warning(f"Data not found for {time_space_batch=}")
+        except (KeyboardInterrupt, MemoryError) as e:
+            message = (
+                f"Ingestion pipeline for {run_params} {start_year=} {end_year=} "
+                f"running at {hostname} as been canceled at {time_space_batch}"
+                f"with {e}"
+            )
+            logger.error(message)
+            if slack_notify:
+                notify_to_slack(message)
+            raise
+        except Exception as e:
+            message = (
+                f"Ingestion pipeline for {run_params} {start_year=} {end_year=} "
+                f"running at {hostname} as failed {time_space_batch} with {e}"
+            )
+            logger.error(message)
+            if slack_notify:
+                notify_to_slack(message)
+            raise
 
     main_iterator = _get_main_iterator(
         config, dataset_name, source, start_year, end_year, start_month=start_month
