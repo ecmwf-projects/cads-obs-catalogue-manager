@@ -1,7 +1,6 @@
 """Main python API."""
 import socket
 import tempfile
-from copy import copy
 from datetime import datetime
 from itertools import product
 from pathlib import Path
@@ -156,18 +155,6 @@ def run_ingestion_pipeline(
     )
     if slack_notify:
         notify_to_slack(final_message)
-    _print_warning_summary()
-
-
-def _print_warning_summary():
-    logger.info(
-        "--------------------------------------------------------------------------------"
-    )
-    logger.info("Warnings summary:")
-    logger.info(
-        "--------------------------------------------------------------------------------"
-    )
-    logger.warning("\n".join(copy(warning_tracker.records)))
 
 
 def _print_final_message(
@@ -311,7 +298,6 @@ def run_make_cdm(
     for time_space_batch in main_iterator:
         _run_for_batch(time_space_batch)
     _print_final_message(dataset_name, source, start_year, end_year, "make cdm")
-    _print_warning_summary()
 
 
 def _run_ingestion_pipeline_for_batch(
