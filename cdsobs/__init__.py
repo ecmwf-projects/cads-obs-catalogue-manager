@@ -24,9 +24,10 @@ except ImportError:  # pragma: no cover
     # Local copy or not installed with setuptools
     __version__ = "999"
 
-__all__ = ["__version__"]
+warning_tracker = configure_logger()
 
-configure_logger()
+__all__ = ["__version__", "warning_tracker"]
+
 
 # Remove the annoying messages from numexpr. Use all available threads.
 os.environ["NUMEXPR_MAX_THREADS"] = str(multiprocessing.cpu_count())

@@ -42,6 +42,12 @@ def make_production(
         help="Disable CDM tag check, only for testing purposes.",
         show_default=True,
     ),
+    slack_notify: bool = typer.Option(
+        False,
+        help="Notify to slack channel defined by CADSOBS_SLACK_CHANNEL and "
+        "CADSOBS_SLACK_HOOK environment variables.",
+        show_default=True,
+    ),
 ):
     """
     Upload datasets to the CADS observation repository.
@@ -65,4 +71,5 @@ def make_production(
             start_month,
             version,
             disable_cdm_tag_check,
+            slack_notify,
         )

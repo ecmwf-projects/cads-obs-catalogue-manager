@@ -205,3 +205,12 @@ class DatasetReaderFunctionCallable(Protocol):
         **kwargs,
     ) -> pandas.DataFrame:
         ...
+
+
+@dataclass
+class IngestionRunParams:
+    dataset_name: str
+    source: str
+    version: str
+    config: CDSObsConfig
+    service_definition: ServiceDefinition

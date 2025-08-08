@@ -70,7 +70,6 @@ def to_cdm_dataset(partition: DatasetPartition) -> CdmDataset:
     """
     cdm_tables = partition.dataset_metadata.cdm_tables
     cdm_variables = get_cdm_fields(cdm_tables)
-
     cdm_variables = unique([v for v in cdm_variables if v in partition.data])
     data = partition.data.loc[:, cdm_variables].set_index("observation_id")
     original_variables = set(partition.data.columns)

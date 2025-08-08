@@ -249,7 +249,7 @@ class EmptyBatchException(Exception):
     pass
 
 
-def _entry_exists(
+def entry_exists(
     dataset_name: str,
     session: Session,
     source: str,
