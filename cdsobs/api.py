@@ -1,11 +1,11 @@
 """Main python API."""
-import pprint
 import socket
 import tempfile
+from copy import copy
 from datetime import datetime
 from itertools import product
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, Literal
 
 import h5netcdf
 import pandas
@@ -151,19 +151,42 @@ def run_ingestion_pipeline(
         config, dataset_name, service_definition, session, source, version
     )
     # Log successful, taking the warnings into account
-    final_message = (
-        f"Finished ingestion pipeline for {run_params} {start_year=} {end_year=} "
+    final_message = _print_final_message(
+        dataset_name, source, start_year, end_year, "ingestion pipeline"
     )
+    if slack_notify:
+        notify_to_slack(final_message)
+    _print_warning_summary()
+
+
+def _print_warning_summary():
+    logger.info(
+        "--------------------------------------------------------------------------------"
+    )
+    logger.info("Warnings summary:")
+    logger.info(
+        "--------------------------------------------------------------------------------"
+    )
+    logger.warning("\n".join(copy(warning_tracker.records)))
+
+
+def _print_final_message(
+    dataset_name: str,
+    source: str,
+    start_year: int,
+    end_year: int,
+    function_name: Literal["ingestion pipeline", "make cdm"],
+) -> str:
+    final_message = f"Finished {function_name} for {dataset_name=} {source=} {start_year=} {end_year=} "
     if warning_tracker.warning_logged:
         final_message += "with warnings, please check the log."
     else:
         final_message += "successfully."
+    logger.info(
+        "--------------------------------------------------------------------------------"
+    )
     logger.info(final_message)
-    if slack_notify:
-        notify_to_slack(final_message)
-    logger.info("-----------------------------------")
-    logger.info("Warnings recorded:")
-    logger.info(pprint.pformat(warning_tracker.records))
+    return final_message
 
 
 def _run_sanity_check(
@@ -198,7 +221,13 @@ def _run_sanity_check(
     s3_client.download_file(
         bucket_name=bucket_name, object_name=object_name, ofile=temp_file.name
     )
-    dataset = h5netcdf.File(temp_file.name)
+    validate_storage_file(service_definition, source, temp_file.name)
+
+
+def validate_storage_file(
+    service_definition: ServiceDefinition, source: str, file_path: Path | str
+):
+    dataset = h5netcdf.File(file_path)
     fields = set(dataset.variables)
     expected_fields = set(service_definition.sources[source].descriptions)
     expected_fields = expected_fields - set(
@@ -281,6 +310,8 @@ def run_make_cdm(
     )
     for time_space_batch in main_iterator:
         _run_for_batch(time_space_batch)
+    _print_final_message(dataset_name, source, start_year, end_year, "make cdm")
+    _print_warning_summary()
 
 
 def _run_ingestion_pipeline_for_batch(
@@ -473,6 +504,12 @@ def _run_make_cdm_for_batch(
             logger.info(
                 f"Saved partition to "
                 f"{serialized_partition.file_params.local_temp_path}"
+            )
+            logger.info("Validating file")
+            validate_storage_file(
+                run_params.service_definition,
+                run_params.source,
+                serialized_partition.file_params.local_temp_path,
             )
 
 
