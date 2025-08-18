@@ -55,7 +55,7 @@ def read_flat_parquet(
     if filename_pattern is not None:
         input_files_pattern = Path(
             input_path,
-            input_path.format(
+            filename_pattern.format(
                 dataset_name=dataset_name,
                 source=source,
                 year=time_batch.year,
