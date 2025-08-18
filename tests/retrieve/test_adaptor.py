@@ -13,7 +13,7 @@ def test_adaptor(tmp_path):
         "observation_type": ["vertical_profile"],
         "format": "netCDF",
         "variable": ["air_temperature", "geopotential_height"],
-        "year": ["1969"],
+        "year": "1969",
         "month": ["01", "02"],
         "day": [f"{i:02d}" for i in range(1, 32)],
         "area": ["50", "-10", "20", "10"],
