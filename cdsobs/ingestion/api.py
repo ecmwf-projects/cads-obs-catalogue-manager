@@ -109,7 +109,7 @@ def validate_and_homogenise(
             "int"
         )
 
-        # Check mandatory columns are present
+    # Check mandatory columns are present
     check_mandatory_columns(data_renamed, source_definition)
     # Cast data types to those specified in Service Definition file.
     cast_to_descriptions(data_renamed, source_definition)

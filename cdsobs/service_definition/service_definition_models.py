@@ -2,7 +2,7 @@
 from typing import Dict
 
 import numpy
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from cdsobs.utils.types import StrNotBlank
 
@@ -82,7 +82,7 @@ class SourceDefinition(BaseModel, extra="forbid"):
     join_ids: JoinIds | None = None
     space_columns: SpaceColumns | None = None
     descriptions: dict[str, Description]
-    mandatory_columns: list[str]
+    mandatory_columns: list[str] = Field(default_factory=list)
     order_by: list[str] | None = None
 
     def is_multitable(self):
