@@ -2,7 +2,7 @@
 from typing import Dict
 
 import numpy
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 from cdsobs.utils.types import StrNotBlank
 
@@ -73,6 +73,23 @@ class Description(BaseModel, extra="forbid"):
         return dtype
 
 
+MANDATORY_COLUMNS = (
+    "station_name",
+    "primary_station_id",
+    "report_id",
+    "observation_id",
+    "longitude",
+    "latitude",
+    "report_timestamp",
+    "height_of_station_above_sea_level",
+    "report_meaning_of_time_stamp",
+    "report_duration",
+    "observed_variable",
+    "units",
+    "observation_value",
+)
+
+
 class SourceDefinition(BaseModel, extra="forbid"):
     main_variables: list[str]
     cdm_mapping: CdmMapping
@@ -82,7 +99,7 @@ class SourceDefinition(BaseModel, extra="forbid"):
     join_ids: JoinIds | None = None
     space_columns: SpaceColumns | None = None
     descriptions: dict[str, Description]
-    mandatory_columns: list[str] = Field(default_factory=list)
+    mandatory_columns: tuple[str, ...] = MANDATORY_COLUMNS
     order_by: list[str] | None = None
 
     def is_multitable(self):
