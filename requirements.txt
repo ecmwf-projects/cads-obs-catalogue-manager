@@ -9,14 +9,14 @@ fastapi==0.115.12
 fsspec==2025.5.1
 h5netcdf==1.6.1
 h5py==3.14.0
-httpx
+httpx==0.28.1
 myst-parser==4.0.1
 netCDF4==1.7.2
 numpy==1.26.4
 pandas==2.1.4
 pre_commit==4.2.0
-psycopg2-binary
-pyarrow
+psycopg2-binary==2.9.10
+pyarrow==20.0.0
 pydantic==2.11.4
 pydantic_core==2.33.2
 pydantic-extra-types==2.10.5
@@ -24,7 +24,7 @@ pydantic-settings==2.9.1
 pydata-sphinx-theme==0.16.1
 pytest-cov==6.1.1
 python-dotenv==1.1.0
-pytest-mock
+pytest-mock==3.14.1
 semver==3.0.4
 setuptools==80.9.0
 Sphinx==8.2.3
@@ -45,5 +45,4 @@ tzdata==2025.2
 uvicorn==0.34.3
 xarray==2025.6.0
 xyzservices==2025.4.0
-PyYAML
-git+https://github.com/ecmwf-projects/cads-adaptors
+PyYAML==6.0.2
