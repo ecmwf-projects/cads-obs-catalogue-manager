@@ -59,7 +59,6 @@ def test_capabilities_datasets(test_config, test_repository):
     app.dependency_overrides[session_gen] = test_session
     actual = client.get("/capabilities/datasets").json()
     expected = [
-        "insitu-observations-surface-land",
         "insitu-observations-woudc-ozone-total-column-and-profiles",
         "insitu-observations-igra-baseline-network",
         "insitu-comprehensive-upper-air-observation-network",
