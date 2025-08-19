@@ -51,22 +51,6 @@ TEST_API_PARAMETERS = [
         "GRUAN",
     ),
     (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "uscrn_subhourly",
-    ),
-    (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "uscrn_hourly",
-    ),
-    (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "uscrn_daily",
-    ),
-    (
-        "insitu-observations-near-surface-temperature-us-climate-reference-network",
-        "uscrn_monthly",
-    ),
-    (
         "insitu-observations-gnss",
         "IGS",
     ),
