@@ -111,6 +111,9 @@ def validate_and_homogenise(
 
     # Check mandatory columns are present
     check_mandatory_columns(data_renamed, source_definition)
+    # Remove columns marked to drop in the service definition
+    if len(source_definition.columns_to_drop) > 0:
+        data_renamed = data_renamed.drop(source_definition.columns_to_drop, axis=1)
     # Cast data types to those specified in Service Definition file.
     cast_to_descriptions(data_renamed, source_definition)
     # It is possible to fill a certain variable with a single value, for example to
