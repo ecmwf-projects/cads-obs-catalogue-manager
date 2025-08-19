@@ -36,14 +36,14 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: ecmwf-projects/cdm-obs.git
-        ref: '0.0.2'
+        ref: '0.1.0'
         path: cdm-obs
     - name: Download cads-forms-insitu
       env:
         BITBUCKET_TOKEN: ${{ secrets.BITBUCKET_TOKEN }}
       timeout-minutes: 2
       run: |
-        git clone --depth 1 -b dev https://"$BITBUCKET_TOKEN"@git.ecmwf.int/scm/cds/cads-forms-insitu.git
+        git clone --depth 1 -b columns-to-drop https://"$BITBUCKET_TOKEN"@git.ecmwf.int/scm/cds/cads-forms-insitu.git
     - name: Deploy test ingestion database
       env:
         TEST_INGESTION_DB_PASS: ${{ secrets.TEST_INGESTION_DB_PASS }}
