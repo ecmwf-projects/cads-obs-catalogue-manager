@@ -43,7 +43,7 @@ jobs:
         BITBUCKET_TOKEN: ${{ secrets.BITBUCKET_TOKEN }}
       timeout-minutes: 2
       run: |
-        git clone --depth 1 -b columns-to-drop https://"$BITBUCKET_TOKEN"@git.ecmwf.int/scm/cds/cads-forms-insitu.git
+        git clone --depth 1 -b dev https://"$BITBUCKET_TOKEN"@git.ecmwf.int/scm/cds/cads-forms-insitu.git
     - name: Deploy test ingestion database
       env:
         TEST_INGESTION_DB_PASS: ${{ secrets.TEST_INGESTION_DB_PASS }}

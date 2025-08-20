@@ -31,7 +31,7 @@ from cdsobs.storage import S3Client, StorageClient
 from tests.utils import get_test_years
 
 TEST_API_PARAMETERS = [
-    # ("insitu-observations-surface-land", "sub_daily"),
+    ("insitu-observations-surface-land", "sub_daily"),
     ("insitu-observations-woudc-ozone-total-column-and-profiles", "OzoneSonde"),
     ("insitu-observations-woudc-ozone-total-column-and-profiles", "TotalOzone"),
     (
