@@ -75,9 +75,10 @@ def to_cdm_dataset(partition: DatasetPartition) -> CdmDataset:
     original_variables = set(partition.data.columns)
     removed_variables = original_variables - set(cdm_variables)
     if len(removed_variables) > 0:
-        logger.warning(
-            "The following variables where read but are not in the CDM and "
-            f"are going to be dropped: {pformat(removed_variables)}"
+        raise RuntimeError(
+            "The following fields where read but are not in the CDM:"
+            f"{pformat(removed_variables)}. Please use the columns_to_drop field in"
+            "the service definition file to explicitly mark them to be dropped."
         )
     return CdmDataset(data, partition.partition_params, partition.dataset_metadata)
 
