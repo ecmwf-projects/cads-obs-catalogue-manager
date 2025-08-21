@@ -245,6 +245,7 @@ def filter_batch_stations(
         station_metadata["end of records"] >= selected_start,
     )
     spatial_mask = lon_mask * lat_mask
+    # Ship stations are only filtered by time batch when reading, because they move
     ship_mask = station_metadata.index.str.contains(SHIP_STATION_MARKER)
     stations_noship = station_metadata.loc[
         (~ship_mask) * spatial_mask * time_mask
@@ -501,15 +502,13 @@ def filter_stations_outside_batch(dataset_cdm, file_and_slices, time_space_batch
     lat_mask = between(lats, lat_start, lat_end)
     spatial_mask = lon_mask * lat_mask
     if spatial_mask.sum() < len(spatial_mask):
+        # We don't raise here as this is inevitable for SHIP stations that move.
+        # Ship stations are only filtered by time batch when reading
         logger.info(
             f"Records have been found outside the SpatialBatch ranges for {file_and_slices.path}, "
             "filtering out."
         )
         dataset_cdm["header_table"] = dataset_cdm["header_table"].loc[spatial_mask]
-        raise RuntimeError(
-            "Records have been found outside the SpatialBatch ranges for "
-            f"{file_and_slices.path}"
-        )
 
 
 class NoDataInFileException(RuntimeError):
