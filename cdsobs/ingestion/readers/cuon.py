@@ -226,6 +226,10 @@ def read_table_data(
     return final_df_out
 
 
+# These stations are ships that move, we don't want to filter them spatially here
+SHIP_STATION_MARKER = "0-20999-0"
+
+
 def filter_batch_stations(
     files: Iterable[Path], time_space_batch: TimeSpaceBatch, active_json: str
 ) -> list[Path]:
@@ -237,11 +241,17 @@ def filter_batch_stations(
     lon_mask = between(station_metadata.lon, lon_start, lon_end)
     lat_mask = between(station_metadata.lat, lat_start, lat_end)
     time_mask = numpy.logical_and(
-        station_metadata["start of records"] <= selected_end,
+        station_metadata["start of records"] < selected_end,
         station_metadata["end of records"] >= selected_start,
     )
-    mask = lon_mask * lat_mask * time_mask
-    batch_stations = station_metadata.loc[mask].index
+    spatial_mask = lon_mask * lat_mask
+    # Ship stations are only filtered by time batch when reading, because they move
+    ship_mask = station_metadata.index.str.contains(SHIP_STATION_MARKER)
+    stations_noship = station_metadata.loc[
+        (~ship_mask) * spatial_mask * time_mask
+    ].index
+    ship_stations = station_metadata.loc[ship_mask * time_mask].index
+    batch_stations = stations_noship.union(ship_stations)
     return [f for f in files if f.name.split("_")[0] in batch_stations]
 
 
@@ -492,12 +502,13 @@ def filter_stations_outside_batch(dataset_cdm, file_and_slices, time_space_batch
     lat_mask = between(lats, lat_start, lat_end)
     spatial_mask = lon_mask * lat_mask
     if spatial_mask.sum() < len(spatial_mask):
+        # We don't raise here as this is inevitable for SHIP stations that move.
+        # Ship stations are only filtered by time batch when reading
         logger.info(
             f"Records have been found outside the SpatialBatch ranges for {file_and_slices.path}, "
             "filtering out."
         )
         dataset_cdm["header_table"] = dataset_cdm["header_table"].loc[spatial_mask]
-        raise RuntimeError("Stations found outside the ")
 
 
 class NoDataInFileException(RuntimeError):
