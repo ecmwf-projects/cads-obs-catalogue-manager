@@ -57,6 +57,10 @@ def retrieve_observations(
     cdm_lite_vars = list(
         set(itertools.chain.from_iterable(cdm_lite_variables.values()))
     )
+    disabled_fields = config.get_disabled_fields(
+        retrieve_args.dataset, retrieve_args.source
+    )
+    cdm_lite_vars = [v for v in cdm_lite_vars if v not in disabled_fields]
     context = Context()
     output_path = retrieve_data(
         retrieve_args.dataset,

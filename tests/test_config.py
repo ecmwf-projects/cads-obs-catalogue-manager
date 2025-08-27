@@ -15,3 +15,9 @@ def test_config(test_config):
     assert lat_tile_size == 30
     lat_tile_size = dataset_config.get_tile_size("lat", "uscrn_subhourly", 2015)
     assert lat_tile_size == 20
+
+    disabled_fields = test_config.get_disabled_fields(
+        "insitu-comprehensive-upper-air-observation-network", "CUON"
+    )
+    expected_fields = ["report_type", "report_duration", "station_type", "secondary_id"]
+    assert disabled_fields == expected_fields

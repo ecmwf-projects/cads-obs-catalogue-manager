@@ -164,7 +164,7 @@ def test_adaptor_gnss(tmp_path):
     assert xarray.open_dataset(tempfile).observation_id.size > 0
 
 
-# @pytest.mark.skip("By hand only.")
+@pytest.mark.skip("By hand only.")
 def test_adaptor_cuon(tmp_path):
     """Full test with a local instance of the HTTP API."""
     from cads_adaptors import ObservationsAdaptor
