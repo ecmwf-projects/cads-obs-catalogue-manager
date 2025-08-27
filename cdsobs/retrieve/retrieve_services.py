@@ -20,11 +20,16 @@ def merged_constraints_table(entries: sa.engine.result.ScalarResult) -> pd.DataF
     def _get_entry_constraints(e):
         logger.debug(f"Reading constraints for entry {e.id}")
         entry_constraints = (
-            ConstraintsSchema(**e.constraints)
-            .to_table(e.stations)
-            .drop("stations", axis=1)
-            .set_index(["time"])
-            .assign(source=e.dataset_source, version=e.version)
+            (
+                ConstraintsSchema(**e.constraints)
+                .to_table(e.stations)
+                .drop("stations", axis=1)
+                .set_index(["time"])
+                .assign(source=e.dataset_source, version=e.version)
+            )
+            .reset_index()
+            .groupby(["time", "source", "version"])
+            .any()
         )
         return entry_constraints
 
@@ -33,9 +38,6 @@ def merged_constraints_table(entries: sa.engine.result.ScalarResult) -> pd.DataF
         df_total = pandas.concat(table_constraints, axis=0)
     else:
         df_total = table_constraints[0]
-    # Some combinations can be repeated, they must be combined with any()
-    # as there may be datasets with more parameters in the constraints.
-    df_total = df_total.reset_index().groupby(["time", "source", "version"]).any()
     # replace NaNs (new cells created by combining data, no value in original data)
     # with False:
     df_total = df_total.fillna(False)
