@@ -164,15 +164,20 @@ def test_adaptor_gnss(tmp_path):
     assert xarray.open_dataset(tempfile).observation_id.size > 0
 
 
-@pytest.mark.skip("By hand only.")
+# @pytest.mark.skip("By hand only.")
 def test_adaptor_cuon(tmp_path):
     """Full test with a local instance of the HTTP API."""
     from cads_adaptors import ObservationsAdaptor
 
     test_request = {
         "version": "1_1_0",
-        "variable": ["air_dewpoint", "air_temperature"],
-        "year": ["1999"],
+        "variable": [
+            "air_dewpoint",
+            "air_temperature",
+            "relative_humidity",
+            "geopotential",
+        ],
+        "year": ["1959"],
         "month": ["07"],
         "day": ["01", "02"],
         # "station": ["0-20000-0-89664"],

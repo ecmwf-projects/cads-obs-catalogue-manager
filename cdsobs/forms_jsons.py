@@ -88,7 +88,6 @@ def get_constraints_json(session, output_path: Path, dataset) -> Path:
     merged_constraints = merged_constraints_table(catalogue_entries)
     # Remove the stations here to avoid using too much memory, set to true the constraints
     # if there is data for any of the stations
-    merged_constraints = merged_constraints.drop("stations", axis=1)
     merged_constraints = merged_constraints.groupby(["time", "source", "version"]).any()
     logger.info("Computing flat constraints.")
     # This returns a bool series where True are available combinations
