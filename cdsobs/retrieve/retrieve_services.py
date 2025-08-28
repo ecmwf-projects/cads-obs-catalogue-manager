@@ -38,6 +38,9 @@ def merged_constraints_table(entries: sa.engine.result.ScalarResult) -> pd.DataF
         df_total = pandas.concat(table_constraints, axis=0)
     else:
         df_total = table_constraints[0]
+    # Some combinations can be repeated, they must be combined with any()
+    # as there may be datasets with more parameters in the constraints.
+    df_total = df_total.reset_index().groupby(["time", "source", "version"]).any()
     # replace NaNs (new cells created by combining data, no value in original data)
     # with False:
     df_total = df_total.fillna(False)
