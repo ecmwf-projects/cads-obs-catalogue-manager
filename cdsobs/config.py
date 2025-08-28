@@ -230,6 +230,14 @@ class CDSObsConfig(pydantic.BaseModel):
     def get_dataset_ingestion_db(self, name: str) -> DBConfig:
         return self.ingestion_databases[self.get_dataset(name).ingestion_db]
 
+    def get_disabled_fields(self, dataset_name: str, dataset_source: str) -> list[str]:
+        dataset_config = self.get_dataset(dataset_name)
+        if isinstance(dataset_config.disabled_fields, dict):
+            disabled_fields = dataset_config.disabled_fields[dataset_source]
+        else:
+            disabled_fields = dataset_config.disabled_fields
+        return disabled_fields
+
 
 def validate_config(config_file: Path):
     """Validate the configuration YAML."""

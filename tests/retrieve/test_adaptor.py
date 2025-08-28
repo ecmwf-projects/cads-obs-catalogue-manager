@@ -171,8 +171,13 @@ def test_adaptor_cuon(tmp_path):
 
     test_request = {
         "version": "1_1_0",
-        "variable": ["air_dewpoint", "air_temperature"],
-        "year": ["1999"],
+        "variable": [
+            "air_dewpoint",
+            "air_temperature",
+            "relative_humidity",
+            "geopotential",
+        ],
+        "year": ["1959"],
         "month": ["07"],
         "day": ["01", "02"],
         # "station": ["0-20000-0-89664"],
