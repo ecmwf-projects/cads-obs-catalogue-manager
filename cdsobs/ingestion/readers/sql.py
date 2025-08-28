@@ -199,7 +199,7 @@ def read_header_and_data_tables(
         {"id": "observation_id", join_ids.data: "report_id"}, axis=1
     )
     # Remove some offending fields
-    if source == "IGRA":
+    if source == "IGRA" and "version" in data_table:
         # Is all nans and conflicts with the header version
         logger.warning(
             "Deleted version from data table as it is all nans and conflicts"
