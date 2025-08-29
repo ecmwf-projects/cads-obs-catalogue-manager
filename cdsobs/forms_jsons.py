@@ -85,7 +85,7 @@ def get_constraints_json(session, output_path: Path, dataset) -> Path:
     """JSON file with the constraints in compressed form."""
     # This is probably slow, can it be improved?
     catalogue_entries = get_catalogue_entries_stream(session, dataset)
-    merged_constraints = merged_constraints_table(session, catalogue_entries)
+    merged_constraints = merged_constraints_table(catalogue_entries)
     # # Remove the stations here to avoid using too much memory, set to true the constraints
     # # if there is data for any of the stations
     # merged_constraints = merged_constraints.groupby(["time", "source", "version"]).any()

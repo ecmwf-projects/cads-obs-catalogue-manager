@@ -14,9 +14,7 @@ from cdsobs.utils.logutils import get_logger
 logger = get_logger(__name__)
 
 
-def merged_constraints_table(
-    session, entries: sa.engine.result.ScalarResult
-) -> pd.DataFrame:
+def merged_constraints_table(entries: sa.engine.result.ScalarResult) -> pd.DataFrame:
     """Merge a set of  constraints tables."""
 
     def _get_entry_constraints(e):
@@ -34,7 +32,6 @@ def merged_constraints_table(
             .any()
             .reset_index()
         )
-        session.expunge(e)
         return entry_constraints
 
     # Loop over entries to get
