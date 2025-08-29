@@ -401,11 +401,17 @@ def fix_units(denormalized_table_file: pandas.DataFrame) -> pandas.DataFrame:
     relative_humidity_mask = (
         denormalized_table_file["observed_variable"] == relative_humidity_code
     )
-    denormalized_table_file.loc[relative_humidity_mask, "observation_value"] *= 100
-    denormalized_table_file.loc[relative_humidity_mask, "uncertainty_value1"] *= 100
-    denormalized_table_file.loc[
-        relative_humidity_mask, "homogenisation_adjustment"
-    ] *= 100
+    cols_to_scale_humidity = [
+        "observation_value",
+        "uncertainty_value1",
+        "homogenisation_adjustment",
+        "an_depar@body",
+        "fg_depar@body",
+        "fg_depar@offline",
+    ]
+    for col in cols_to_scale_humidity:
+        denormalized_table_file.loc[relative_humidity_mask, col] *= 100
+
     denormalized_table_file.loc[
         relative_humidity_mask, "units"
     ] = relative_humidity_units_code
@@ -419,8 +425,12 @@ def fix_units(denormalized_table_file: pandas.DataFrame) -> pandas.DataFrame:
     geopotential_mask = (
         denormalized_table_file["observed_variable"] == geopotential_code
     )
-    denormalized_table_file.loc[geopotential_mask, "observation_value"] /= g
-    denormalized_table_file.loc[geopotential_mask, "uncertainty_value1"] /= g
+    cols_to_scale_geopotential = cols_to_scale_humidity.copy()
+    # There is no homogenisation_adjustment for geopotential
+    cols_to_scale_geopotential.remove("homogenisation_adjustment")
+    for col in cols_to_scale_geopotential:
+        denormalized_table_file.loc[geopotential_mask, col] /= g
+
     denormalized_table_file.loc[geopotential_mask, "units"] = geopotential_units_code
     denormalized_table_file.loc[
         geopotential_mask, "uncertainty_units1"
