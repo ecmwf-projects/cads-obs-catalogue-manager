@@ -1,6 +1,5 @@
 from typing import Sequence
 
-import dask
 import pandas
 import pandas as pd
 import sqlalchemy as sa
@@ -15,7 +14,9 @@ from cdsobs.utils.logutils import get_logger
 logger = get_logger(__name__)
 
 
-def merged_constraints_table(entries: sa.engine.result.ScalarResult) -> pd.DataFrame:
+def merged_constraints_table(
+    session, entries: sa.engine.result.ScalarResult
+) -> pd.DataFrame:
     """Merge a set of  constraints tables."""
 
     def _get_entry_constraints(e):
@@ -33,13 +34,11 @@ def merged_constraints_table(entries: sa.engine.result.ScalarResult) -> pd.DataF
             .any()
             .reset_index()
         )
+        session.expunge(e)
         return entry_constraints
 
-    # We use threads here too speed up the queries to the database
-    # Build lazy tasks
-    tasks = [dask.delayed(_get_entry_constraints)(e) for e in entries]
-    # Execute in parallel using threads
-    table_constraints = dask.compute(*tasks, scheduler="threads")
+    # Loop over entries to get
+    table_constraints = [_get_entry_constraints(e) for e in entries]
     logger.info("Concatenating the tables")
     if len(table_constraints) > 1:
         df_total = pandas.concat(
