@@ -30,21 +30,26 @@ def merged_constraints_table(entries: sa.engine.result.ScalarResult) -> pd.DataF
             .reset_index()
             .groupby(["time", "source", "version"])
             .any()
+            .reset_index()
         )
         return entry_constraints
 
+    # Loop over entries to get
     table_constraints = [_get_entry_constraints(e) for e in entries]
+    logger.info("Concatenating the tables")
     if len(table_constraints) > 1:
-        df_total = pandas.concat(table_constraints, axis=0)
+        df_total = pandas.concat(
+            table_constraints, axis=0, ignore_index=True
+        ).set_index(["time", "source", "version"])
     else:
         df_total = table_constraints[0]
-    # Some combinations can be repeated, they must be combined with any()
-    # as there may be datasets with more parameters in the constraints.
-    df_total = df_total.reset_index().groupby(["time", "source", "version"]).any()
     # replace NaNs (new cells created by combining data, no value in original data)
     # with False:
     df_total = df_total.fillna(False)
-    return df_total.reset_index()
+    # Some combinations can be repeated, they must be combined with any()
+    # as there may be datasets with more parameters in the constraints.
+    df_total = df_total.reset_index().groupby(["time", "source", "version"]).any()
+    return df_total
 
 
 def get_urls(
