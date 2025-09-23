@@ -27,6 +27,7 @@ dependencies = [
   "netCDF4",
   "pandas<3",
   "psycopg2-binary",
+  "pyarrow",
   "pydantic",
   "pydantic_core",
   "pydantic-settings",
@@ -41,7 +42,8 @@ dependencies = [
   "typer",
   "uvicorn",
   "xarray",
-  "PyYAML"
+  "PyYAML",
+  "cads-adaptors@git+https://github.com/ecmwf-projects/cads-adaptors"
 ]
 description = "CopDS Observation Repository Catalogue Manager"
 dynamic = ["version"]
@@ -52,21 +54,21 @@ requires-python = ">=3.12,<3.13"
 
 [project.optional-dependencies]
 dev = [
-  "pre_commit==4.2.0",
-  "pytest-cov==6.1.1",
-  "pytest-mock==3.14.1"
+  "pre_commit",
+  "pytest-cov",
+  "pytest-mock"
 ]
 docs = [
-  "Sphinx==8.2.3",
-  "sphinx-autoapi==3.5.0",
-  "myst-parser==4.0.1",
-  "pydata-sphinx-theme==0.16.1"
+  "Sphinx",
+  "sphinx-autoapi",
+  "myst-parser",
+  "pydata-sphinx-theme"
 ]
 types = [
-  "types-python-dateutil==2.9.0.20250516",
-  "types-PyYAML==6.0.12.20250516",
-  "types-requests==2.32.4.20250611",
-  "types-setuptools==80.9.0.20250529"
+  "types-python-dateutil",
+  "types-PyYAML",
+  "types-requests",
+  "types-setuptools"
 ]
 
 [project.scripts]
