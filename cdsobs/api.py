@@ -478,7 +478,7 @@ def _handle_units(
             # variables
             if mask.any():
                 units = homogenised_data.loc[mask, unit_field].iloc[0]
-                _check_cdm_units(units, variable, varname2units)
+                _check_cdm_units(units, variable, unit_field, varname2units)
     return homogenised_data
 
 

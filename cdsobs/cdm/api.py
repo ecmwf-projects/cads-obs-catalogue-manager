@@ -414,11 +414,13 @@ def _extract_variable_units_change(
     homogenised_data.loc[observed_variable_mask, "original_units"] = original_units
 
 
-def _check_cdm_units(new_units: str, variable: str, varname2units: pandas.Series):
+def _check_cdm_units(
+    units: str, variable: str, unit_field: str, varname2units: pandas.Series
+):
     try:
         cdm_units = varname2units.loc[variable, "units"]
     except KeyError:
-        raise KeyError(f"{variable} not found in the CDM, can't check the unis.")
+        raise KeyError(f"{variable} not found in the CDM, can't check the units.")
     if isinstance(cdm_units, pandas.Series):
         # This is for the case when there are two enties with the same name
         # (air temperatura)
@@ -427,8 +429,8 @@ def _check_cdm_units(new_units: str, variable: str, varname2units: pandas.Series
         cdm_units = [
             cdm_units,
         ]
-    if new_units not in cdm_units:
+    if units not in cdm_units:
         logger.warning(
-            f"{variable} units ({new_units}) are different to the units "
-            f"defined in the CDM table ({cdm_units})"
+            f"{unit_field} units ({units}) are different to the units "
+            f"defined in the CDM table ({cdm_units}) for variable {variable}."
         )
