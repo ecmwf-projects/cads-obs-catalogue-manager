@@ -184,15 +184,13 @@ def test_adaptor_cuon(tmp_path):
         "data_format": "netcdf",
     }
     test_form = {}
-    # + "/v1/AUTH_{public_user}" will be needed to work with S3 ceph public urls, but it
-    # is not needed for this test as it works with MiniIO.
     test_adaptor_config = {
+        "collection_id": "insitu_comprehensive_upper_air_observation_network",
         "costing": {"max_costs": {"size": 1600}},
         "entry_point": "cads_adaptors:ObservationsAdaptor",
         "intersect_constraints": True,
-        "collection_id": "insitu-comprehensive-upper-air-observation-network",
-        "obs_api_url": "http://localhost:8000",
         "mapping": {
+            "defaults": {"version": "1.0.0"},
             "force": {"dataset_source": ["CUON"]},
             "remap": {
                 "data_format": {"netcdf": "netCDF"},
@@ -200,6 +198,7 @@ def test_adaptor_cuon(tmp_path):
             },
             "rename": {"data_format": "format", "variable": "variables"},
         },
+        "obs_api_url": "http://localhost:8000",
     }
     disabled_fields = [
         "report_type",

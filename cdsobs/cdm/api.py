@@ -338,9 +338,7 @@ def define_units(
 
     It also compares them against those defined in the CDM observed_variable table.
     """
-    variable_table = cdm_variable_table.table.copy()
-    variable_table["name"] = variable_table["name"].str.strip().str.replace(" ", "_")
-    varname2units = variable_table[["name", "units"]].set_index("name")
+    varname2units = get_varname2units(cdm_variable_table)
     unit_changes = source_definition.cdm_mapping.unit_changes
     homogenised_data["units"] = ""
     homogenised_data["original_units"] = ""
@@ -350,6 +348,13 @@ def define_units(
         )
 
     return homogenised_data
+
+
+def get_varname2units(cdm_variable_table: CDMCodeTable) -> dict[str, str]:
+    variable_table = cdm_variable_table.table.copy()
+    variable_table["name"] = variable_table["name"].str.strip().str.replace(" ", "_")
+    varname2units = variable_table[["name", "units"]].set_index("name")
+    return varname2units
 
 
 def is_git_repository(path: Path) -> bool:
@@ -393,29 +398,29 @@ def _extract_variable_units_change(
                 "New units set in CDM mapping section must agree"
                 "with the ones in the description section."
             )
-        try:
-            _check_cdm_units(new_units, variable, varname2units)
-            logger.info(
-                f"Changing units for variable {variable} according to service definition."
-            )
-        except KeyError:
-            logger.warning(
-                f"Variable {variable} is not defined in the CDM so we"
-                f"cannot check if the variables used are CDM compliant."
-            )
+        logger.info(
+            f"Changing units for variable {variable} according to service definition."
+        )
+
         homogenised_data.loc[observed_variable_mask, "observation_value"] = (
             homogenised_data.loc[observed_variable_mask, "observation_value"]
             * unit_change.scale
             + unit_change.offset
         )
         original_units = list(unit_change.names.keys())[0]
+
     # Assign to the units columns
     homogenised_data.loc[observed_variable_mask, "units"] = new_units
     homogenised_data.loc[observed_variable_mask, "original_units"] = original_units
 
 
-def _check_cdm_units(new_units, variable, varname2units):
-    cdm_units = varname2units.loc[variable, "units"]
+def _check_cdm_units(
+    units: str, variable: str, unit_field: str, varname2units: pandas.Series
+):
+    try:
+        cdm_units = varname2units.loc[variable, "units"]
+    except KeyError:
+        raise KeyError(f"{variable} not found in the CDM, can't check the units.")
     if isinstance(cdm_units, pandas.Series):
         # This is for the case when there are two enties with the same name
         # (air temperatura)
@@ -424,8 +429,8 @@ def _check_cdm_units(new_units, variable, varname2units):
         cdm_units = [
             cdm_units,
         ]
-    if new_units not in cdm_units:
+    if units not in cdm_units:
         logger.warning(
-            f"New units ({new_units}) are different to the units"
-            f"defined in the CDM table ({cdm_units})"
+            f"{unit_field} units ({units}) are different to the units "
+            f"defined in the CDM table ({cdm_units}) for variable {variable}."
         )

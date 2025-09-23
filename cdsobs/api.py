@@ -12,9 +12,11 @@ from sqlalchemy.orm import Session
 
 from cdsobs import warning_tracker
 from cdsobs.cdm.api import (
+    _check_cdm_units,
     check_cdm_compliance,
     define_units,
     get_cdm_repo_current_tag,
+    get_varname2units,
 )
 from cdsobs.cli._catalogue_explorer import stats_summary
 from cdsobs.config import CDSObsConfig, DatasetConfig
@@ -444,10 +446,11 @@ def _handle_units(
     source: str,
 ) -> pandas.DataFrame:
     # Define units id not present and apply unit changes
+    source_definition = service_definition.sources[source]
     if "units" not in homogenised_data.columns:
         homogenised_data = define_units(
             homogenised_data,
-            service_definition.sources[source],
+            source_definition,
             dataset_metadata.cdm_code_tables["observed_variable"],
         )
     # If units is present but encoded as integers, decode them
@@ -457,6 +460,7 @@ def _handle_units(
     code2unit[0] = "none"
     unit_fields = [f for f in homogenised_data.columns if "units" in f]
     for unit_field in unit_fields:
+        # Convert if we get units as integers
         if homogenised_data[unit_field].dtype.kind == "i":
             # Decode integers using CDM tables
             decoded_units = homogenised_data[unit_field].map(code2unit)
@@ -464,6 +468,17 @@ def _handle_units(
             if decoded_units.isnull().any():
                 raise RuntimeError("Not all units were mapped")
             homogenised_data[unit_field] = decoded_units
+        # Check the units agains he CDM
+        varname2units = get_varname2units(
+            dataset_metadata.cdm_code_tables["observed_variable"]
+        )
+        for variable in source_definition.main_variables:
+            mask = homogenised_data["observed_variable"] == variable
+            # Check if the variable is available, not all partitions contain all
+            # variables
+            if mask.any():
+                units = homogenised_data.loc[mask, unit_field].iloc[0]
+                _check_cdm_units(units, variable, unit_field, varname2units)
     return homogenised_data
 
 
