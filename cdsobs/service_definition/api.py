@@ -7,7 +7,9 @@ from cdsobs.cdm.api import get_cdm_fields, read_cdm_code_table
 from cdsobs.cdm.tables import read_cdm_tables
 from cdsobs.config import CDSObsConfig
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
-from cdsobs.service_definition.validation import logger
+from cdsobs.utils.logutils import get_logger
+
+logger = get_logger(__name__)
 
 
 def validate_service_definition(
@@ -20,11 +22,10 @@ def validate_service_definition(
     ----------
     yml_file : str
       Input service_definition.yml.
-
-    cdm_tables: CDMTables
-      CDM tables for CDM validation
     cdm_tables_location: Path
       Location of CDM variables
+    validate_cdm: bool
+      Check if the variable and field names are CDM compliant.
 
     Returns
     -------
