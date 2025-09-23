@@ -84,14 +84,14 @@ jobs:
         CDM_TABLES_LOCATION: ${{ github.workspace }}
         CADS_OBS_INSITU_LOCATION: ${{ github.workspace }}
       run: |
-        apt-get install -y libnetcdf
+        sudo apt-get install -y libnetcdf
         python -m venv venv
         source venv/bin/activate
         python -m pip install -e .[dev]
         pytest tests/test_api.py::test_run_ingestion_pipeline[insitu-observations-woudc-ozone-total-column-and-profiles-TotalOzone]
         deactivate
         rm -rf venv
-        apt-get remove -y libnetcdf
+        sudo apt-get remove -y libnetcdf
     - name: Install Conda environment with Micromamba
       uses: mamba-org/setup-micromamba@v1
       with:
