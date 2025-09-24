@@ -67,6 +67,29 @@ jobs:
         wget -nv -O test_netcdfs.tar.gz https://cloud.predictia.es/s/7QzpBEaYyiZ3o6C/download
         tar xzf test_netcdfs.tar.gz -C cuon_data/
         rm test_netcdfs.tar.gz
+    - name: Test pip only installation (no conda)
+      env:
+        TEST_INGESTION_DB_PASS: ${{ secrets.TEST_INGESTION_DB_PASS }}
+        STORAGE_PASSWORD: ${{ secrets.STORAGE_PASSWORD}}
+        CATALOGUE_DB: ${{ secrets.CATALOGUE_DB}}
+        CATALOGUE_HOST: ${{ secrets.CATALOGUE_HOST}}
+        CATALOGUE_PASSWORD: ${{ secrets.CATALOGUE_PASSWORD}}
+        CATALOGUE_PORT: ${{ secrets.CATALOGUE_PORT}}
+        CATALOGUE_USER: ${{ secrets.CATALOGUE_USER}}
+        STORAGE_ACCESS_KEY: ${{ secrets.STORAGE_ACCESS_KEY}}
+        STORAGE_HOST: ${{ secrets.STORAGE_HOST}}
+        STORAGE_PORT: ${{ secrets.STORAGE_PORT}}
+        STORAGE_SECRET_KEY: ${{ secrets.STORAGE_SECRET_KEY}}
+        STORAGE_SECURE: ${{ secrets.STORAGE_SECURE}}
+        CDM_TABLES_LOCATION: ${{ github.workspace }}
+        CADS_OBS_INSITU_LOCATION: ${{ github.workspace }}
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        python -m pip install -e .[dev]
+        pytest tests/test_api.py::test_run_ingestion_pipeline[insitu-observations-woudc-ozone-total-column-and-profiles-TotalOzone]
+        deactivate
+        rm -rf venv
     - name: Install Conda environment with Micromamba
       uses: mamba-org/setup-micromamba@v1
       with:
@@ -76,9 +99,6 @@ jobs:
         cache-env: true
         extra-specs: |
           python=3.10
-    - name: Install package
-      run: |
-        python -m pip install --no-deps -e .
     - name: Run tests
       env:
         TEST_INGESTION_DB_PASS: ${{ secrets.TEST_INGESTION_DB_PASS }}
@@ -96,7 +116,6 @@ jobs:
         CDM_TABLES_LOCATION: ${{ github.workspace }}
         CADS_OBS_INSITU_LOCATION: ${{ github.workspace }}
       run: |
-        ls ${GITHUB_WORKSPACE}/common_data_model/*
         make unit-tests COV_REPORT=xml
 
   type-check:
