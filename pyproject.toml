@@ -13,11 +13,63 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Topic :: Scientific/Engineering"
 ]
+dependencies = [
+  "aiohttp",
+  "boto3==1.34.0",
+  "connectorx",
+  "cryptography",
+  "dask",
+  "duckdb",
+  "fastapi",
+  "fsspec",
+  "h5netcdf",
+  "httpx",
+  "netCDF4",
+  "pandas<3",
+  "psycopg2-binary",
+  "pyarrow",
+  "pydantic",
+  "pydantic_core",
+  "pydantic-settings",
+  "python-dotenv",
+  "pydantic_extra_types",
+  "requests",
+  "semver",
+  "SQLAlchemy",
+  "sqlalchemy_json",
+  "structlog",
+  "tenacity",
+  "typer",
+  "uvicorn",
+  "xarray",
+  "PyYAML",
+  "cads-adaptors@git+https://github.com/ecmwf-projects/cads-adaptors"
+]
 description = "CopDS Observation Repository Catalogue Manager"
 dynamic = ["version"]
 license = {file = "LICENSE"}
 name = "cdsobs"
 readme = "README.md"
+requires-python = ">=3.12,<3.13"
+
+[project.optional-dependencies]
+dev = [
+  "pre_commit",
+  "pytest-cov",
+  "pytest-mock"
+]
+docs = [
+  "Sphinx",
+  "sphinx-autoapi",
+  "myst-parser",
+  "pydata-sphinx-theme"
+]
+types = [
+  "types-python-dateutil",
+  "types-PyYAML",
+  "types-requests",
+  "types-setuptools"
+]
 
 [project.scripts]
 cadsobs = "cdsobs.cli.app:main"

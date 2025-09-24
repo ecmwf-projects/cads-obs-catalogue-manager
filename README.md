@@ -2,8 +2,11 @@
 
 ## Instalation
 
-The CLI services will be used directly on the VM. To prepare the project, simply clone
-it and install its dependencies via conda.
+The CLI services will be used directly on the VM.
+
+### Installation with conda
+
+To install the package, simply clone it and install its dependencies via conda.
 
 ```commandline
 git clone git@github.com:ecmwf-projects/cads-obs-catalogue-manager.git
@@ -11,28 +14,26 @@ cd cads-obs-catalogue-manager
 conda create -n cads-obs -c conda-forge python=3.10
 conda activate cads-obs
 conda env update --file environment.yml
-pip install .
+pip install --no-deps .
 ```
 
-## Deploy services
+### Installation with pip
 
-In order to deploy the services (the databases and the web API) simply use the provided
-docker-compose.yml
+Install python 3.12 with your package manager, together with [the netCDF library](https://github.com/Unidata/netcdf-c). Other dependencies may be needed depending
+on the Linux version to be used. Then run.
 
 ```commandline
-docker-compose build
-docker-compose up -d
+git clone git@github.com:ecmwf-projects/cads-obs-catalogue-manager.git
+cd cads-obs-catalogue-manager
+python -m pip install .
 ```
-
-Note that you will need to add sensible information (the catalogue database password)
-as environment variables (or use a .env). The variable name is CATALOGUE_PASSWORD
 
 ## Workflow for developers/contributors
 
 For best experience create a new conda environment (e.g. DEVELOP) with Python 3.10:
 
 ```commandline
-conda create -n DEVELOP -c conda-forge python=3.10
+conda create -n DEVELOP -c conda-forge python=3.12
 conda activate DEVELOP
 ```
 
@@ -49,19 +50,6 @@ Before pushing to GitHub, run the following commands:
 ### Writing tests
 
 We use the pytest framework and fixtures.
-
-Configuration files for the tests are available in tests/data/${dataset_name}
-
-```
-data
-├── insitu-comprehensive-upper-air-observation-network
-│   └── service_definition.json
-├── insitu-observations-igra-baseline-network
-│   └── service_definition.json
-├── insitu-observations-woudc-ozone-total-column-and-profiles
-    └── service_definition.json
-
-```
 
 ### Test data preparison
 
@@ -89,7 +77,7 @@ Finally start the docker containers by running:
 
 ```commandline
 cd tests/docker
-docker-compose up -d
+docker compose up -d
 ```
 
 Ingestion db tables available right now:

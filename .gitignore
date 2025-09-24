@@ -414,3 +414,5 @@ catalogue-data/
 *.pdf
 *.tex
 fil-result/
+
+.conda/
