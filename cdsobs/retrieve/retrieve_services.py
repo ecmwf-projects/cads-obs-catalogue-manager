@@ -66,7 +66,7 @@ def get_urls(
     return object_urls
 
 
-def _get_catalogue_entries(
+def get_catalogue_entries(
     catalogue_repository: CatalogueRepository, retrieve_args: RetrieveArgs
 ) -> Sequence[Catalogue]:
     """Return the entries of the catalogue that contain the requested data."""
