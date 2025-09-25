@@ -64,6 +64,7 @@ def test_make_cdm(test_config, tmp_path, caplog):
         end_year=end_year,
         output_dir=Path(tmp_path),
         save_data=True,
+        disable_cdm_tag_check=True,
     )
     output_file = Path(
         tmp_path,

@@ -5,13 +5,14 @@ from typing import Annotated, Iterator
 
 import sqlalchemy.orm
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 
 from cdsobs.cdm.lite import cdm_lite_variables
 from cdsobs.config import CDSObsConfig, validate_config
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
 from cdsobs.retrieve.models import RetrieveArgs
-from cdsobs.retrieve.retrieve_services import _get_catalogue_entries, get_urls
+from cdsobs.retrieve.retrieve_services import get_catalogue_entries, get_urls
 from cdsobs.service_definition.api import get_service_definition
 from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.storage import S3Client
@@ -68,7 +69,7 @@ def get_object_urls(
     # Query the storage to get the URLS of the files that contain the data requested
     try:
         catalogue_repository = CatalogueRepository(session.catalogue_session)
-        entries = _get_catalogue_entries(catalogue_repository, retrieve_args)
+        entries = get_catalogue_entries(catalogue_repository, retrieve_args)
     except DataNotFoundException as e:
         raise make_http_exception(status_code=500, message=f"Error: {e}")
     except Exception as e:
@@ -133,3 +134,26 @@ def get_disabled_fields(
 ) -> list[str]:
     disabled_fields = session.cdsobs_config.get_disabled_fields(dataset, source)
     return disabled_fields
+
+
+@router.get("/{dataset}/forms/{json_name}")
+def get_form(
+    dataset: str,
+    json_name: str,
+    session: Annotated[HttpAPISession, Depends(session_gen)],
+) -> StreamingResponse:
+    """Get the service definition for a dataset."""
+    try:
+        s3_client = S3Client.from_config(session.cdsobs_config.s3config)
+        bucket_name = s3_client.get_bucket_name(dataset_name=dataset)
+        s3_obj = s3_client.s3.Object(bucket_name, json_name)
+        file_like = s3_obj.get()["Body"]
+        return StreamingResponse(
+            content=file_like,
+            media_type="application/octet-stream",
+            headers={"Content-Disposition": f"attachment; filename={json_name}"},
+        )
+    except FileNotFoundError:
+        raise make_http_exception(
+            status_code=404, message=f"Form {json_name} not found for {dataset=}."
+        )
