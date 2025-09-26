@@ -79,7 +79,7 @@ def test_copy_delete_dataset_inside(test_repository, test_config):
     assert result.exit_code == 0
     with get_session(test_config.catalogue_db) as test_session:
         assert len(CatalogueRepository(test_session).get_by_dataset("test")) == 2
-    # Actual delete
+    # Actual delete, only one entry
     result = runner.invoke(
         app,
         delete_invoke_params,
@@ -90,6 +90,27 @@ def test_copy_delete_dataset_inside(test_repository, test_config):
     with get_session(test_config.catalogue_db) as test_session:
         assert len(CatalogueRepository(test_session).get_by_dataset("test")) == 1
     assert len(list(test_repository.s3_client.list_directory_objects(dest_bucket))) == 1
+    # Delete all
+    delete_all_invoke_params = [
+        "delete-dataset",
+        "-c",
+        CONFIG_YML,
+        "--dataset",
+        "test",
+        "--dataset-source",
+        "TotalOzone",
+        "--version",
+        DEFAULT_VERSION,
+    ]
+    result = runner.invoke(
+        app,
+        delete_all_invoke_params,
+        input="test",
+        catch_exceptions=False,
+    )
+    assert result.exit_code == 0
+    with get_session(test_config.catalogue_db) as test_session:
+        assert not CadsDatasetRepository(test_session).dataset_exists("test")
 
 
 @pytest.mark.skip(reason="this test does get stuck in github CI for some reason")
