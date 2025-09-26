@@ -158,6 +158,7 @@ def test_repository(test_session, test_s3_client, test_config, tmp_path_factory)
             test_config,
             start_year,
             end_year,
+            disable_cdm_tag_check=True,
         )
         # dataset must be explicitly enabled now after make production
         set_version_status(
@@ -186,6 +187,7 @@ def test_repository(test_session, test_s3_client, test_config, tmp_path_factory)
         start_year,
         end_year,
         version="2.0.0",
+        disable_cdm_tag_check=True,
     )
     set_version_status(
         test_config,

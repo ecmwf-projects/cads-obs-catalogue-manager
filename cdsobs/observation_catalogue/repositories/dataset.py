@@ -41,3 +41,4 @@ class CadsDatasetRepository(BaseRepository):
     def delete_dataset(self, dataset_name: str):
         dataset = self.get_dataset(dataset_name)
         self.session.delete(dataset)
+        self.session.commit()

@@ -80,18 +80,19 @@ def delete_dataset(
             console.print(
                 f"[bold green] {nd} entries deleted from {dataset}. [/bold green]"
             )
-            nremaining = catalogue_session.scalar(
+            # If no entries are left for this version, delete it
+            nremaining_version = catalogue_session.scalar(
                 select(func.count())
                 .select_from(Catalogue)
                 .where(Catalogue.dataset == dataset, Catalogue.version == version)
             )
-            if nremaining == 0:
+            if nremaining_version == 0:
                 CadsDatasetVersionRepository(catalogue_session).delete_dataset(
                     dataset, version
                 )
                 console.print(
-                    f"[bold green] Deleted {dataset} {version} from datasets table as it was "
-                    f"left empty. [/bold green]"
+                    f"[bold green] Deleted {dataset} {version} from dataset version "
+                    f"table as it was left empty. [/bold green]"
                 )
 
 
