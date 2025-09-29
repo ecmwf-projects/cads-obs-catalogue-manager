@@ -159,7 +159,7 @@ def copy_inside(
         if dry_run:
             logger.info(f"Would copy {len(entries)} with assets: {assets}")
         else:
-            new_assets = s3_copy(init_s3client, entries, dest_dataset)
+            new_assets = s3_copy(init_s3client, assets, dest_dataset)
             try:
                 catalogue_copy(init_session, entries, init_s3client, dest_dataset)
             except (Exception, KeyboardInterrupt):
@@ -251,6 +251,7 @@ def copy_outside(
                 dest_config,
                 dest_dataset,
                 entries,
+                assets,
                 init_config,
                 init_s3client,
                 init_session,
@@ -258,16 +259,16 @@ def copy_outside(
 
 
 def _copy_outside_logic(
-    dest_config, dest_dataset, entries, init_config, init_s3client, init_session
+    dest_config, dest_dataset, entries, assets, init_config, init_s3client, init_session
 ):
     if init_config.s3config == dest_config.s3config:
         # namespace may be different, so we need another s3 client here
         dest_s3client = S3Client.from_config(dest_config.s3config)
-        new_assets = s3_copy(dest_s3client, entries, dest_dataset)
+        new_assets = s3_copy(dest_s3client, assets, dest_dataset)
     else:
         # get new destination client as current client
         dest_s3client = S3Client.from_config(dest_config.s3config)
-        new_assets = s3_export(init_s3client, dest_s3client, entries, dest_dataset)
+        new_assets = s3_export(init_s3client, dest_s3client, assets, dest_dataset)
     try:
         if init_config.catalogue_db == dest_config.catalogue_db:
             catalogue_copy(init_session, entries, dest_s3client, dest_dataset)
@@ -321,12 +322,12 @@ def catalogue_copy(
         catalogue_repo.create(new_schema)
 
 
-def s3_copy(s3client: S3Client, entries, dest_dataset):
+def s3_copy(s3client: S3Client, assets: list[str], dest_dataset: str) -> list[str]:
     """Copy into another bucket."""
     new_assets = []
     try:
-        for entry in entries:
-            new_asset = copy_asset(dest_dataset, entry, s3client)
+        for asset in assets:
+            new_asset = copy_asset(dest_dataset, asset, s3client)
             new_assets.append(new_asset)
     except (Exception, KeyboardInterrupt):
         s3_rollback(s3client, new_assets)
@@ -337,8 +338,7 @@ def s3_copy(s3client: S3Client, entries, dest_dataset):
 @retry(
     wait=wait_random_exponential(multiplier=0.5, max=60), stop=stop_after_attempt(10)
 )
-def copy_asset(dest_dataset, entry, s3client):
-    source_asset = entry.asset
+def copy_asset(dest_dataset: str, source_asset: str, s3client) -> str:
     source_bucket, name = source_asset.split("/")
     dest_bucket = s3client.get_bucket_name(dest_dataset)
     s3client.create_directory(dest_bucket)
@@ -353,9 +353,14 @@ def s3_rollback(s3_client, assets):
         s3_client.delete_file(bucket, name)
 
 
-def s3_export(init_s3client: S3Client, dest_s3client: S3Client, entries, dest_dataset):
+def s3_export(
+    init_s3client: S3Client,
+    dest_s3client: S3Client,
+    assets: list[str],
+    dest_dataset: str,
+) -> list[str]:
     """Download from one S3 and upload to another."""
-    object_urls = [init_s3client.get_url_from_asset(e.asset) for e in entries]
+    object_urls = [init_s3client.get_url_from_asset(asset) for asset in assets]
     new_assets = []
     try:
         dest_bucket = dest_s3client.get_bucket_name(dest_dataset)
