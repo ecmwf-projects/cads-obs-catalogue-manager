@@ -44,7 +44,7 @@ def test_copy_delete_dataset_inside(test_repository, test_config):
     with get_session(test_config.catalogue_db) as test_session:
         assert len(CatalogueRepository(test_session).get_by_dataset("test")) == 2
     dest_bucket = test_repository.s3_client.get_bucket_name("test")
-    assert len(list(test_repository.s3_client.list_directory_objects(dest_bucket))) == 2
+    assert len(list(test_repository.s3_client.list_directory_objects(dest_bucket))) == 5
     # Copy again to check that existing entries are not copied
     result = runner.invoke(
         app,
@@ -55,7 +55,7 @@ def test_copy_delete_dataset_inside(test_repository, test_config):
     with get_session(test_config.catalogue_db) as test_session:
         assert len(CatalogueRepository(test_session).get_by_dataset("test")) == 2
     dest_bucket = test_repository.s3_client.get_bucket_name("test")
-    assert len(list(test_repository.s3_client.list_directory_objects(dest_bucket))) == 2
+    assert len(list(test_repository.s3_client.list_directory_objects(dest_bucket))) == 5
     # Test delete, with dry run and without
     delete_invoke_params = [
         "delete-dataset",
@@ -89,7 +89,7 @@ def test_copy_delete_dataset_inside(test_repository, test_config):
     assert result.exit_code == 0
     with get_session(test_config.catalogue_db) as test_session:
         assert len(CatalogueRepository(test_session).get_by_dataset("test")) == 1
-    assert len(list(test_repository.s3_client.list_directory_objects(dest_bucket))) == 1
+    assert len(list(test_repository.s3_client.list_directory_objects(dest_bucket))) == 4
     # Delete all
     delete_all_invoke_params = [
         "delete-dataset",
