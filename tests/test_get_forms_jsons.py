@@ -21,7 +21,5 @@ def test_get_forms_jsons(test_repository, tmp_path):
         assert s3_client.object_exists(bucket, f.name)
     variables_json = geco_files[2]
     descriptions = json.load(variables_json.open("r"))["CUON"]
-    disabled_fields = test_repository.config.get_dataset_version(
-        dataset
-    ).disabled_fields
+    disabled_fields = test_repository.config.get_dataset(dataset).disabled_fields
     assert not any([d in descriptions for d in disabled_fields])
