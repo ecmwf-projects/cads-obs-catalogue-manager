@@ -87,7 +87,7 @@ def delete_dataset(
                 .where(Catalogue.dataset == dataset, Catalogue.version == version)
             )
             if nremaining_version == 0:
-                CadsDatasetVersionRepository(catalogue_session).delete_dataset(
+                CadsDatasetVersionRepository(catalogue_session).delete_dataset_version(
                     dataset, version
                 )
                 console.print(

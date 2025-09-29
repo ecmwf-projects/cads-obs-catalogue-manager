@@ -50,7 +50,7 @@ class CadsDatasetVersionRepository(BaseRepository):
             )
         )
 
-    def delete_dataset(self, dataset_name: str, version: str):
+    def delete_dataset_version(self, dataset_name: str, version: str):
         dataset_version = self.get_dataset_version(dataset_name, version)
         self.session.delete(dataset_version)
         self.session.commit()
