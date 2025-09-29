@@ -127,7 +127,7 @@ def test_cli_deprecate_version(test_repository):
         CONFIG_YML,
     ]
     dataset_version_repo = CadsDatasetVersionRepository(session)
-    dataset_version = dataset_version_repo.get_dataset(
+    dataset_version = dataset_version_repo.get_dataset_version(
         dataset_name=dataset, version=version
     )
     assert not dataset_version.deprecated

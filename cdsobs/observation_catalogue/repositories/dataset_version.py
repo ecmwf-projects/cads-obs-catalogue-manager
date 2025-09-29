@@ -40,7 +40,9 @@ class CadsDatasetVersionRepository(BaseRepository):
             == 1
         )
 
-    def get_dataset(self, dataset_name: str, version: str) -> CadsDatasetVersion | None:
+    def get_dataset_version(
+        self, dataset_name: str, version: str
+    ) -> CadsDatasetVersion | None:
         return self.session.scalar(
             sa.select(CadsDatasetVersion).filter(
                 CadsDatasetVersion.dataset == dataset_name,
@@ -49,6 +51,6 @@ class CadsDatasetVersionRepository(BaseRepository):
         )
 
     def delete_dataset(self, dataset_name: str, version: str):
-        dataset = self.get_dataset(dataset_name, version)
-        self.session.delete(dataset)
+        dataset_version = self.get_dataset_version(dataset_name, version)
+        self.session.delete(dataset_version)
         self.session.commit()
