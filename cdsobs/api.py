@@ -532,7 +532,7 @@ def set_version_status(
     """Change the status of a version for a given dataset."""
     with get_session(config.catalogue_db) as session:
         cads_dataset_version_repo = CadsDatasetVersionRepository(session)
-        dataset_version = cads_dataset_version_repo.get_dataset(
+        dataset_version = cads_dataset_version_repo.get_dataset_version(
             dataset_name=dataset, version=version
         )
         if dataset_version is None:

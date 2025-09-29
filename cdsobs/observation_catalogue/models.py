@@ -56,7 +56,7 @@ class CadsDatasetVersion(Base):
     version: Mapped[str] = mapped_column(String, default="1.0.0", nullable=False)
     deprecated: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     catalogue_entries: Mapped[List["Catalogue"]] = relationship(
-        back_populates="dataset_version", cascade="all"
+        back_populates="dataset_version", passive_deletes=True
     )
     __table_args__ = (
         PrimaryKeyConstraint("version", "dataset"),

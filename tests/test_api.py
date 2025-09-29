@@ -41,7 +41,7 @@ def test_run_ingestion_pipeline(
     assert counter > 0
     # assert dataset is disabled by default
     cads_dataset_version_repo = CadsDatasetVersionRepository(test_session_pertest)
-    dataset_version = cads_dataset_version_repo.get_dataset(
+    dataset_version = cads_dataset_version_repo.get_dataset_version(
         dataset_name=dataset_name, version=DEFAULT_VERSION
     )
     assert dataset_version.deprecated
@@ -84,5 +84,7 @@ def test_set_version_status(test_repository):
     set_version_status(config, dataset_name, version, deprecated=False)
     set_version_status(config, dataset_name, version, deprecated=True)
     cads_dataset_version_repo = CadsDatasetVersionRepository(session)
-    dataset_version = cads_dataset_version_repo.get_dataset(dataset_name, version)
+    dataset_version = cads_dataset_version_repo.get_dataset_version(
+        dataset_name, version
+    )
     assert dataset_version.deprecated

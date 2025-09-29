@@ -30,7 +30,9 @@ def test_check_cdm_compliance(test_config, caplog):
         dataset_name, source, DEFAULT_VERSION, test_config, service_definition
     )
     homogenised_data = _get_homogenised_data(run_params)
-    available_cdm_tables = test_config.get_dataset(dataset_name).available_cdm_tables
+    available_cdm_tables = test_config.get_dataset_version(
+        dataset_name
+    ).available_cdm_tables
     cdm_tables = read_cdm_tables(test_config.cdm_tables_location, available_cdm_tables)
     cdm_fields_mapping = check_cdm_compliance(homogenised_data, cdm_tables)
     assert len(cdm_fields_mapping) > 1
