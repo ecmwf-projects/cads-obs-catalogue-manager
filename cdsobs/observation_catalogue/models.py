@@ -78,7 +78,7 @@ class Catalogue(Base):
     dataset: Mapped[str] = mapped_column(String, index=True)
     version: Mapped[str] = mapped_column(String, index=True)
     dataset_version: Mapped["CadsDatasetVersion"] = relationship(
-        back_populates="catalogue_entries", cascade="all"
+        back_populates="catalogue_entries"
     )
     dataset_source: Mapped[str] = mapped_column(String)
     time_coverage_start: Mapped[datetime] = mapped_column(TIMESTAMP)
