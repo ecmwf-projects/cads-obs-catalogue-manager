@@ -123,6 +123,31 @@ def get_dataset_service_definition(
         )
 
 
+@router.get("/{dataset}/service_definition.yml")
+def get_service_definition_yaml(
+    dataset: str,
+    session: Annotated[HttpAPISession, Depends(session_gen)],
+) -> StreamingResponse:
+    """Get the service definition for a dataset."""
+    try:
+        s3_client = S3Client.from_config(session.cdsobs_config.s3config)
+        bucket_name = s3_client.get_bucket_name(dataset_name=dataset)
+        s3_obj = s3_client.s3.Object(bucket_name, "service_definition.yml")
+        file_like = s3_obj.get()["Body"]
+        return StreamingResponse(
+            content=file_like,
+            media_type="application/octet-stream",
+            headers={
+                "Content-Disposition": "attachment; filename=service_definition.yml"
+            },
+        )
+    except FileNotFoundError:
+        raise make_http_exception(
+            status_code=404,
+            message=f"Form service_definition.yml not found for {dataset=}.",
+        )
+
+
 @router.get("/cdm/lite_variables")
 def get_cdm_lite_variables() -> dict[str, list[str] | dict]:
     return cdm_lite_variables

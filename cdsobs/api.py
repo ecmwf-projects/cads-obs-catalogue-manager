@@ -8,6 +8,7 @@ from typing import Iterator, Literal
 
 import h5netcdf
 import pandas
+import yaml
 from sqlalchemy.orm import Session
 
 from cdsobs import warning_tracker
@@ -151,6 +152,35 @@ def run_ingestion_pipeline(
     _run_sanity_check(
         config, dataset_name, service_definition, session, source, version
     )
+    # upload the service-definition.yml to the bucket
+    s3_client = S3Client.from_config(session.cdsobs_config.s3config)
+    if s3_client.object_exists(bucket=dataset_name, name="service_definition.yml"):
+        # CHECK IF IT IS DIFERENT
+        temp_file = tempfile.NamedTemporaryFile()
+        s3_client.download_file(
+            bucket_name=dataset_name,
+            object_name="service_definition.yml",
+            ofile=temp_file.name,
+        )
+        with open(temp_file.name, "rb") as old, open(
+            service_definition.path, "rb"
+        ) as new:
+            new_service_definition = yaml.safe_load(new)
+            old_service_definition = yaml.safe_load(old)
+        if new_service_definition != old_service_definition:
+            logger.warning("service_definition.yml has changed, re-uploading")
+            s3_client.upload_file(
+                bucket=dataset_name,
+                name="service_definition.yml",
+                file=service_definition.path,
+            )
+    else:
+        s3_client.upload_file(
+            bucket=dataset_name,
+            name="service_definition.yml",
+            file=service_definition.path,
+        )
+
     # Log successful, taking the warnings into account
     final_message = _print_final_message(
         dataset_name, source, start_year, end_year, "ingestion pipeline"

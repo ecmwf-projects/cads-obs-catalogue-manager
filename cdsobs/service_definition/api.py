@@ -97,4 +97,4 @@ def get_service_definition(
     with open(path_to_yaml) as f:
         data = yaml.safe_load(f)
 
-    return ServiceDefinition(**data)
+    return ServiceDefinition(**data, path=path_to_yaml)

@@ -1,4 +1,5 @@
 """Servide definition models."""
+from pathlib import Path
 from typing import Dict
 
 import numpy
@@ -172,3 +173,4 @@ class ServiceDefinition(BaseModel, extra="forbid"):
     global_attributes: dict
     space_columns: SpaceColumns | None = None
     sources: dict[str, SourceDefinition]
+    path: Path | None = None
