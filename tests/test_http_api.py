@@ -47,7 +47,9 @@ def test_read_main(test_repository, test_config, tmp_path):
 def test_service_definition(test_config):
     dataset = "insitu-observations-gnss"
     actual = client.get(f"/{dataset}/service_definition.yml").text
-    expected = get_service_definition(test_config, dataset).model_dump(exclude_none=True, exclude={"path"})
+    expected = get_service_definition(test_config, dataset).model_dump(
+        exclude_none=True, exclude={"path"}
+    )
     expected.pop("path", None)
     assert yaml.safe_load(actual) == expected
 

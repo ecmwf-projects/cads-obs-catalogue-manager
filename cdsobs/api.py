@@ -152,9 +152,33 @@ def run_ingestion_pipeline(
     _run_sanity_check(
         config, dataset_name, service_definition, session, source, version
     )
-    # upload the service-definition.yml to the bucket
-    s3_client = S3Client.from_config(config.s3config)
+
+    # Upload the service definition
+    _upload_service_definition(
+        S3Client.from_config(config.s3config), service_definition, dataset_name
+    )
+
+    # Log successful, taking the warnings into account
+    final_message = _print_final_message(
+        dataset_name, source, start_year, end_year, "ingestion pipeline"
+    )
+    if slack_notify:
+        notify_to_slack(final_message)
+
+
+def _upload_service_definition(
+    s3_client: S3Client,
+    service_definition: ServiceDefinition,
+    dataset_name: str,
+):
+    """Upload the service definition to S3 using the storage_config."""
     bucket = s3_client.get_bucket_name(dataset_name)
+
+    if service_definition.path is None:
+        raise RuntimeError(
+            "Service definition needs to be created from a file with get_service_definition."
+        )
+
     if s3_client.object_exists(bucket=bucket, name="service_definition.yml"):
         # CHECK IF IT IS DIFERENT
         temp_file = tempfile.NamedTemporaryFile()
@@ -181,13 +205,6 @@ def run_ingestion_pipeline(
             object_name="service_definition.yml",
             file_to_upload=service_definition.path,
         )
-
-    # Log successful, taking the warnings into account
-    final_message = _print_final_message(
-        dataset_name, source, start_year, end_year, "ingestion pipeline"
-    )
-    if slack_notify:
-        notify_to_slack(final_message)
 
 
 def _print_final_message(
