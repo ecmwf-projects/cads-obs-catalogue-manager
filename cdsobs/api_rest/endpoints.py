@@ -121,7 +121,7 @@ def get_dataset_service_definition_yaml(
         file_like = s3_obj.get()["Body"]
         return StreamingResponse(
             content=file_like,
-            media_type="application/x-yaml",
+            media_type="application/yaml",
             headers={
                 "Content-Disposition": "attachment; filename=service_definition.yml"
             },
