@@ -109,22 +109,8 @@ def get_sources(
     return list(service_definition.sources)
 
 
-@router.get("/{dataset}/service_definition")
-def get_dataset_service_definition(
-    dataset: str,
-    session: Annotated[HttpAPISession, Depends(session_gen)],
-) -> ServiceDefinition:
-    """Get the service definition for a dataset."""
-    try:
-        return get_service_definition(session.cdsobs_config, dataset)
-    except FileNotFoundError:
-        raise make_http_exception(
-            status_code=404, message=f"Service definition not found for {dataset=}"
-        )
-
-
 @router.get("/{dataset}/service_definition.yml")
-def get_service_definition_yaml(
+def get_dataset_service_definition_yaml(
     dataset: str,
     session: Annotated[HttpAPISession, Depends(session_gen)],
 ) -> StreamingResponse:
@@ -136,7 +122,7 @@ def get_service_definition_yaml(
         file_like = s3_obj.get()["Body"]
         return StreamingResponse(
             content=file_like,
-            media_type="application/octet-stream",
+            media_type="application/x-yaml",
             headers={
                 "Content-Disposition": "attachment; filename=service_definition.yml"
             },
