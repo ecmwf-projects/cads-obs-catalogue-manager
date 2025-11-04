@@ -14,7 +14,6 @@ from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetReposit
 from cdsobs.retrieve.models import RetrieveArgs
 from cdsobs.retrieve.retrieve_services import get_catalogue_entries, get_urls
 from cdsobs.service_definition.api import get_service_definition
-from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.storage import S3Client
 from cdsobs.utils.exceptions import ConfigNotFound, DataNotFoundException, SizeError
 from cdsobs.utils.utils import get_database_session
