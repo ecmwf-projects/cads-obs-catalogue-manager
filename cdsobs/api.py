@@ -154,11 +154,12 @@ def run_ingestion_pipeline(
     )
     # upload the service-definition.yml to the bucket
     s3_client = S3Client.from_config(config.s3config)
-    if s3_client.object_exists(bucket=dataset_name, name="service_definition.yml"):
+    bucket = s3_client.get_bucket_name(dataset_name)
+    if s3_client.object_exists(bucket=bucket, name="service_definition.yml"):
         # CHECK IF IT IS DIFERENT
         temp_file = tempfile.NamedTemporaryFile()
         s3_client.download_file(
-            bucket_name=dataset_name,
+            bucket_name=bucket,
             object_name="service_definition.yml",
             ofile=temp_file.name,
         )
@@ -170,13 +171,13 @@ def run_ingestion_pipeline(
         if new_service_definition != old_service_definition:
             logger.warning("service_definition.yml has changed, re-uploading")
             s3_client.upload_file(
-                destination_bucket=dataset_name,
+                destination_bucket=bucket,
                 object_name="service_definition.yml",
                 file_to_upload=service_definition.path,
             )
     else:
         s3_client.upload_file(
-            destination_bucket=dataset_name,
+            destination_bucket=bucket,
             object_name="service_definition.yml",
             file_to_upload=service_definition.path,
         )
