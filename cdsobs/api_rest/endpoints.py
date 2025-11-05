@@ -14,7 +14,6 @@ from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetReposit
 from cdsobs.retrieve.models import RetrieveArgs
 from cdsobs.retrieve.retrieve_services import get_catalogue_entries, get_urls
 from cdsobs.service_definition.api import get_service_definition
-from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.storage import S3Client
 from cdsobs.utils.exceptions import ConfigNotFound, DataNotFoundException, SizeError
 from cdsobs.utils.utils import get_database_session
@@ -109,17 +108,28 @@ def get_sources(
     return list(service_definition.sources)
 
 
-@router.get("/{dataset}/service_definition")
-def get_dataset_service_definition(
+@router.get("/{dataset}/service_definition.yml")
+def get_dataset_service_definition_yaml(
     dataset: str,
     session: Annotated[HttpAPISession, Depends(session_gen)],
-) -> ServiceDefinition:
+) -> StreamingResponse:
     """Get the service definition for a dataset."""
     try:
-        return get_service_definition(session.cdsobs_config, dataset)
+        s3_client = S3Client.from_config(session.cdsobs_config.s3config)
+        bucket_name = s3_client.get_bucket_name(dataset_name=dataset)
+        s3_obj = s3_client.s3.Object(bucket_name, "service_definition.yml")
+        file_like = s3_obj.get()["Body"]
+        return StreamingResponse(
+            content=file_like,
+            media_type="application/yaml",
+            headers={
+                "Content-Disposition": "attachment; filename=service_definition.yml"
+            },
+        )
     except FileNotFoundError:
         raise make_http_exception(
-            status_code=404, message=f"Service definition not found for {dataset=}"
+            status_code=404,
+            message=f"Form service_definition.yml not found for {dataset=}.",
         )
 
 

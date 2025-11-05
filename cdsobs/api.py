@@ -8,6 +8,7 @@ from typing import Iterator, Literal
 
 import h5netcdf
 import pandas
+import yaml
 from sqlalchemy.orm import Session
 
 from cdsobs import warning_tracker
@@ -151,12 +152,59 @@ def run_ingestion_pipeline(
     _run_sanity_check(
         config, dataset_name, service_definition, session, source, version
     )
+
+    # Upload the service definition
+    _upload_service_definition(
+        S3Client.from_config(config.s3config), service_definition, dataset_name
+    )
+
     # Log successful, taking the warnings into account
     final_message = _print_final_message(
         dataset_name, source, start_year, end_year, "ingestion pipeline"
     )
     if slack_notify:
         notify_to_slack(final_message)
+
+
+def _upload_service_definition(
+    s3_client: S3Client,
+    service_definition: ServiceDefinition,
+    dataset_name: str,
+):
+    """Upload the service definition to S3 using the storage_config."""
+    bucket = s3_client.get_bucket_name(dataset_name)
+
+    if service_definition.path is None:
+        raise RuntimeError(
+            "Service definition needs to be created from a file with get_service_definition."
+        )
+
+    if s3_client.object_exists(bucket=bucket, name="service_definition.yml"):
+        # CHECK IF IT IS DIFERENT
+        temp_file = tempfile.NamedTemporaryFile()
+        s3_client.download_file(
+            bucket_name=bucket,
+            object_name="service_definition.yml",
+            ofile=temp_file.name,
+        )
+        with open(temp_file.name, "rb") as old, open(
+            service_definition.path, "rb"
+        ) as new:
+            new_service_definition = yaml.safe_load(new)
+            old_service_definition = yaml.safe_load(old)
+        if new_service_definition != old_service_definition:
+            logger.warning("service_definition.yml has changed, re-uploading")
+            s3_client.upload_file(
+                destination_bucket=bucket,
+                object_name="service_definition.yml",
+                file_to_upload=service_definition.path,
+            )
+    else:
+        s3_client.upload_file(
+            destination_bucket=bucket,
+            object_name="service_definition.yml",
+            file_to_upload=service_definition.path,
+        )
 
 
 def _print_final_message(
