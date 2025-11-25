@@ -119,7 +119,7 @@ def test_adaptor_uscrn(tmp_path):
 
 
 @pytest.mark.skip("By hand only.")
-def test_adaptor_gnss(tmp_path):
+def test_adaptor_gnss(tmp_path, test_repository):
     """Full test with a local instance of the HTTP API."""
     from cads_adaptors import ObservationsAdaptor
 
