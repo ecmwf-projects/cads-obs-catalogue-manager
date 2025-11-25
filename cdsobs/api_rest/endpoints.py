@@ -4,8 +4,10 @@ from pathlib import Path
 from typing import Annotated, Iterator
 
 import sqlalchemy.orm
+import yaml
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from starlette.responses import JSONResponse
 
 from cdsobs.cdm.lite import cdm_lite_variables
 from cdsobs.config import CDSObsConfig, validate_config
@@ -109,23 +111,25 @@ def get_sources(
 
 
 @router.get("/{dataset}/service_definition")
-def get_dataset_service_definition_yaml(
+def get_dataset_service_definition(
     dataset: str,
     session: Annotated[HttpAPISession, Depends(session_gen)],
-) -> StreamingResponse:
-    """Get the service definition for a dataset."""
+) -> JSONResponse:
+    """Get the service definition for a dataset as JSON."""
     try:
         s3_client = S3Client.from_config(session.cdsobs_config.s3config)
         bucket_name = s3_client.get_bucket_name(dataset_name=dataset)
         s3_obj = s3_client.s3.Object(bucket_name, "service_definition.yml")
-        file_like = s3_obj.get()["Body"]
-        return StreamingResponse(
-            content=file_like,
-            media_type="application/yaml",
-            headers={
-                "Content-Disposition": "attachment; filename=service_definition.yml"
-            },
-        )
+
+        # Download the file fully into memory
+        body = s3_obj.get()["Body"].read().decode("utf-8")
+
+        # Parse YAML → Python object
+        data = yaml.safe_load(body)
+
+        # Return JSON
+        return JSONResponse(content=data)
+
     except FileNotFoundError:
         raise make_http_exception(
             status_code=404,
