@@ -108,7 +108,7 @@ def get_sources(
     return list(service_definition.sources)
 
 
-@router.get("/{dataset}/service_definition.yml")
+@router.get("/{dataset}/service_definitionr")
 def get_dataset_service_definition_yaml(
     dataset: str,
     session: Annotated[HttpAPISession, Depends(session_gen)],
