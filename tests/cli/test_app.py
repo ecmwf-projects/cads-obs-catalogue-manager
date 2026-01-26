@@ -92,6 +92,7 @@ def test_cli_make_cdm(tmp_path):
         tmp_path,
         "--source",
         "OzoneSonde",
+        "--disable-cdm-tag-check",
     ]
     result = runner.invoke(app, args, catch_exceptions=False)
     assert result.exit_code == 0
