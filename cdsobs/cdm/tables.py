@@ -179,12 +179,14 @@ def read_cdm_table(cdm_tables_location: Path, name: str) -> CDMTable:
     table_path = Path(cdm_tables_location, f"cdm-obs/table_definitions/{name}.csv")
     table_data = pandas.read_csv(
         table_path,
-        delimiter="\t",
-        quoting=3,
+        delimiter=",",
+        quoting=0,
         dtype=str,
         na_filter=False,
         comment="#",
         index_col="element_name",
+        engine="python",
+        on_bad_lines="error",
     ).drop("description", axis=1)
     # In some tables kind is called type
     if "kind" not in table_data:
