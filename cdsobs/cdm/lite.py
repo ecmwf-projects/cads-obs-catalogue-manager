@@ -64,6 +64,7 @@ optional_variable_names = [
     "fg_depar@offline",
     "record_timestamp",
     "value_significance",
+    "observation_height_above_station_surface",
 ]
 # Add uncetainty numbered vars programatycally, as they are to many to add by hand to
 # the list
