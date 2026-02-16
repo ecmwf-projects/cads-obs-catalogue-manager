@@ -1,4 +1,3 @@
-from hashlib import sha1
 from importlib import import_module
 from pathlib import Path
 from pprint import pformat
@@ -293,10 +292,6 @@ def _get_reader(
     function_name = import_str_list[-1]
     module = import_module(module_str)
     return getattr(module, function_name)
-
-
-def hash_string(value):
-    return sha1(str(value).encode("utf-8")).hexdigest()
 
 
 def _melt_variables(

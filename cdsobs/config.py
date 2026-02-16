@@ -16,7 +16,7 @@ def _get_default_cdm_tables_location() -> Path:
     return _get_default_location("CDM_TABLES_LOCATION")
 
 
-def _get_default_cads_forms_insitu_location() -> Path:
+def _get_default_cads_obs_config_location() -> Path:
     return _get_default_location("CADS_OBS_INSITU_LOCATION")
 
 
@@ -201,7 +201,7 @@ class CDSObsConfig(pydantic.BaseModel):
     ingestion_databases: Dict[str, DBConfig]
     datasets: List[DatasetConfig]
     cdm_tables_location: Path = _get_default_cdm_tables_location()
-    cads_obs_insitu_location: Path = _get_default_cads_forms_insitu_location()
+    cads_obs_config_location: Path = _get_default_cads_obs_config_location()
 
     @classmethod
     def from_yaml(cls, config_file: Path) -> "CDSObsConfig":

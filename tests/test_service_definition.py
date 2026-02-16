@@ -1,14 +1,25 @@
 import logging
 from pathlib import Path
 
-from cdsobs.service_definition.api import validate_service_definition
+from cdsobs.service_definition.api import (
+    get_service_definition,
+    validate_service_definition,
+)
+from tests.utils import hash_string
+
+
+def test_get_service_definition(test_config):
+    dataset_name = "insitu-comprehensive-upper-air-observation-network"
+    service_definition = get_service_definition(test_config, dataset_name)
+    assert hash_string(service_definition) == "3f29348ad71cb8278bf323fe82a3d87c4b661d25"
 
 
 def test_new_service_definition_valid(caplog, test_config):
     service_definition = Path(
-        test_config.cads_obs_insitu_location,
-        "cads-forms-insitu",
-        "insitu-observations-igra-baseline-network/service_definition.yml",
+        test_config.cads_obs_config_location,
+        "cads-obs-config",
+        "service-definitions",
+        "insitu-observations-igra-baseline-network.yml",
     )
     with caplog.at_level(logging.ERROR):
         validate_service_definition(

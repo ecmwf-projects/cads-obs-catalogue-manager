@@ -1,3 +1,4 @@
+import hashlib
 from typing import Tuple
 
 
@@ -75,3 +76,7 @@ def get_test_years(source: str) -> Tuple[int, int]:
         case _:
             raise NotImplementedError(f"Unsupported source {source}")
     return start_year, end_year
+
+
+def hash_string(value):
+    return hashlib.sha1(str(value).encode("utf-8")).hexdigest()
