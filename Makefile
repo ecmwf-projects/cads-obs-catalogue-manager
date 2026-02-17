@@ -9,7 +9,7 @@ qa:
 	pre-commit run --all-files
 
 unit-tests:
-	python -m pytest -vv --cov=. --cov-report=$(COV_REPORT) --ignore 'test/scripts'
+	python -m pytest -vv --cov=cdsobs --cov-report=$(COV_REPORT) --ignore 'tests/scripts'
 
 type-check:
 	python -m mypy  .

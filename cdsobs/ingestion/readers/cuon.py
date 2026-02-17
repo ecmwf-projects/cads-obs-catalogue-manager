@@ -169,7 +169,9 @@ def _process_table(
     return var_data
 
 
-def _get_field_data(field, hfile, selector, table_name):
+def _get_field_data(
+    field: str, hfile: h5py.File, selector: slice | numpy.ndarray, table_name: str
+) -> numpy.ndarray:
     field_obj = hfile[table_name][field]
     if len(field_obj.shape) > 1:
         field_data = field_obj[selector, ...]
@@ -181,9 +183,11 @@ def _get_field_data(field, hfile, selector, table_name):
     return field_data
 
 
-def _get_times_in_seconds_from(time_batch):
+def _get_times_in_seconds_from(time_batch: TimeBatch) -> tuple:
     year = time_batch.year
     month = time_batch.month
+    if month is None:
+        raise ValueError("time_batch.month cannot be None for CUON readers")
     last_month_day = calendar.monthrange(year, month)[1]
     start = f"{year}-{month:02d}-01T00:00:00"
     end = f"{year}-{month:02d}-{last_month_day}T23:59:59"
@@ -192,7 +196,7 @@ def _get_times_in_seconds_from(time_batch):
     return selected_end, selected_start
 
 
-def _maybe_concat_chars(field_data):
+def _maybe_concat_chars(field_data: numpy.ndarray) -> numpy.ndarray:
     # recover byte array strings - not necessary for dataframes
     if len(field_data.shape) > 1:
         field_len, str_len = field_data.shape
@@ -202,7 +206,7 @@ def _maybe_concat_chars(field_data):
     return field_data
 
 
-def _maybe_swap_bytes(field_data):
+def _maybe_swap_bytes(field_data: numpy.ndarray) -> numpy.ndarray:
     if field_data.dtype.byteorder == ">":
         # Flip big endian fields
         field_data = field_data.newbyteorder().byteswap()
@@ -255,7 +259,7 @@ def filter_batch_stations(
     return [f for f in files if f.name.split("_")[0] in batch_stations]
 
 
-def get_cuon_stations(active_json: str):
+def get_cuon_stations(active_json: str) -> pandas.DataFrame:
     # Read file with CUON stations locations
     columns = [
         "start of records",
@@ -491,7 +495,9 @@ def fixes_for_cuonv29(denormalized_table_file: pandas.DataFrame) -> pandas.DataF
     return denormalized_table_file
 
 
-def decode_time(denormalized_table_file, file_and_slices):
+def decode_time(
+    denormalized_table_file: pandas.DataFrame, file_and_slices: CUONFileandSlices
+) -> pandas.DataFrame:
     if len(denormalized_table_file) > 0:
         for time_field in ["record_timestamp", "report_timestamp", "date_time"]:
             denormalized_table_file.loc[:, time_field] = cftime.num2date(
@@ -504,7 +510,11 @@ def decode_time(denormalized_table_file, file_and_slices):
     return denormalized_table_file
 
 
-def filter_stations_outside_batch(dataset_cdm, file_and_slices, time_space_batch):
+def filter_stations_outside_batch(
+    dataset_cdm: dict[str, pandas.DataFrame],
+    file_and_slices: CUONFileandSlices,
+    time_space_batch: TimeSpaceBatch,
+):
     lats = dataset_cdm["header_table"]["latitude"]
     lons = dataset_cdm["header_table"]["longitude"]
     lon_start, lon_end, lat_start, lat_end = time_space_batch.get_spatial_coverage()

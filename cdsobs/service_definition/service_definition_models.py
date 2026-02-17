@@ -120,15 +120,21 @@ class SourceDefinition(BaseModel, extra="forbid"):
     columns_to_drop: list[str] = Field(default_factory=list)
     order_by: list[str] | None = None
 
-    def is_multitable(self):
+    def is_multitable(self) -> bool:
         return self.header_table is not None
 
-    def get_raw_header_columns(self):
+    def get_raw_header_columns(self) -> list[str]:
+        if self.cdm_mapping.rename is None:
+            return []
         return [
-            k for k, v in self.cdm_mapping.rename.items() if v in self.header_columns
+            k
+            for k, v in self.cdm_mapping.rename.items()
+            if (self.header_columns is not None and v in self.header_columns)
         ]
 
-    def get_raw_mandatory_columns(self):
+    def get_raw_mandatory_columns(self) -> list[str]:
+        if self.cdm_mapping.rename is None:
+            return []
         return [
             k for k, v in self.cdm_mapping.rename.items() if v in self.mandatory_columns
         ]

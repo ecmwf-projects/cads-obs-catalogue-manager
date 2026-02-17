@@ -177,7 +177,12 @@ def _extract_cdm_table_fields(
     return table_data
 
 
-def _add_foreign_keys(name, table_data, cdm_tables, partition_data):
+def _add_foreign_keys(
+    name: str,
+    table_data: pandas.DataFrame,
+    cdm_tables: CDMTables,
+    partition_data: pandas.DataFrame,
+) -> pandas.DataFrame:
     # Check if the external names of the foreign keys in this table are available and
     # add them
     table_definition = cdm_tables[name]
@@ -383,7 +388,11 @@ def get_cdm_repo_current_tag(path: Path) -> str:
 
 
 def _extract_variable_units_change(
-    homogenised_data, source_definition, unit_changes, variable, varname2units
+    homogenised_data: pandas.DataFrame,
+    source_definition: SourceDefinition,
+    unit_changes: Optional[dict],
+    variable: str,
+    varname2units: pandas.DataFrame,
 ):
     observed_variable = homogenised_data.loc[:, "observed_variable"]
     description_units = source_definition.descriptions[variable].units

@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Iterable, Sequence
 
 import pandas
 import pandas as pd
@@ -14,10 +14,10 @@ from cdsobs.utils.logutils import get_logger
 logger = get_logger(__name__)
 
 
-def merged_constraints_table(entries: sa.engine.result.ScalarResult) -> pd.DataFrame:
+def merged_constraints_table(entries: Iterable[Catalogue]) -> pd.DataFrame:
     """Merge a set of  constraints tables."""
 
-    def _get_entry_constraints(e):
+    def _get_entry_constraints(e: Catalogue) -> pd.DataFrame:
         logger.debug(f"Reading constraints for entry {e.id}")
         entry_constraints = (
             (

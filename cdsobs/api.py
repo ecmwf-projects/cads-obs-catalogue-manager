@@ -300,7 +300,7 @@ def run_make_cdm(
     save_data: bool = False,
     version: str = DEFAULT_VERSION,
     disable_cdm_tag_check: bool = False,
-    service_definition: ServiceDefinition = None,
+    service_definition: ServiceDefinition | None = None,
 ):
     """
     Run the first steps of the ingestion pileline.

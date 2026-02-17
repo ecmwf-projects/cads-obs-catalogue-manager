@@ -59,10 +59,10 @@ class TimeSpaceBatch:
     time_batch: TimeBatch
     space_batch: SpaceBatch | Literal["global"] = "global"
 
-    def get_time_coverage(self):
+    def get_time_coverage(self) -> Tuple[datetime, datetime]:
         return self.time_batch.get_time_coverage()
 
-    def get_spatial_coverage(self):
+    def get_spatial_coverage(self) -> Tuple[int, int, int, int]:
         if self.space_batch == "global":
             return -180, 180, -90, 90
         else:

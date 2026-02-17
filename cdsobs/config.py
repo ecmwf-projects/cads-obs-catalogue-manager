@@ -42,7 +42,7 @@ class DBConfig(pydantic.BaseModel):
         )
         return url.unicode_string()
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, DBConfig):
             return NotImplemented
         return (
@@ -61,7 +61,7 @@ class S3Config(pydantic_settings.BaseSettings):
     public_url_endpoint: str | None = None
     namespace: str = ""
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, S3Config):
             return NotImplemented
         return (
@@ -92,7 +92,7 @@ class CDSObsConfig(pydantic.BaseModel):
         return cls(**config_dict)
 
 
-def validate_config(config_file: Path):
+def validate_config(config_file: Path) -> CDSObsConfig:
     """Validate the configuration YAML."""
     with config_file.open() as f:
         config_dict = yaml.safe_load(f)

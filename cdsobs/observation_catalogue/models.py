@@ -63,7 +63,7 @@ class CadsDatasetVersion(Base):
         UniqueConstraint("version", "dataset"),
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return pformat({k: v for k, v in self.__dict__.items() if k[0] != "_"})
 
 
@@ -103,9 +103,9 @@ class Catalogue(Base):
         ),
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return pformat({k: v for k, v in self.__dict__.items() if k[0] != "_"})
 
 
-def row_to_json(row: Base):
+def row_to_json(row: Base) -> dict:
     return {c.name: getattr(row, c.name) for c in row.__table__.columns}

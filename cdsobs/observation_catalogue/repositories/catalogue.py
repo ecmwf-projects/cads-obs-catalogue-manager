@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Sequence
 
 import sqlalchemy as sa
@@ -32,9 +33,7 @@ class CatalogueRepository(BaseRepository):
         ).all()
         return list(results)
 
-    def get_by_dataset_and_version(
-        self, dataset: str, version: str
-    ) -> Sequence[Catalogue]:
+    def get_by_dataset_and_version(self, dataset: str, version: str) -> list[Catalogue]:
         results = self.session.scalars(
             sa.select(Catalogue).filter(
                 Catalogue.dataset == dataset, Catalogue.version == version
@@ -44,7 +43,7 @@ class CatalogueRepository(BaseRepository):
 
     def get_by_dataset_and_source_and_version(
         self, dataset: str, source: str, version: str
-    ) -> Sequence[Catalogue]:
+    ) -> list[Catalogue]:
         results = self.session.scalars(
             sa.select(Catalogue).filter(
                 Catalogue.dataset == dataset,
@@ -96,7 +95,7 @@ class CatalogueRepository(BaseRepository):
         else:
             return []
 
-    def exists_asset(self, asset: str):
+    def exists_asset(self, asset: str) -> bool:
         result = self.session.scalars(
             sa.select(Catalogue.id).filter(Catalogue.asset == asset).limit(1)
         ).all()
@@ -104,16 +103,16 @@ class CatalogueRepository(BaseRepository):
 
     def entry_exists(
         self,
-        dataset,
-        dataset_source,
-        time_coverage_start,
-        time_coverage_end,
-        longitude_coverage_start,
-        longitude_coverage_end,
-        latitude_coverage_start,
-        latitude_coverage_end,
-        version,
-    ):
+        dataset: str,
+        dataset_source: str,
+        time_coverage_start: datetime,
+        time_coverage_end: datetime,
+        longitude_coverage_start: float,
+        longitude_coverage_end: float,
+        latitude_coverage_start: float,
+        latitude_coverage_end: float,
+        version: str,
+    ) -> bool:
         result = self.session.scalars(
             sa.select(Catalogue.id)
             .filter(

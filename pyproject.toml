@@ -79,6 +79,7 @@ target-version = ['py310']
 
 [tool.coverage.run]
 branch = true
+source = ["cdsobs"]
 
 [tool.isort]
 profile = "black"

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import cast
+from typing import Tuple, cast
 
 import h5netcdf
 import netCDF4
@@ -8,6 +8,7 @@ import pandas
 
 from cdsobs import constants
 from cdsobs.cdm.api import CdmDataset, define_units, to_cdm_dataset
+from cdsobs.cdm.code_tables import CDMCodeTables
 from cdsobs.config import CDSObsConfig
 from cdsobs.ingestion.api import read_batch_data
 from cdsobs.ingestion.core import (
@@ -31,7 +32,7 @@ from cdsobs.utils.utils import compute_hash, datetime_to_seconds, get_file_size
 logger = get_logger(__name__)
 
 
-def _get_default_fillvalue(dtype):
+def _get_default_fillvalue(dtype: numpy.dtype):
     kind = dtype.kind
     if kind in ["u", "i", "f"]:
         size = numpy.dtype(dtype).itemsize
@@ -152,7 +153,9 @@ def to_netcdf(
     return output_path
 
 
-def encode_observed_variables(cdm_code_tables, data):
+def encode_observed_variables(
+    cdm_code_tables: CDMCodeTables, data: pandas.DataFrame
+) -> Tuple[pandas.Series, dict]:
     code_table = cdm_code_tables["observed_variable"].table
     # strip to remove extra spaces
     var2code = get_var2code(code_table)
@@ -172,7 +175,7 @@ def encode_observed_variables(cdm_code_tables, data):
     return encoded_data, var2code_subset
 
 
-def get_var2code(code_table):
+def get_var2code(code_table: pandas.DataFrame) -> dict:
     code_dict = pandas.Series(
         index=code_table["name"].str.strip().str.replace(" ", "_").str.encode("ascii"),
         data=code_table.index,

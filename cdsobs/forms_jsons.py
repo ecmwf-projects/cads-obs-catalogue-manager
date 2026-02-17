@@ -7,8 +7,10 @@ import fsspec
 import h5netcdf
 import numpy
 import pandas
+import sqlalchemy
 import sqlalchemy as sa
 from fsspec.implementations.http import HTTPFileSystem
+from sqlalchemy.orm import Session
 
 from cdsobs.cli._catalogue_explorer import stats_summary
 from cdsobs.config import CDSObsConfig
@@ -96,7 +98,7 @@ def get_variables_json(
     return output_file_path
 
 
-def get_constraints_json(session, output_path: Path, dataset) -> Path:
+def get_constraints_json(session: Session, output_path: Path, dataset: str) -> Path:
     """JSON file with the constraints in compressed form."""
     # This is probably slow, can it be improved?
     catalogue_entries = get_catalogue_entries_stream(session, dataset)
@@ -135,7 +137,7 @@ def get_constraints_json(session, output_path: Path, dataset) -> Path:
 
 
 def get_widgets_json(
-    session,
+    session: Session,
     output_path: Path,
     dataset: str,
     service_definition: ServiceDefinition,
@@ -174,7 +176,7 @@ def get_widgets_json(
 
 def get_station_summary(
     dataset: str,
-    session,
+    session: Session,
     storage_url: str,
     output_path: Path,
     service_definition: ServiceDefinition,
@@ -229,8 +231,8 @@ def get_station_summary(
 
 
 def get_catalogue_entries_stream(
-    session, dataset: str
-) -> sa.engine.result.ScalarResult:
+    session: Session, dataset: str
+) -> sqlalchemy.ScalarResult:
     catalogue_entries = session.scalars(
         sa.select(Catalogue)
         .filter(
