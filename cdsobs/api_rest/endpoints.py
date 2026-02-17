@@ -146,7 +146,12 @@ def get_cdm_lite_variables() -> dict[str, list[str] | dict]:
 def get_disabled_fields(
     dataset: str, source: str, session: Annotated[HttpAPISession, Depends(session_gen)]
 ) -> list[str]:
-    disabled_fields = session.cdsobs_config.get_disabled_fields(dataset, source)
+    service_definition = get_service_definition(session.cdsobs_config, dataset)
+    disabled_fields_config = service_definition.disabled_fields
+    if isinstance(disabled_fields_config, dict):
+        disabled_fields = disabled_fields_config.get(source, [])
+    else:
+        disabled_fields = disabled_fields_config
     return disabled_fields
 
 

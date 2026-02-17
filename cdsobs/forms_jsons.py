@@ -17,6 +17,7 @@ from cdsobs.observation_catalogue.models import CadsDatasetVersion, Catalogue
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.retrieve.retrieve_services import merged_constraints_table
 from cdsobs.service_definition.api import get_service_definition
+from cdsobs.service_definition.service_definition_models import ServiceDefinition
 from cdsobs.storage import S3Client
 from cdsobs.utils.logutils import get_logger
 
@@ -31,20 +32,27 @@ def get_forms_jsons(
     config: CDSObsConfig,
     upload_to_storage: bool = False,
     get_stations_file: bool = False,
+    service_definition: ServiceDefinition | None = None,
 ) -> Tuple[Path, ...]:
     """Save the geco output json files in a folder."""
     # widgets.json
     session = catalogue_repository.session
-    widgets_file = get_widgets_json(session, config, output_path, dataset)
+    if service_definition is None:
+        service_definition = get_service_definition(config, dataset)
+    widgets_file = get_widgets_json(session, output_path, dataset, service_definition)
     # constraints
     constraints_file = get_constraints_json(session, output_path, dataset)
     # variables
-    variables_file = get_variables_json(dataset, config, output_path)
+    variables_file = get_variables_json(output_path, service_definition)
     json_files: Tuple[Path, ...] = (widgets_file, constraints_file, variables_file)
     # stations file is optional and not computed by default
     if get_stations_file:
         stations_file = get_station_summary(
-            dataset, session, config, storage_client.public_url_base, output_path
+            dataset,
+            session,
+            storage_client.public_url_base,
+            output_path,
+            service_definition,
         )
         json_files += (stations_file,)
     if upload_to_storage:
@@ -57,21 +65,28 @@ def get_forms_jsons(
     return json_files
 
 
-def get_variables_json(dataset: str, config: CDSObsConfig, output_path: Path) -> Path:
+def get_variables_json(
+    output_path: Path,
+    service_definition: ServiceDefinition,
+) -> Path:
     """JSON file with the variables and their metadata."""
-    service_definition = get_service_definition(config, dataset)
     variables_json_content = {}
     for source_name, source in service_definition.sources.items():
         descriptions = {k: v.model_dump() for k, v in source.descriptions.items()}
         # Delete disabled fields
-        disabled_fields = config.get_dataset(dataset).disabled_fields
-        if config.get_dataset(dataset).disabled_fields is not None:
+        disabled_fields_config = service_definition.disabled_fields
+        if isinstance(disabled_fields_config, dict):
+            disabled_fields = disabled_fields_config.get(source_name, [])
+        else:
+            disabled_fields = disabled_fields_config
+        if disabled_fields:
             logger.info(
                 "The following fields are disabled and won't be included in the"
                 f"variables.json file: \n {disabled_fields}"
             )
             for disabled_field in disabled_fields:
-                del descriptions[disabled_field]
+                if disabled_field in descriptions:
+                    del descriptions[disabled_field]
         variables_json_content[source_name] = descriptions
 
     output_file_path = Path(output_path, "variables.json")
@@ -120,11 +135,13 @@ def get_constraints_json(session, output_path: Path, dataset) -> Path:
 
 
 def get_widgets_json(
-    session, config: CDSObsConfig, output_path: Path, dataset: str
+    session,
+    output_path: Path,
+    dataset: str,
+    service_definition: ServiceDefinition,
 ) -> Path:
     """JSON file with the variables and their metadata."""
     catalogue_entries = get_catalogue_entries_stream(session, dataset)
-    service_definition = get_service_definition(config, dataset)
     variables = [
         v
         for s in service_definition.sources
@@ -156,7 +173,11 @@ def get_widgets_json(
 
 
 def get_station_summary(
-    dataset: str, session, config: CDSObsConfig, storage_url: str, output_path: Path
+    dataset: str,
+    session,
+    storage_url: str,
+    output_path: Path,
+    service_definition: ServiceDefinition,
 ) -> Path:
     """Iterate over the input files to get the stations and their metadata."""
     stations_output_path = Path(output_path, "stations.json")
@@ -164,7 +185,6 @@ def get_station_summary(
 
     df_list = []
 
-    service_definition = get_service_definition(config, dataset)
     for source in service_definition.sources:
         if service_definition.space_columns is None:
             space_columns = service_definition.sources[source].space_columns

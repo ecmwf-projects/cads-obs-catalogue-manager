@@ -20,7 +20,7 @@ from cdsobs.cdm.api import (
     get_varname2units,
 )
 from cdsobs.cli._catalogue_explorer import stats_summary
-from cdsobs.config import CDSObsConfig, DatasetConfig
+from cdsobs.config import CDSObsConfig
 from cdsobs.constants import DEFAULT_VERSION
 from cdsobs.ingestion.api import (
     EmptyBatchException,
@@ -66,6 +66,7 @@ def run_ingestion_pipeline(
     version: str = DEFAULT_VERSION,
     disable_cdm_tag_check: bool = False,
     slack_notify: bool = False,
+    service_definition: ServiceDefinition | None = None,
 ):
     """
     Ingest the data to the CADS observation repository.
@@ -105,7 +106,8 @@ def run_ingestion_pipeline(
     logger.info("----------------------------------------------------------------")
     logger.info(f"Running ingestion pipeline in {hostname}")
     logger.info("----------------------------------------------------------------")
-    service_definition = get_service_definition(config, dataset_name)
+    if service_definition is None:
+        service_definition = get_service_definition(config, dataset_name)
     _maybe_check_cdm_tag(config, disable_cdm_tag_check)
     run_params = IngestionRunParams(
         dataset_name, source, version, config, service_definition
@@ -141,7 +143,13 @@ def run_ingestion_pipeline(
             raise
 
     main_iterator = _get_main_iterator(
-        config, dataset_name, source, start_year, end_year, start_month=start_month
+        config,
+        dataset_name,
+        source,
+        start_year,
+        end_year,
+        service_definition,
+        start_month=start_month,
     )
 
     for time_space_batch in main_iterator:
@@ -292,6 +300,7 @@ def run_make_cdm(
     save_data: bool = False,
     version: str = DEFAULT_VERSION,
     disable_cdm_tag_check: bool = False,
+    service_definition: ServiceDefinition = None,
 ):
     """
     Run the first steps of the ingestion pileline.
@@ -325,7 +334,8 @@ def run_make_cdm(
     logger.info("----------------------------------------------------------------")
     logger.info("Running make cdm")
     logger.info("----------------------------------------------------------------")
-    service_definition = get_service_definition(config, dataset_name)
+    if service_definition is None:
+        service_definition = get_service_definition(config, dataset_name)
     _maybe_check_cdm_tag(config, disable_cdm_tag_check)
     run_params = IngestionRunParams(
         dataset_name, source, version, config, service_definition
@@ -343,7 +353,7 @@ def run_make_cdm(
             logger.warning(f"No data found for {time_batch=}")
 
     main_iterator = _get_main_iterator(
-        config, dataset_name, source, start_year, end_year
+        config, dataset_name, source, start_year, end_year, service_definition
     )
     for time_space_batch in main_iterator:
         _run_for_batch(time_space_batch)
@@ -397,11 +407,11 @@ def _get_main_iterator(
     source: str,
     start_year: int,
     end_year: int,
+    service_definition: ServiceDefinition,
     start_month: int = 1,
 ) -> Iterator[TimeSpaceBatch]:
     """Get the main iterator for the ingestion, over batches of time and space."""
-    dataset_config = config.get_dataset(dataset_name)
-    time_tile_size = dataset_config.time_tile_size
+    time_tile_size = service_definition.time_tile_size
     if time_tile_size == "month":
         time_iterator = (
             TimeBatch(dt.year, dt.month)
@@ -416,10 +426,10 @@ def _get_main_iterator(
         time_iterator = (TimeBatch(yy) for yy in years)
     else:
         raise NotImplementedError(f"Invalid {time_tile_size=}")
-    if dataset_config.read_with_spatial_batches:
+    if service_definition.read_with_spatial_batches:
         logger.info("Reading each tile at a time, both in space and time.")
         main_iterator = _get_space_and_time_iterator(
-            dataset_config, time_iterator, source
+            service_definition, time_iterator, source
         )
     else:
         main_iterator = (TimeSpaceBatch(t) for t in time_iterator)
@@ -427,19 +437,23 @@ def _get_main_iterator(
 
 
 def _get_space_and_time_iterator(
-    dataset_config: DatasetConfig, time_iterable: Iterator[TimeBatch], source: str
+    service_definition: ServiceDefinition,
+    time_iterable: Iterator[TimeBatch],
+    source: str,
 ) -> Iterator[TimeSpaceBatch]:
     for time_batch in time_iterable:
-        space_iterable = _get_space_iterator(dataset_config, source, time_batch.year)
+        space_iterable = _get_space_iterator(
+            service_definition, source, time_batch.year
+        )
         for space_batch in space_iterable:
             yield TimeSpaceBatch(time_batch, space_batch)
 
 
 def _get_space_iterator(
-    dataset_config: DatasetConfig, source: str, year: int
+    service_definition: ServiceDefinition, source: str, year: int
 ) -> Iterator[SpaceBatch]:
-    lon_tile_size = dataset_config.get_tile_size("lon", source, year)
-    lat_tile_size = dataset_config.get_tile_size("lat", source, year)
+    lon_tile_size = service_definition.get_tile_size("lon", source, year)
+    lat_tile_size = service_definition.get_tile_size("lat", source, year)
     for lon_start, lat_start in product(
         range(-180, 180, lon_tile_size), range(-90, 90, lat_tile_size)
     ):
@@ -452,10 +466,8 @@ def _read_homogenise_and_partition(
     run_params: IngestionRunParams,
     time_space_batch: TimeSpaceBatch,
 ) -> Iterator[DatasetPartition]:
-    dataset_name = run_params.dataset_name
     config = run_params.config
     service_definition = run_params.service_definition
-    dataset_config = config.get_dataset(dataset_name)
     source = run_params.source
     dataset_metadata = get_dataset_metadata(run_params)
     # Get the data as a single big table with the names remmaped from
@@ -473,8 +485,8 @@ def _read_homogenise_and_partition(
     )
     # Get tile sizes
     year = time_space_batch.time_batch.year
-    lon_tile_size = dataset_config.get_tile_size("lon", source, year)
-    lat_tile_size = dataset_config.get_tile_size("lat", source, year)
+    lon_tile_size = service_definition.get_tile_size("lon", source, year)
+    lat_tile_size = service_definition.get_tile_size("lat", source, year)
     # Partition and sort the data.
     data_partitions = get_partitions(
         dataset_metadata,

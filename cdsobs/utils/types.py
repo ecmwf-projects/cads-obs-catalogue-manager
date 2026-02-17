@@ -28,3 +28,15 @@ def _validate_len(v: list) -> list:
 NotEmptyUniqueStrList = Annotated[
     list[str], AfterValidator(_validate_unique_list), _validate_len
 ]
+
+
+def year_isin_period(year: int, period: str) -> bool:
+    year_start, year_end = period.split("-")
+    return int(year_start) <= year <= int(year_end)
+
+
+def get_year_tile_size(tile_size_dict: dict[str, int], year: int) -> int:
+    periods = list(tile_size_dict)
+    thisyear_period = [p for p in periods if year_isin_period(year, p)][0]
+    result = tile_size_dict[thisyear_period]
+    return result

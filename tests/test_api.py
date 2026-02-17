@@ -19,7 +19,7 @@ logger = get_logger(__name__)
 
 @pytest.mark.parametrize("dataset_name,source", TEST_API_PARAMETERS)
 def test_run_ingestion_pipeline(
-    dataset_name, source, test_session_pertest, test_config, caplog, tmp_path
+    dataset_name, source, test_session_pertest, test_config, test_sds, caplog, tmp_path
 ):
     start_year, end_year = get_test_years(source)
     os.environ["CADSOBS_AVOID_MULTIPROCESS"] = "0"
@@ -31,6 +31,7 @@ def test_run_ingestion_pipeline(
         start_year=start_year,
         end_year=end_year,
         disable_cdm_tag_check=True,
+        service_definition=test_sds.get(dataset_name),
     )
     # assert insertions have been made
     counter = test_session_pertest.scalar(
@@ -52,7 +53,7 @@ def test_run_ingestion_pipeline(
         assert stations == ["0-20001-0-53772", "0-20001-0-53845"]
 
 
-def test_make_cdm(test_config, tmp_path, caplog):
+def test_make_cdm(test_config, test_sds, tmp_path, caplog):
     dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
     source = "OzoneSonde"
     start_year, end_year = get_test_years(source)
@@ -65,6 +66,7 @@ def test_make_cdm(test_config, tmp_path, caplog):
         output_dir=Path(tmp_path),
         save_data=True,
         disable_cdm_tag_check=True,
+        service_definition=test_sds.get(dataset_name),
     )
     output_file = Path(
         tmp_path,

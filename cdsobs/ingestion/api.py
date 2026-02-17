@@ -219,8 +219,8 @@ def read_batch_data(
     source = dataset_params.dataset_source
     logger.info(f"Reading ingestion tables for {dataset_name=} {source=}")
     # Read the data as a flat table
-    main_reader_function = _get_reader(config, dataset_name, source)
-    reader_extra_args = config.get_dataset(dataset_name).reader_extra_args
+    main_reader_function = _get_reader(service_definition, source)
+    reader_extra_args = service_definition.reader_extra_args
     reader_extra_args = reader_extra_args if reader_extra_args is not None else {}
     data_table = main_reader_function(
         dataset_name,
@@ -278,10 +278,10 @@ def entry_exists(
 
 
 def _get_reader(
-    config: CDSObsConfig, dataset_name: str, source: str
+    service_definition: ServiceDefinition, source: str
 ) -> DatasetReaderFunctionCallable:
-    """Return the reader function by parsing it from the config file."""
-    reader_conf = config.get_dataset(dataset_name).reader
+    """Return the reader function by parsing it from the service definition."""
+    reader_conf = service_definition.reader
     # Support a different reader for each source (for IGRA and IGRA_H).
     if isinstance(reader_conf, str):
         import_str = reader_conf

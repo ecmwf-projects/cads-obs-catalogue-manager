@@ -1,15 +1,12 @@
 import os
 from pathlib import Path
-from typing import Dict, List, Literal, NewType, Optional
+from typing import Dict
 
 import pydantic
 import pydantic_settings
 import yaml
-from pydantic_core.core_schema import ValidationInfo
 
-from cdsobs.cdm.tables import DEFAULT_CDM_TABLES_TO_USE
 from cdsobs.utils.exceptions import ConfigError, ConfigNotFound
-from cdsobs.utils.types import LatTileSize, LonTileSize, TimeTileSize
 
 
 def _get_default_cdm_tables_location() -> Path:
@@ -74,132 +71,12 @@ class S3Config(pydantic_settings.BaseSettings):
         )
 
 
-AvailableReaders = Literal[
-    "cdsobs.ingestion.readers.sql.read_header_and_data_tables",
-    "cdsobs.ingestion.readers.sql.read_singletable_data",
-    "cdsobs.ingestion.readers.cuon.read_cuon_netcdfs",
-    "cdsobs.ingestion.readers.cuon_np.read_cuon_netcdfs",
-    "cdsobs.ingestion.readers.netcdf.read_flat_netcdfs",
-    "cdsobs.ingestion.readers.csv.read_flat_csvs",
-    "cdsobs.ingestion.readers.parquet.read_flat_parquet",
-]
-
-
-Source = NewType("Source", str)
-Period = NewType("Period", str)
-
-LatTileConfig = (
-    LatTileSize | dict[Source | Period, LatTileSize | dict[Period, LatTileSize]]
-)
-LonTileConfig = (
-    LonTileSize | dict[Source | Period, LonTileSize | dict[Period, LonTileSize]]
-)
-
-
-def year_isin_period(year: int, period: str) -> bool:
-    year_start, year_end = period.split("-")
-    return int(year_start) <= year <= int(year_end)
-
-
-def get_year_tile_size(tile_size_dict: dict[str, int], year: int) -> int:
-    periods = list(tile_size_dict)
-    thisyear_period = [p for p in periods if year_isin_period(year, p)][0]
-    result = tile_size_dict[thisyear_period]
-    return result
-
-
-class DatasetConfig(pydantic.BaseModel):
-    """
-    Dataset-specific configuration variables.
-
-    Parameters
-    ----------
-    name:
-      Dataset name (e.g. insitu-comprehensive-upper-air-observation-network)
-    lat_tile_size:
-      Size of the latitude partitions.
-    lon_tile_size:
-      Size of the longitude partitions.
-    ingestion_db:
-      Input database configuration name. In must be defined in the ingestion_databases
-      field of the root level (CDSObsConfig). By default is "main". For datasets that do
-      not use an ingestion database it will be ignored.
-    reader:
-      Function to read the input data
-    reader_extra_args:
-      Optional. Args to pass to the read function (e.g. a directory). Default is None
-    disabled_fields:
-      Optional. This variable can be used to disable fields. The API rest will tell the
-      adaptor to not to include these fields in the ouput. It can be a list, to disable
-      fields dataset-wise, or a dictionary, to disable them only for a dataset_source.
-    """
-
-    name: str
-    lat_tile_size: LatTileConfig
-    lon_tile_size: LonTileConfig
-    time_tile_size: TimeTileSize = "month"
-    reader: AvailableReaders | dict[
-        str, AvailableReaders
-    ] = "cdsobs.ingestion.readers.sql.read_header_and_data_tables"
-    available_cdm_tables: List[str] = DEFAULT_CDM_TABLES_TO_USE
-    reader_extra_args: Optional[dict[str, str]] = None
-    ingestion_db: str = "main"
-    read_with_spatial_batches: bool = False
-    disabled_fields: list[str] | dict[str, list[str]] = []
-
-    def get_tile_size(
-        self, kind: Literal["lat", "lon"], source: str, year: int
-    ) -> LatTileSize | LonTileSize:
-        """
-        Handle the possible dependency of the tile sizes on year and source.
-
-        Parameters
-        ----------
-        name:
-          Dataset name (e.g. insitu-comprehensive-upper-air-observation-network)
-        kind:
-          Wether we want the tile size of the longitudes (lon) or latitudes (lat).
-        source:
-          The dataset source as defined in the service definition file.
-        year:
-          The year of data that is being processed.
-
-        """
-        tile_size_config: LatTileSize | LonTileSize = getattr(self, f"{kind}_tile_size")
-
-        if isinstance(tile_size_config, int):
-            # Tile size is always the same
-            result = tile_size_config
-        else:
-            # Tile size depends on the source, the year or both
-            if source in tile_size_config:
-                # Tile size depends on the source
-                source_tile_size = tile_size_config[source]
-                if isinstance(source_tile_size, int):
-                    # Tile size depends on source only
-                    result = source_tile_size
-                else:
-                    # Tile size depends on the source and year
-                    result = get_year_tile_size(source_tile_size, year)
-            else:
-                # Tile size depends on the year
-                result = get_year_tile_size(tile_size_config, year)
-
-        return result
-
-
 class CDSObsConfig(pydantic.BaseModel):
-    """
-    Global configuration of the CADS Observation Catalogue Manager.
-
-    It includes a list of dataset-specific configuration parameters.
-
-    """
+    """Global configuration of the CADS Observation Catalogue Manager."""
 
     catalogue_db: DBConfig
     s3config: S3Config
     ingestion_databases: Dict[str, DBConfig]
-    datasets: List[DatasetConfig]
     cdm_tables_location: Path = _get_default_cdm_tables_location()
     cads_obs_config_location: Path = _get_default_cads_obs_config_location()
 
@@ -213,30 +90,6 @@ class CDSObsConfig(pydantic.BaseModel):
         with config_file.open() as f:
             config_dict = yaml.safe_load(f)
         return cls(**config_dict)
-
-    @pydantic.field_validator("datasets")
-    def ingestion_db_is_defined(cls, v: List[DatasetConfig], info: ValidationInfo):
-        for dataset in v:
-            if dataset.ingestion_db not in info.data["ingestion_databases"]:
-                raise KeyError(
-                    f"{dataset.ingestion_db} must be defined in the ingestion databases mapping."
-                )
-        return v
-
-    def get_dataset(self, name: str) -> DatasetConfig:
-        """Return the dataset-specific configuration parameters for a given dataset."""
-        return [d for d in self.datasets if d.name == name][0]
-
-    def get_dataset_ingestion_db(self, name: str) -> DBConfig:
-        return self.ingestion_databases[self.get_dataset(name).ingestion_db]
-
-    def get_disabled_fields(self, dataset_name: str, dataset_source: str) -> list[str]:
-        dataset_config = self.get_dataset(dataset_name)
-        if isinstance(dataset_config.disabled_fields, dict):
-            disabled_fields = dataset_config.disabled_fields[dataset_source]
-        else:
-            disabled_fields = dataset_config.disabled_fields
-        return disabled_fields
 
 
 def validate_config(config_file: Path):

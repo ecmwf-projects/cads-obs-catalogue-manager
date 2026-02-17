@@ -50,16 +50,18 @@ def retrieve_observations(
         catalogue_repository = CatalogueRepository(session)
         entries = get_catalogue_entries(catalogue_repository, retrieve_args)
         object_urls = get_urls(entries, storage_url)
-        global_attributes = get_service_definition(
-            config, retrieve_args.dataset
-        ).global_attributes
+        service_definition = get_service_definition(config, retrieve_args.dataset)
+        global_attributes = service_definition.global_attributes
     field_attributes = cdm_lite_variables["attributes"]
     cdm_lite_vars = list(
         set(itertools.chain.from_iterable(cdm_lite_variables.values()))
     )
-    disabled_fields = config.get_disabled_fields(
-        retrieve_args.dataset, retrieve_args.params.dataset_source
-    )
+    disabled_fields_config = service_definition.disabled_fields
+    source = retrieve_args.params.dataset_source
+    if isinstance(disabled_fields_config, dict):
+        disabled_fields = disabled_fields_config.get(source, [])
+    else:
+        disabled_fields = disabled_fields_config
     cdm_lite_vars = [v for v in cdm_lite_vars if v not in disabled_fields]
     context = Context()
     output_path = retrieve_data(

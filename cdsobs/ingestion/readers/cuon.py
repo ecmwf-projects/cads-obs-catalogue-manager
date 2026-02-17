@@ -292,7 +292,7 @@ def read_cuon_netcdfs(
     if len(files) == 0:
         raise EmptyBatchException
     # Avoid for now: sensor_configuration, source_configuration
-    tables_to_use = config.get_dataset(dataset_name).available_cdm_tables
+    tables_to_use = service_definition.available_cdm_tables
     cdm_tables = read_cdm_tables(config.cdm_tables_location, tables_to_use)
     files_and_slices = read_all_nc_slices(files, time_space_batch.time_batch)
     denormalized_tables_futures = []

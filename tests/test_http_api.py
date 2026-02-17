@@ -4,6 +4,7 @@ from cdsobs.api_rest.app import app
 from cdsobs.api_rest.endpoints import HttpAPISession, session_gen
 from cdsobs.cdm.lite import cdm_lite_variables
 from cdsobs.service_definition.api import get_service_definition
+from cdsobs.service_definition.service_definition_models import ServiceDefinition
 
 client = TestClient(app)
 
@@ -46,11 +47,9 @@ def test_read_main(test_repository, test_config, tmp_path):
 def test_service_definition(test_config, test_repository):
     dataset = "insitu-observations-gnss"
     actual = client.get(f"/{dataset}/service_definition").json()
-    expected = get_service_definition(test_config, dataset).model_dump(
-        exclude_none=True, exclude={"path"}
-    )
-    expected.pop("path", None)
-    assert actual == expected
+    expected = get_service_definition(test_config, dataset)
+    expected.path = None
+    assert ServiceDefinition(**actual) == expected
 
 
 def test_capabilities_datasets(test_config, test_repository):
