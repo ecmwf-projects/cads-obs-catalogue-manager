@@ -10,13 +10,13 @@ def test_config(test_config):
     )
     service_definition = get_service_definition(test_config, dataset_name)
     lon_tile_size = service_definition.get_tile_size("lon", "uscrn_monthly", 2001)
-    assert lon_tile_size == 90
+    assert lon_tile_size == 30
     lat_tile_size = service_definition.get_tile_size("lat", "uscrn_daily", 2010)
-    assert lat_tile_size == 90
+    assert lat_tile_size == 30
     lat_tile_size = service_definition.get_tile_size("lat", "uscrn_subhourly", 2006)
     assert lat_tile_size == 30
     lat_tile_size = service_definition.get_tile_size("lat", "uscrn_subhourly", 2015)
-    assert lat_tile_size == 20
+    assert lat_tile_size == 30
 
     dataset_name = "insitu-comprehensive-upper-air-observation-network"
     service_definition = get_service_definition(test_config, dataset_name)

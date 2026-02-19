@@ -87,7 +87,7 @@ def test_sds(test_config):
     sd.reader_extra_args["active_json"] = str(Path(input_dir, "active.json"))
     sds[dataset_name] = sd
 
-    # WOUDC
+    # WOUDC netCDF example
     dataset_name = "insitu-observations-woudc-netcdfs"
     sd = get_service_definition(test_config, dataset_name)
     example_filename = "insitu-observations-woudc-ozone-total-column-and-profiles_OzoneSonde_1969_01.nc"
@@ -100,16 +100,28 @@ def test_sds(test_config):
     # Surface Land
     dataset_name = "insitu-observations-surface-land"
     sd = get_service_definition(test_config, dataset_name)
-    input_dir = Path(Path(tests_path, "data/csv_data/").absolute(), "*.psv")
+    input_dir = Path(Path(tests_path, "data/parquet_data/").absolute(), "*.parquet")
+    # We don't want this in the test.
+    del sd.reader_extra_args["filename_pattern"]
     sd.reader_extra_args["input_path"] = str(input_dir)
     sds[dataset_name] = sd
 
+    # WOUDC2
+    dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
+    sd = get_service_definition(test_config, dataset_name)
+    sd.ingestion_db = "main"
+    sd.time_tile_size = "year"
+    sds[dataset_name] = sd
+
+    # GNSS
+    dataset_name = "insitu-observations-gnss"
+    sd = get_service_definition(test_config, dataset_name)
+    sd.ingestion_db = "main"
+    sds[dataset_name] = sd
     # Add other datasets from parameters if they are not already there
     datasets_to_add = [
-        "insitu-observations-woudc-ozone-total-column-and-profiles",
         "insitu-observations-igra-baseline-network",
         "insitu-observations-gruan-reference-network",
-        "insitu-observations-gnss",
     ]
     for dataset_name in datasets_to_add:
         if dataset_name not in sds:

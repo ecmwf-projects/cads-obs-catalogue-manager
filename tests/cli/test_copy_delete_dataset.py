@@ -116,12 +116,18 @@ def test_copy_delete_dataset_inside(test_repository, test_config):
 @pytest.mark.skip(reason="this test does get stuck in github CI for some reason")
 def test_s3_export(test_repository):
     entries = test_repository.catalogue_repository.get_by_dataset(DS_TEST_NAME)
-    s3_export(test_repository.s3_client, test_repository.s3_client, entries, "test")
+    assets = [e.asset for e in entries]
+    s3_export(test_repository.s3_client, test_repository.s3_client, assets, "test")
     s3_client = test_repository.s3_client
     origin_bucket = s3_client.get_bucket_name(DS_TEST_NAME)
     dest_bucket = s3_client.get_bucket_name("test")
     origin_objects = list(
         test_repository.s3_client.list_directory_objects(origin_bucket)
     )
+    origin_objects = [
+        oo
+        for oo in origin_objects
+        if ".json" not in origin_objects or ".yml" in origin_objects
+    ]
     dest_objects = list(test_repository.s3_client.list_directory_objects(dest_bucket))
     assert len(origin_objects) == len(dest_objects)
