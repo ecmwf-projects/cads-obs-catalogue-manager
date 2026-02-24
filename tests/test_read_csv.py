@@ -1,3 +1,6 @@
+import importlib
+from pathlib import Path
+
 from cdsobs.ingestion.core import TimeBatch, TimeSpaceBatch
 from cdsobs.ingestion.readers.csv import read_flat_csvs
 from cdsobs.service_definition.api import get_service_definition
@@ -6,13 +9,14 @@ from cdsobs.service_definition.api import get_service_definition
 def test_read_flat_csvs(test_config):
     dataset_name = "insitu-comprehensive-upper-air-observation-network"
     service_definition = get_service_definition(test_config, dataset_name)
+    test_data_path = Path(str(importlib.resources.files("tests")), "data", "csv_data")
     df = read_flat_csvs(
         dataset_name,
         test_config,
         service_definition,
         "CUON",
         time_space_batch=TimeSpaceBatch(TimeBatch(2001, 9), "global"),
-        input_path="tests/data/csv_data/*",
+        input_path=f"{test_data_path}/*",
         separator="|",
     )
     print(df)

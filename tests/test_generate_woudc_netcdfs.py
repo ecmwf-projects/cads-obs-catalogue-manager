@@ -6,16 +6,15 @@ from cdsobs.ingestion.core import (
 )
 from cdsobs.ingestion.serialize import batch_to_netcdf
 from cdsobs.metadata import get_dataset_metadata
-from cdsobs.service_definition.api import get_service_definition
 
 
-def test_batch_to_netcdf(test_config, tmp_path):
+def test_batch_to_netcdf(test_config, tmp_path, test_sds):
     dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
     new_dataset_name = "insitu-observations-woudc-netcdfs"
     year = 1969
     month = 1
     output_dir = tmp_path
-    service_definition = get_service_definition(test_config, dataset_name)
+    service_definition = test_sds[dataset_name]
     run_params = IngestionRunParams(
         dataset_name, "OzoneSonde", DEFAULT_VERSION, test_config, service_definition
     )

@@ -19,26 +19,24 @@ from cdsobs.ingestion.core import (
     TimeSpaceBatch,
 )
 from cdsobs.metadata import get_dataset_metadata
-from cdsobs.service_definition.api import get_service_definition
 
 
-def test_check_cdm_compliance(test_config, caplog):
+def test_check_cdm_compliance(test_config, test_sds, caplog):
     dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
     source = "OzoneSonde"
-    service_definition = get_service_definition(test_config, dataset_name)
+    service_definition = test_sds.get(dataset_name)
     run_params = IngestionRunParams(
         dataset_name, source, DEFAULT_VERSION, test_config, service_definition
     )
     homogenised_data = _get_homogenised_data(run_params)
-    available_cdm_tables = test_config.get_dataset(dataset_name).available_cdm_tables
+    available_cdm_tables = service_definition.available_cdm_tables
     cdm_tables = read_cdm_tables(test_config.cdm_tables_location, available_cdm_tables)
     cdm_fields_mapping = check_cdm_compliance(homogenised_data, cdm_tables)
     assert len(cdm_fields_mapping) > 1
 
 
 def _get_homogenised_data(run_params: IngestionRunParams) -> pandas.DataFrame:
-    test_config = run_params.config
-    service_definition = get_service_definition(test_config, run_params.dataset_name)
+    service_definition = run_params.service_definition
     time_batch = TimeSpaceBatch(TimeBatch(year=1969, month=2))
     dataset_metadata = get_dataset_metadata(run_params)
     homogenised_data = read_batch_data(
@@ -47,10 +45,10 @@ def _get_homogenised_data(run_params: IngestionRunParams) -> pandas.DataFrame:
     return homogenised_data
 
 
-def test_apply_variable_unit_change(test_config):
+def test_apply_variable_unit_change(test_config, test_sds):
     dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
     source = "OzoneSonde"
-    service_definition = get_service_definition(test_config, dataset_name)
+    service_definition = test_sds.get(dataset_name)
     run_params = IngestionRunParams(
         dataset_name, source, DEFAULT_VERSION, test_config, service_definition
     )

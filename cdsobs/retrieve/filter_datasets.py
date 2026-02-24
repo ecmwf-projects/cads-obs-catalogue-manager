@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 from cdsobs.cdm.api import read_cdm_code_table
 from cdsobs.utils.logutils import get_logger
@@ -16,5 +17,5 @@ def get_var_code_dict(cdm_tables_location: Path) -> dict:
     return code_dict
 
 
-def between(index, start, end):
+def between(index: Any, start: Any, end: Any):
     return (index >= start) & (index < end)

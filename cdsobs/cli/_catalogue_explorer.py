@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Iterable, Sequence
 
 import sqlalchemy
 import typer
@@ -166,7 +166,9 @@ def list_datasets(
         print_db_results(results, print_format, CadsDatasetVersion)
 
 
-def print_catalogue_info(session, source, dataset, version):
+def print_catalogue_info(
+    session: sqlalchemy.orm.Session, source: str, dataset: str, version: str
+):
     repo = CatalogueRepository(session)
     if len(source):
         results = repo.get_by_dataset_and_source_and_version(dataset, source, version)
@@ -181,7 +183,7 @@ def print_catalogue_info(session, source, dataset, version):
     console.print(stats_summary(results))
 
 
-def stats_summary(entries: sqlalchemy.engine.result.ScalarResult) -> dict:
+def stats_summary(entries: Iterable[Catalogue]) -> dict:
     num_of_partitions = 0
     total_size = 0
     stations, variables, time_coverages = set(), set(), set()

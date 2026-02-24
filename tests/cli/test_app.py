@@ -76,22 +76,23 @@ def test_cli_retrieve(tmp_path, test_repository):
     assert result.exit_code == 0
 
 
+@pytest.mark.skip(reason="this test does not reset db after running")
 def test_cli_make_cdm(tmp_path):
     args = [
         "make-cdm",
         "--dataset",
-        "insitu-observations-woudc-ozone-total-column-and-profiles",
+        "insitu-observations-gruan-reference-network",
         "--config",
         CONFIG_YML,
         "--start-year",
-        2001,
+        2011,
         "--end-year",
-        2002,
+        2012,
         "--save-data",
         "--output-dir",
         tmp_path,
         "--source",
-        "OzoneSonde",
+        "GRUAN",
         "--disable-cdm-tag-check",
     ]
     result = runner.invoke(app, args, catch_exceptions=False)
@@ -101,7 +102,7 @@ def test_cli_make_cdm(tmp_path):
 @pytest.mark.skip(reason="this test does not reset db after running")
 def test_cli_get_forms_jsons(tmp_path, test_repository):
     args = [
-        "get-forms-jsons",
+        "get_forms_jsons",
         "--dataset",
         "insitu-observations-woudc-ozone-total-column-and-profiles",
         "--config",

@@ -63,7 +63,12 @@ def copy_dataset(
 
 
 def _copy_dataset_impl(
-    cdsobs_config_yml, dataset, dest_config_yml, dest_dataset, version, dry_run
+    cdsobs_config_yml: Path,
+    dataset: str,
+    dest_config_yml: Path | None,
+    dest_dataset: str | None,
+    version: str,
+    dry_run: bool,
 ):
     if dest_dataset is None:
         dest_dataset = dataset
@@ -84,7 +89,7 @@ def _copy_dataset_impl(
         copy_inside(init_config, dataset, dest_dataset, version, dry_run)
 
 
-def check_params(dest_config_yml, dataset, dest_dataset):
+def check_params(dest_config_yml: Path | None, dataset: str, dest_dataset: str | None):
     """
     Check parameters logic before doing things.
 
@@ -205,7 +210,7 @@ def copy_outside(
     init_config: CDSObsConfig,
     dest_config: CDSObsConfig,
     dataset: str,
-    dest_dataset,
+    dest_dataset: str,
     version: str,
     dry_run: bool,
 ):
@@ -259,7 +264,13 @@ def copy_outside(
 
 
 def _copy_outside_logic(
-    dest_config, dest_dataset, entries, assets, init_config, init_s3client, init_session
+    dest_config: CDSObsConfig,
+    dest_dataset: str,
+    entries: Sequence[Catalogue],
+    assets: list[str],
+    init_config: CDSObsConfig,
+    init_s3client: S3Client,
+    init_session: Session,
 ):
     if init_config.s3config == dest_config.s3config:
         # namespace may be different, so we need another s3 client here
@@ -338,7 +349,7 @@ def s3_copy(s3client: S3Client, assets: list[str], dest_dataset: str) -> list[st
 @retry(
     wait=wait_random_exponential(multiplier=0.5, max=60), stop=stop_after_attempt(10)
 )
-def copy_asset(dest_dataset: str, source_asset: str, s3client) -> str:
+def copy_asset(dest_dataset: str, source_asset: str, s3client: S3Client) -> str:
     source_bucket, name = source_asset.split("/")
     dest_bucket = s3client.get_bucket_name(dest_dataset)
     s3client.create_directory(dest_bucket)
@@ -347,7 +358,7 @@ def copy_asset(dest_dataset: str, source_asset: str, s3client) -> str:
     return new_asset
 
 
-def s3_rollback(s3_client, assets):
+def s3_rollback(s3_client: S3Client, assets: Sequence[str]):
     for asset in assets:
         bucket, name = asset.split("/")[-2:]
         s3_client.delete_file(bucket, name)

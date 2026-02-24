@@ -28,7 +28,7 @@ class RetrieveParams(BaseModel, extra="ignore"):
 
     @classmethod
     @model_validator(mode="before")
-    def validate_coverages(cls, values):
+    def validate_coverages(cls, values: dict) -> dict:
         """Check that the coverages are consistent."""
         coverages = ["latitude_coverage", "longitude_coverage", "time_coverage"]
         for coverage in coverages:
@@ -41,7 +41,7 @@ class RetrieveParams(BaseModel, extra="ignore"):
 
     @classmethod
     @field_validator("version", mode="before")
-    def validate_version(cls, value):
+    def validate_version(cls, value: str):
         if value != "last":
             assert SemanticVersion.is_valid(value)
 

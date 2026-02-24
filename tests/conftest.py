@@ -27,6 +27,7 @@ from cdsobs.ingestion.serialize import serialize_partition
 from cdsobs.observation_catalogue.database import Base, get_session
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.retrieve.models import RetrieveArgs
+from cdsobs.service_definition.api import get_service_definition
 from cdsobs.storage import S3Client, StorageClient
 from tests.utils import get_test_years
 
@@ -68,28 +69,65 @@ TEST_API_PARAMETERS = [
 @pytest.fixture(scope="module")
 def test_config():
     config = CDSObsConfig.from_yaml(CONFIG_YML)
-    # For cuon, add the test dir with the test files
-    cuon_config = config.get_dataset(
-        "insitu-comprehensive-upper-air-observation-network"
-    )
+    return config
+
+
+@pytest.fixture(scope="module")
+def test_sds(test_config):
+    sds = {}
     tests_path = importlib.resources.files("tests")
+
+    # CUON
+    dataset_name = "insitu-comprehensive-upper-air-observation-network"
+    sd = get_service_definition(test_config, dataset_name)
     input_dir = Path(
         tests_path, "data/cuon_data/0-20500-0-94829_CEUAS_merged_v3.nc"
     ).parent.absolute()
+    sd.reader_extra_args["input_dir"] = str(input_dir)
+    sd.reader_extra_args["active_json"] = str(Path(input_dir, "active.json"))
+    sds[dataset_name] = sd
 
-    cuon_config.reader_extra_args["input_dir"] = str(input_dir)
-    cuon_config.reader_extra_args["active_json"] = str(Path(input_dir, "active.json"))
-    # Do the same for WOUDC test netcdfs
-    woudc_netcdfs_config = config.get_dataset("insitu-observations-woudc-netcdfs")
+    # WOUDC netCDF example
+    dataset_name = "insitu-observations-woudc-netcdfs"
+    sd = get_service_definition(test_config, dataset_name)
     example_filename = "insitu-observations-woudc-ozone-total-column-and-profiles_OzoneSonde_1969_01.nc"
     input_dir = Path(
         tests_path, f"data/woudc_netcdfs/{example_filename}"
     ).parent.absolute()
-    woudc_netcdfs_config.reader_extra_args["input_dir"] = str(input_dir)
-    surface_config = config.get_dataset("insitu-observations-surface-land")
-    input_dir = Path(Path(tests_path, "data/csv_data/").absolute(), "*.psv")
-    surface_config.reader_extra_args["input_path"] = str(input_dir)
-    return config
+    sd.reader_extra_args["input_dir"] = str(input_dir)
+    sds[dataset_name] = sd
+
+    # Surface Land
+    dataset_name = "insitu-observations-surface-land"
+    sd = get_service_definition(test_config, dataset_name)
+    input_dir = Path(Path(tests_path, "data/parquet_data/").absolute(), "*.parquet")
+    # We don't want this in the test.
+    del sd.reader_extra_args["filename_pattern"]
+    sd.reader_extra_args["input_path"] = str(input_dir)
+    sds[dataset_name] = sd
+
+    # WOUDC2
+    dataset_name = "insitu-observations-woudc-ozone-total-column-and-profiles"
+    sd = get_service_definition(test_config, dataset_name)
+    sd.ingestion_db = "main"
+    sd.time_tile_size = "year"
+    sds[dataset_name] = sd
+
+    # GNSS
+    dataset_name = "insitu-observations-gnss"
+    sd = get_service_definition(test_config, dataset_name)
+    sd.ingestion_db = "main"
+    sds[dataset_name] = sd
+    # Add other datasets from parameters if they are not already there
+    datasets_to_add = [
+        "insitu-observations-igra-baseline-network",
+        "insitu-observations-gruan-reference-network",
+    ]
+    for dataset_name in datasets_to_add:
+        if dataset_name not in sds:
+            sds[dataset_name] = get_service_definition(test_config, dataset_name)
+
+    return sds
 
 
 @pytest.fixture(scope="module")
@@ -147,7 +185,9 @@ class TestRepository:
 
 
 @pytest.fixture(scope="module")
-def test_repository(test_session, test_s3_client, test_config, tmp_path_factory):
+def test_repository(
+    test_session, test_s3_client, test_config, test_sds, tmp_path_factory
+):
     """The whole thing, session to the catalogue DB and storage client."""
     for dataset_name, dataset_source in TEST_API_PARAMETERS:
         start_year, end_year = get_test_years(dataset_source)
@@ -159,6 +199,7 @@ def test_repository(test_session, test_s3_client, test_config, tmp_path_factory)
             start_year,
             end_year,
             disable_cdm_tag_check=True,
+            service_definition=test_sds.get(dataset_name),
         )
         # dataset must be explicitly enabled now after make production
         set_version_status(
@@ -173,6 +214,7 @@ def test_repository(test_session, test_s3_client, test_config, tmp_path_factory)
         upload_to_storage=True,
         storage_client=test_s3_client,
         get_stations_file=False,
+        service_definition=test_sds.get(DS_TEST_NAME),
     )
 
     # Gruan version 2.0.0
@@ -188,6 +230,7 @@ def test_repository(test_session, test_s3_client, test_config, tmp_path_factory)
         end_year,
         version="2.0.0",
         disable_cdm_tag_check=True,
+        service_definition=test_sds.get(dataset_name),
     )
     set_version_status(
         test_config,

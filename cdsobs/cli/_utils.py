@@ -8,7 +8,7 @@ from cdsobs.utils.logutils import get_logger
 logger = get_logger(__name__)
 
 
-def exception_handler(exception):
+def exception_handler(exception: Exception):
     more_info = "Set CLI_DEBUG=true to see the full trace"
     if isinstance(exception, CliException):
         logger.error(f"Error:\\ {exception}")
@@ -41,7 +41,7 @@ PAGE_SIZE = 50
 print_format_msg = "Format to display results, either table or json"
 
 
-def list_parser(arg: str):
+def list_parser(arg: str) -> list[str]:
     arg = arg.replace(" ", "")
     if not len(arg):
         return []

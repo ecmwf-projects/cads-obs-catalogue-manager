@@ -70,7 +70,7 @@ class StorageClient(ABC):
         pass
 
     @abstractmethod
-    def object_exists(self, bucket, name):
+    def object_exists(self, bucket: str, name: str) -> bool:
         pass
 
     def get_bucket_name(self, dataset_name: str, max_allowed_bucket_length: int = 63):
@@ -154,7 +154,7 @@ class S3Client(StorageClient):
         )
         return self.get_asset(destination_bucket, object_name)
 
-    def download_file(self, bucket_name, object_name, ofile):
+    def download_file(self, bucket_name: str, object_name: str, ofile: str | Path):
         self.s3.Object(bucket_name, object_name).download_file(
             ofile, Config=self.transfer_config
         )
@@ -177,7 +177,7 @@ class S3Client(StorageClient):
         copy_source = {"Bucket": init_bucket, "Key": init_name}
         self.s3.Bucket(destination_bucket).copy(copy_source, destination_name)
 
-    def object_exists(self, bucket, name) -> bool:
+    def object_exists(self, bucket: str, name: str) -> bool:
         try:
             # (head request, it doesn't load the full object)
             self.s3.Object(bucket, name).load()

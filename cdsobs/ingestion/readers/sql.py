@@ -149,7 +149,7 @@ def read_singletable_data(
     """Read datasets formatted as one single table."""
     source_definition = service_definition.sources[source]
     # Get the reader function for this dataset
-    ingestion_db_config = config.get_dataset_ingestion_db(dataset_name)
+    ingestion_db_config = config.ingestion_databases[service_definition.ingestion_db]
     sql_reader_function = dataset2sqlreader_function[dataset_name]
     _, data_table = read_ingestion_tables(
         ingestion_db_config,
@@ -176,7 +176,7 @@ def read_header_and_data_tables(
         )
     # Get the reader function for this dataset
     sql_reader_function = dataset2sqlreader_function[dataset_name]
-    ingestion_db_config = config.get_dataset_ingestion_db(dataset_name)
+    ingestion_db_config = config.ingestion_databases[service_definition.ingestion_db]
     header_table, data_table = read_ingestion_tables(
         ingestion_db_config,
         source_definition,

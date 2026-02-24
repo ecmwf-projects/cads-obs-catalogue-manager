@@ -87,11 +87,12 @@ def validate_cdm_in_sc(cdm_fields, cdm_variables, service_definition):
 def get_service_definition(
     config: CDSObsConfig, dataset_name: str
 ) -> ServiceDefinition:
-    cadsobs_insitu_location = config.cads_obs_insitu_location
+    cadsobs_insitu_location = config.cads_obs_config_location
     path_to_yaml = Path(
         cadsobs_insitu_location,
-        "cads-forms-insitu",
-        f"{dataset_name}/service_definition.yml",
+        "cads-obs-config",
+        "service-definitions",
+        f"{dataset_name}.yml",
     )
     logger.info(f"Reading service definition file from {path_to_yaml}")
     with open(path_to_yaml) as f:

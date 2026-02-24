@@ -20,6 +20,7 @@ main methods are:
 """
 
 from datetime import datetime, timedelta
+from typing import Iterable
 
 import pandas as pd
 
@@ -27,7 +28,7 @@ import pandas as pd
 # output groups expected are all years the months with 30 and 31 days, 28 and bisestile years distinct group.
 
 
-def aggregate(a_df, *args):
+def aggregate(a_df: pd.DataFrame, *args: str) -> tuple:
     aggregate_on = args[0]
     if not isinstance(a_df[aggregate_on].iloc[0], tuple):
         out = list(set(a_df[aggregate_on]))
@@ -37,13 +38,15 @@ def aggregate(a_df, *args):
     return tuple(out)
 
 
-def group_by_aggregate_on(a_dataframe, group_list, aggregate_on):
+def group_by_aggregate_on(
+    a_dataframe: pd.DataFrame, group_list: list[str], aggregate_on: str
+) -> pd.DataFrame:
     a_dataframe = a_dataframe.drop_duplicates(keep="last")
     out = a_dataframe.groupby(group_list).apply(aggregate, aggregate_on)
     return pd.DataFrame(out.rename(aggregate_on)).reset_index()
 
 
-def all_perms(elements):
+def all_perms(elements: list) -> Iterable[list]:
     if len(elements) <= 1:
         yield elements
     else:
@@ -53,8 +56,8 @@ def all_perms(elements):
                 yield perm[:i] + elements[0:1] + perm[i:]
 
 
-def sort_by_uniques(df, colums):
-    nu = df[colums].nunique().to_dict()
+def sort_by_uniques(df: pd.DataFrame, columns: list[str]) -> list[str]:
+    nu = df[columns].nunique().to_dict()
     k = list(nu.keys())
     try:
         return [
@@ -73,7 +76,7 @@ def sort_by_uniques(df, colums):
         ]
 
 
-def process_all_groups(a_dataframe, columns):
+def process_all_groups(a_dataframe: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     # order of columns can influence outcome groups
     # we assume that columns are ordered by sort_by_uniques
     # we want to aggregate on the most varying column firs, so ve reverse
@@ -87,7 +90,7 @@ def process_all_groups(a_dataframe, columns):
     return out[columns]
 
 
-def iterative_ordering(a_dataframe, columns):
+def iterative_ordering(a_dataframe: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     # we order the columns in place and serach for the minimum memory usage following some scheme ...
     old = a_dataframe.copy()
     new = a_dataframe.copy()
@@ -106,7 +109,7 @@ def iterative_ordering(a_dataframe, columns):
     return new
 
 
-def explode_constraints(dff):
+def explode_constraints(dff: pd.DataFrame) -> pd.DataFrame:
     # expand the constraints dataframe
     keys = list(dff.keys())
     out = pd.DataFrame(columns=keys)
