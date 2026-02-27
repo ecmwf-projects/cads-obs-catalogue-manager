@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Iterable, Tuple
 
 import fsspec
+import geopandas as gpd
 import h5netcdf
 import numpy
 import pandas
@@ -182,7 +183,7 @@ def get_station_summary(
     service_definition: ServiceDefinition,
 ) -> Path:
     """Iterate over the input files to get the stations and their metadata."""
-    stations_output_path = Path(output_path, "stations.json")
+    stations_output_path = Path(output_path, "stations.geojson")
     fs = fsspec.filesystem("https")
 
     df_list = []
@@ -226,7 +227,17 @@ def get_station_summary(
 
     logger.info(f"Writing {stations_output_path}")
     stations_df = pandas.concat(df_list).drop_duplicates().reset_index()
-    stations_df.to_json(stations_output_path, orient="records")
+    print(stations_df.head())
+    print(stations_df.station_id.unique())
+
+    gdf = gpd.GeoDataFrame(
+        stations_df,
+        geometry=gpd.points_from_xy(stations_df.longitude, stations_df.latitude),
+        crs="EPSG:4326"
+    )
+
+    gdf.to_file(stations_output_path, driver='GeoJSON')
+    # stations_df.to_json(stations_output_path, orient="records")
     return stations_output_path
 
 
