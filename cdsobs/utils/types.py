@@ -10,7 +10,7 @@ TimeTileSize = Literal["month", "year"]
 ByteSize = Annotated[int, pydantic.Field(gt=0)]
 StrNotBlank = Annotated[str, pydantic.Field(min_length=1)]
 BoundedLat = Annotated[float, pydantic.Field(ge=-90, le=90)]
-BoundedLon = Annotated[float, pydantic.Field(ge=-180, le=360)]
+BoundedLon = Annotated[float, pydantic.Field(ge=-180, le=180)]
 
 
 def _validate_unique_list(v: list) -> list:
