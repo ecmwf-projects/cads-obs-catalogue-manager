@@ -7,6 +7,9 @@ from cdsobs.constants import DEFAULT_VERSION, DS_TEST_NAME, SOURCE_TEST_NAME
 from cdsobs.observation_catalogue.database import get_session
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
 from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
+from cdsobs.observation_catalogue.repositories.dataset_version import (
+    CadsDatasetVersionRepository,
+)
 from tests.conftest import CONFIG_YML
 
 runner = CliRunner()
@@ -111,6 +114,70 @@ def test_copy_delete_dataset_inside(test_repository, test_config):
     assert result.exit_code == 0
     with get_session(test_config.catalogue_db) as test_session:
         assert not CadsDatasetRepository(test_session).dataset_exists("test")
+
+    # Ensure deleting GRUAN 1.0.0 does not touch GRUAN 2.0.0
+    gruan_dataset = "insitu-observations-gruan-reference-network"
+    gruan_source = "GRUAN"
+    gruan_version_one = DEFAULT_VERSION
+    gruan_version_two = "2.0.0"
+    with get_session(test_config.catalogue_db) as test_session:
+        catalogue_repo = CatalogueRepository(test_session)
+        gruan_v1_count = len(
+            catalogue_repo.get_by_dataset_and_version(gruan_dataset, gruan_version_one)
+        )
+        gruan_v2_count = len(
+            catalogue_repo.get_by_dataset_and_version(gruan_dataset, gruan_version_two)
+        )
+        assert gruan_v1_count > 0
+        assert gruan_v2_count > 0
+        assert (
+            CadsDatasetVersionRepository(test_session).get_dataset_version(
+                gruan_dataset, gruan_version_two
+            )
+            is not None
+        )
+    delete_gruan_invoke_params = [
+        "delete-dataset",
+        "-c",
+        CONFIG_YML,
+        "--dataset",
+        gruan_dataset,
+        "--dataset-source",
+        gruan_source,
+        "--version",
+        gruan_version_one,
+    ]
+    result = runner.invoke(
+        app,
+        delete_gruan_invoke_params,
+        input=gruan_dataset,
+        catch_exceptions=False,
+    )
+    assert result.exit_code == 0
+    with get_session(test_config.catalogue_db) as test_session:
+        catalogue_repo = CatalogueRepository(test_session)
+        assert (
+            len(
+                catalogue_repo.get_by_dataset_and_version(
+                    gruan_dataset, gruan_version_one
+                )
+            )
+            == 0
+        )
+        assert (
+            len(
+                catalogue_repo.get_by_dataset_and_version(
+                    gruan_dataset, gruan_version_two
+                )
+            )
+            == gruan_v2_count
+        )
+        assert (
+            CadsDatasetVersionRepository(test_session).get_dataset_version(
+                gruan_dataset, gruan_version_two
+            )
+            is not None
+        )
 
 
 @pytest.mark.skip(reason="this test does get stuck in github CI for some reason")

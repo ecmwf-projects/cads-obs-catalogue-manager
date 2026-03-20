@@ -14,8 +14,9 @@ from cdsobs.cli._utils import (
 )
 from cdsobs.config import CDSObsConfig
 from cdsobs.observation_catalogue.database import get_session
-from cdsobs.observation_catalogue.models import Catalogue
+from cdsobs.observation_catalogue.models import CadsDatasetVersion, Catalogue
 from cdsobs.observation_catalogue.repositories.catalogue import CatalogueRepository
+from cdsobs.observation_catalogue.repositories.dataset import CadsDatasetRepository
 from cdsobs.observation_catalogue.repositories.dataset_version import (
     CadsDatasetVersionRepository,
 )
@@ -94,6 +95,17 @@ def delete_dataset(
                     f"[bold green] Deleted {dataset} {version} from dataset version "
                     f"table as it was left empty. [/bold green]"
                 )
+                nremaining_dataset_versions = catalogue_session.scalar(
+                    select(func.count())
+                    .select_from(CadsDatasetVersion)
+                    .where(CadsDatasetVersion.dataset == dataset)
+                )
+                if nremaining_dataset_versions == 0:
+                    CadsDatasetRepository(catalogue_session).remove(dataset)
+                    console.print(
+                        f"[bold green] Deleted {dataset} from dataset table as it was "
+                        f"left empty. [/bold green]"
+                    )
 
 
 def delete_from_catalogue(
